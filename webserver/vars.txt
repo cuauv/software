@@ -1,0 +1,48 @@
+\\***This is the shared memory interface file. Shared variables
+\\in this section get passed to the web server. ***
+
+\\Kill Vals
+soft_kill, switches.soft_kill
+hard_kill, switches.hard_kill
+
+\\Thrusters
+thrusters_t1, motor_desires.sway_fore
+thrusters_t2, motor_desires.sway_aft
+thrusters_t3, motor_desires.port
+thrusters_t4, motor_desires.starboard
+thrusters_t6, motor_desires.fore_starboard
+thrusters_t5, motor_desires.aft_port
+thrusters_t7, motor_desires.aft_starboard
+thrusters_t8, motor_desires.fore_port
+motor_t9, actuator_desires.motor_pwm_1
+controller, settings_control.enabled
+
+\\Cameras
+\\forward_cam vision.web_get_forward
+\\downward_cam vision.web_get_downward
+
+\\Sensors
+	\\DVL
+	dvl_heading, dvl.heading
+	dvl_pitch, dvl.pitch
+	dvl_roll, dvl.roll
+	dvl_temperature, dvl.temperature
+	dvl_depth, dvl.depth
+
+	\\OTHER
+	pitch, kalman.pitch
+	roll, kalman.roll
+	heading, kalman.heading
+	velx, kalman.velx
+	vely, kalman.vely
+	depth, kalman.depth
+	pressure, pressure.hull
+
+    \\POWER
+    batt_id_port pod_port.board_id
+    batt_id_starboard pod_starboard.board_id
+    batt_percent_port pod_port.percent
+    batt_percent_starboard pod_starboard.percent
+
+    \\Mission Start
+    mission_start, mission_start_switch.mission_start

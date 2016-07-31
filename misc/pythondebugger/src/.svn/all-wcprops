@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/electrical/!svn/ver/6338/ragnarok/AVRCode/pythondebugger/src
+END
+commTest.py
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/electrical/!svn/ver/6338/ragnarok/AVRCode/pythondebugger/src/commTest.py
+END
+conf
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/electrical/!svn/ver/6319/ragnarok/AVRCode/pythondebugger/src/conf
+END
+wxGui.wxg
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/electrical/!svn/ver/6329/ragnarok/AVRCode/pythondebugger/src/wxGui.wxg
+END
+confParser.py
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/electrical/!svn/ver/6323/ragnarok/AVRCode/pythondebugger/src/confParser.py
+END
+serialTalker.py
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/electrical/!svn/ver/6338/ragnarok/AVRCode/pythondebugger/src/serialTalker.py
+END
+wxGui.py
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/electrical/!svn/ver/6335/ragnarok/AVRCode/pythondebugger/src/wxGui.py
+END
+gui.py
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/electrical/!svn/ver/6336/ragnarok/AVRCode/pythondebugger/src/gui.py
+END
+register.py
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/electrical/!svn/ver/6321/ragnarok/AVRCode/pythondebugger/src/register.py
+END
+board.py
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/electrical/!svn/ver/6320/ragnarok/AVRCode/pythondebugger/src/board.py
+END

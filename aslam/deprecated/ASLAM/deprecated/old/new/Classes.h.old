@@ -1,0 +1,53 @@
+template<size_t dim, typename T>
+struct mdvector {
+    typedef std::vector<typename mdvector<dim-1, T>::type> type;
+};
+
+template<typename T>
+struct mdvector<0, T> {
+    typedef T type;
+};
+
+// Above thanks to http://stackoverflow.com/questions/13105514/n-dimensional-vector
+
+template<typename T>
+struct VE {
+    T value;
+    T error;
+};
+
+template<typename T>
+struct UF {
+    double operator(std::vector<T> pos);
+};
+
+template<class T>
+class World{
+    private int NDIM, DIML;
+    private std::vector<double> convF;
+    private double wunixtime;
+    private std::vector<Object<T>> objects;
+    public World(int ndim, int diml, std::vector<double> convf, double unixtime);
+    public int addObject(Object<T> o);
+    public std::vector<VE<T>> getObjCentroid(int index, std::vector<T> restr);
+};
+
+template<class T>
+class Object{
+    private int NDIM, DIML;
+    private mdvector<NDIM, T> pmap;
+    private std::vector<Event<T>> events;
+    public Object(int ndim, int diml);
+    public void addEvent(Event<T> e);
+    public void addEvent(Event<T> e, double unixtime);
+    public std::vector<VE<T>> getCentroid(std::vector<T> restr);
+};
+
+template<class T>
+class Event{
+    private int NDIM, DIML;
+    private double eunixtime;
+    private mdvector<NDIM, T> bpmap;
+    public Event(int ndim, int diml, UF uf, double unixtime); 
+    public mdvector<NDIM, T> getBPM();
+};

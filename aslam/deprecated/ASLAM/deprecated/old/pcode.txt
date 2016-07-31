@@ -1,0 +1,37 @@
+- Object
+-- ProbabilityMap (we can flat-field)
+-- Uncertainty (~ stddev)
+
+- Observation
+-- ObjectFrom, ObjectTo
+-- Distance, Uncertainty
+-- Heading, Uncertainty
+-- Timestamp/CallerInfo
+
+- Movement
+-- Object
+-- Position
+-- Uncertainty
+-- Timestamp/CallerInfo
+
+- Localizer
+-- Objects
+-- Update (Observations, Movements)
+-- Position GetDelta(ObjectFrom, ObjectTo)
+
+- Compatibility Wrapper
+
+Update:::
+
+Take current state.
+Each observation used as Bayesian input to relevant objects, Their position updated prop. obsuncertainty / objuncertainty. Other objects updated AS IF AN OBSERVATION WAS MADE of where it would be observed with new position with uncertainty prop. object covariance.
+
+Heading: Decaying functional probability map: infinite cone.
+Distance: Decaying functional probability map: 360d ring.
+
+ProbabilityMap multiplied and renormalized.
+
+Everything as heading/distance?!
+
+Constants:
+OBS_IMPACT -- how much a given observation can decrease probabilities by. Lower - faster convergenece, more bad-data risk.

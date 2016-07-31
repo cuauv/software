@@ -1,0 +1,8 @@
+.stack-work/
+bin/
+aslam.cabal
+aslam.json
+src/math/fastslam.cpp
+src/math/fastslam.h
+src/interface/aslamd.cpp
+src/net/server.hpp

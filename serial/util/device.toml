@@ -1,0 +1,18 @@
+name = "actuSerialPowerator"
+
+[writeVars.vars]
+Var1 = "uint16"
+Var3 = "float"
+
+[readGroups.foo]
+interval_ms = 0
+
+    [readGroups.foo.vars]
+    Var2 = "uint16"
+
+[readGroups.bar]
+interval_ms = 10
+    
+    [readGroups.bar.vars]
+    Var4 = "float"
+    Var5 = "uint8"

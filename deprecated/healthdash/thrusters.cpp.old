@@ -1,0 +1,352 @@
+
+
+
+#include "thrusters.h"
+
+using namespace AUV;
+using namespace std;
+
+/* Thruster Windows */
+WINDOW *main_thruster_status;
+WINDOW *thrust_port;
+WINDOW *thrust_stbd;
+WINDOW *thrust_fore;
+WINDOW *thrust_aft;
+WINDOW *thrust_oview;
+
+/* Thruster Shared Vars */
+
+/* Voltage */
+ShmSharedVar<double> thrust_volt_port("/sensors/altimeters/downward");
+ShmSharedVar<double> thrust_volt_stbd("/sensors/altimeters/downward");
+ShmSharedVar<double> thrust_volt_fore("/sensors/altimeters/downward");
+ShmSharedVar<double> thrust_volt_aft("/sensors/altimeters/downward");
+/* Current */
+ShmSharedVar<double> thrust_curr_port("/diagnostics/thrusters/current/port");
+ShmSharedVar<double> thrust_curr_stbd("/diagnostics/thrusters/current/starboard");
+ShmSharedVar<double> thrust_curr_fore("/diagnostics/thrusters/current/fore");
+ShmSharedVar<double> thrust_curr_aft("/diagnostics/thrusters/current/aft");
+/* Temperature */
+ShmSharedVar<double> thrust_temp_port("/sensors/altimeters/downward");
+ShmSharedVar<double> thrust_temp_stbd("/sensors/altimeters/downward");
+ShmSharedVar<double> thrust_temp_fore("/sensors/altimeters/downward");
+ShmSharedVar<double> thrust_temp_aft("/sensors/altimeters/downward");
+/* Board ID */
+ShmSharedVar<int> thrust_id_port("/sensors/hydrophones/ping_time");
+ShmSharedVar<int> thrust_id_stbd("/sensors/hydrophones/ping_time");
+ShmSharedVar<int> thrust_id_fore("/sensors/hydrophones/ping_time");
+ShmSharedVar<int> thrust_id_aft("/sensors/hydrophones/ping_time");
+/* Is there a serial connection */
+ShmSharedVar<bool> thrust_connected_port("/settings/switches/light");
+ShmSharedVar<bool> thrust_connected_stbd("/settings/switches/light");
+ShmSharedVar<bool> thrust_connected_fore("/settings/switches/light");
+ShmSharedVar<bool> thrust_connected_aft("/settings/switches/light");
+/* Kills */
+ShmSharedVar<bool> hard_kill("/settings/switches/hard_kill");
+ShmSharedVar<bool> soft_kill("/settings/switches/soft_kill");
+
+/* Status Functions */
+int port_thrust_status() {
+    int s = ATTR_OK;
+    int r;
+   
+    if (!thrust_connected_port.value())
+        return ATTR_ERR;
+    /* Voltage */
+    r = rcomp(thrust_volt_port.value(),THRUST_VOLT_WARN_LOW,THRUST_VOLT_ERR_LOW,THRUST_VOLT_WARN_HI,THRUST_VOLT_ERR_HI);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    /* Current */
+    r = acomp(thrust_curr_port.value(), THRUST_PS_CURR_WARN, THRUST_PS_CURR_ERR);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    /* Temp */
+    r = acomp(thrust_temp_port.value(), THRUST_TEMP_WARN, THRUST_TEMP_ERR);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    return s;
+}
+
+int starboard_thrust_status() {
+    int s = ATTR_OK;
+    int r;
+    
+    if (!thrust_connected_stbd.value())
+        return ATTR_ERR;
+    /* Voltage */
+    r = rcomp(thrust_volt_stbd.value(),THRUST_VOLT_WARN_LOW,THRUST_VOLT_ERR_LOW,THRUST_VOLT_WARN_HI,THRUST_VOLT_ERR_HI);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    /* Current */
+    r = acomp(thrust_curr_stbd.value(), THRUST_PS_CURR_WARN, THRUST_PS_CURR_ERR);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    /* Temp */
+    r = acomp(thrust_temp_stbd.value(), THRUST_TEMP_WARN, THRUST_TEMP_ERR);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    return s;
+}
+
+int aft_thrust_status() {
+    int s = ATTR_OK;
+    int r;
+    
+    if (!thrust_connected_aft.value())
+        return ATTR_ERR;
+    /* Voltage */
+    r = rcomp(thrust_volt_aft.value(),THRUST_VOLT_WARN_LOW,THRUST_VOLT_ERR_LOW,THRUST_VOLT_WARN_HI,THRUST_VOLT_ERR_HI);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    /* Current */
+    r = acomp(thrust_curr_aft.value(), THRUST_FA_CURR_WARN, THRUST_FA_CURR_ERR);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    /* Temp */
+    r = acomp(thrust_temp_aft.value(), THRUST_TEMP_WARN, THRUST_TEMP_ERR);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    return s;
+}
+
+int fore_thrust_status() {
+    int s = ATTR_OK;
+    int r;
+    
+    if (!thrust_connected_fore.value())
+        return ATTR_ERR;
+    /* Voltage */
+    r = rcomp(thrust_volt_fore.value(),THRUST_VOLT_WARN_LOW,THRUST_VOLT_ERR_LOW,THRUST_VOLT_WARN_HI,THRUST_VOLT_ERR_HI);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    /* Current */
+    r = acomp(thrust_curr_fore.value(), THRUST_FA_CURR_WARN, THRUST_FA_CURR_ERR);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    /* Temp */
+    r = acomp(thrust_temp_fore.value(), THRUST_TEMP_WARN, THRUST_TEMP_ERR);
+    if (r == (ATTR_ERR)) return ATTR_ERR;
+    if (r == (ATTR_WARN)) s = ATTR_WARN;
+
+    return s;
+}
+
+/* End Status Functions */
+
+/* Main Page Thruster Window */
+
+void update_main_thruster() {
+    wborder(main_thruster_status,0,0,0,0,0,0,0,0);
+    
+    /* Title */
+    mvwprintw(main_thruster_status,1,2,"Thrusters");
+    /* Port */
+    wattrset(main_thruster_status,port_thrust_status());
+    mvwprintw(main_thruster_status,3,2,"PORT");
+    wattrset(main_thruster_status,0);
+    /* Fore */
+    wattrset(main_thruster_status,fore_thrust_status());
+    mvwprintw(main_thruster_status,3,8,"FORE");
+    wattrset(main_thruster_status,0);
+    /* Starboard */
+    wattrset(main_thruster_status,starboard_thrust_status());
+    mvwprintw(main_thruster_status,4,2,"STBD");
+    wattrset(main_thruster_status,0);
+    /* Aft */
+    wattrset(main_thruster_status,aft_thrust_status());
+    mvwprintw(main_thruster_status,4,8,"AFT ");
+    wattrset(main_thruster_status,0);
+
+    move(getmaxy(stdscr)-1,getmaxx(stdscr)-1);
+}
+
+/* Thruster Windows on Thruster Pages */
+
+void update_thruster_port() {
+    werase(thrust_port);
+    wborder(thrust_port,0,0,0,0,0,0,0,0);
+    mvwprintw(thrust_port,1,3,"Port Thruster");
+    
+    if (thrust_connected_port.value()){
+        /* Voltage */
+        mvwprintw(thrust_port,3,2,"Voltage:  ");
+        wattrset(thrust_port,rcomp(thrust_volt_port.value(),THRUST_VOLT_WARN_LOW,THRUST_VOLT_ERR_LOW,THRUST_VOLT_WARN_HI,THRUST_VOLT_ERR_HI));
+        wprintw(thrust_port,"%4.2fV",thrust_volt_port.value());
+        wattrset(thrust_port,0);
+        
+        /* Current */
+        mvwprintw(thrust_port,4,2,"Current:  ");
+        wattrset(thrust_port,acomp(thrust_curr_port.value(),THRUST_PS_CURR_WARN,THRUST_PS_CURR_ERR));
+        wprintw(thrust_port,"%4.2fA",thrust_curr_port.value()/1000.);
+        wattrset(thrust_port,0);
+        
+        /* Temp */
+        mvwprintw(thrust_port,5,2,"Temp:     ");
+        wattrset(thrust_port,acomp(thrust_temp_port.value(), THRUST_TEMP_WARN, THRUST_TEMP_ERR));
+        wprintw(thrust_port,"%3.1f C",thrust_temp_port.value());
+        wattrset(thrust_port,0);
+        
+        /* Board ID */
+        mvwprintw(thrust_port,7,2,"Board ID:    %2d",thrust_id_port.value());
+    } 
+    else { 
+        mvwprintw(thrust_port,4,5,"Killed or");
+    	mvwprintw(thrust_port,5,3,"not connected");
+    }
+    
+    move(getmaxy(stdscr)-1,getmaxx(stdscr)-1);
+}
+
+void update_thruster_starboard() {
+    werase(thrust_stbd);
+    wborder(thrust_stbd,0,0,0,0,0,0,0,0);
+    mvwprintw(thrust_stbd,1,3,"Stbd. Thruster");
+    if (thrust_connected_stbd.value()){
+        /* Voltage */
+        mvwprintw(thrust_stbd,3,2,"Voltage:  ");
+        wattrset(thrust_stbd,rcomp(thrust_volt_stbd.value(),THRUST_VOLT_WARN_LOW,THRUST_VOLT_ERR_LOW,THRUST_VOLT_WARN_HI,THRUST_VOLT_ERR_HI));
+        wprintw(thrust_stbd,"%4.2fV",thrust_volt_stbd.value());
+        wattrset(thrust_stbd,0);
+
+        /* Current */
+        mvwprintw(thrust_stbd,4,2,"Current:  ");
+        wattrset(thrust_stbd,acomp(thrust_curr_stbd.value(),THRUST_PS_CURR_WARN,THRUST_PS_CURR_ERR));
+        wprintw(thrust_stbd,"%4.2fA",thrust_curr_stbd.value()/1000.);
+        wattrset(thrust_stbd,0);
+        
+        
+        /* Temp */
+        mvwprintw(thrust_stbd,5,2,"Temp:     ");
+        wattrset(thrust_stbd,acomp(thrust_temp_stbd.value(), THRUST_TEMP_WARN, THRUST_TEMP_ERR));
+        wprintw(thrust_stbd,"%3.1f C",thrust_temp_stbd.value());
+        wattrset(thrust_stbd,0);
+
+        mvwprintw(thrust_stbd,7,2,"Board ID:    %2d",thrust_id_stbd.value());
+    }
+    else { 
+        mvwprintw(thrust_stbd,4,5,"Killed or");
+    	mvwprintw(thrust_stbd,5,3,"not connected");
+    }
+
+    move(getmaxy(stdscr)-1,getmaxx(stdscr)-1);
+}
+
+void update_thruster_fore() {
+    werase(thrust_fore);
+    wborder(thrust_fore,0,0,0,0,0,0,0,0);
+    mvwprintw(thrust_fore,1,2,"Forward Thruster");
+    if (thrust_connected_fore.value()){
+        /* Voltage */
+        mvwprintw(thrust_fore,3,2,"Voltage:  ");
+        wattrset(thrust_fore,rcomp(thrust_volt_fore.value(),THRUST_VOLT_WARN_LOW,THRUST_VOLT_ERR_LOW,THRUST_VOLT_WARN_HI,THRUST_VOLT_ERR_HI));
+        wprintw(thrust_fore,"%4.2fV",thrust_volt_fore.value());
+        wattrset(thrust_fore,0);
+
+        /* Current */
+        mvwprintw(thrust_fore,4,2,"Current:  ");
+        wattrset(thrust_fore,acomp(thrust_curr_fore.value(),THRUST_FA_CURR_WARN,THRUST_FA_CURR_ERR));
+        wprintw(thrust_fore,"%4.2fA",thrust_curr_fore.value()/1000.);
+        wattrset(thrust_fore,0);
+        
+        
+        /* Temp */
+        mvwprintw(thrust_fore,5,2,"Temp:     ");
+        wattrset(thrust_fore,acomp(thrust_temp_fore.value(), THRUST_TEMP_WARN, THRUST_TEMP_ERR));
+        wprintw(thrust_fore,"%3.1f C",thrust_temp_fore.value());
+        wattrset(thrust_fore,0);
+
+        mvwprintw(thrust_fore,7,2,"Board ID:    %2d",thrust_id_fore.value());
+    }
+    else { 
+        mvwprintw(thrust_fore,4,5,"Killed or");
+    	mvwprintw(thrust_fore,5,3,"not connected");
+    }
+
+    move(getmaxy(stdscr)-1,getmaxx(stdscr)-1);
+}
+
+void update_thruster_aft() {
+    werase(thrust_aft);
+    wborder(thrust_aft,0,0,0,0,0,0,0,0);
+    mvwprintw(thrust_aft,1,3,"Aft Thruster");
+    if (thrust_connected_aft.value()){
+        /* Voltage */
+        mvwprintw(thrust_aft,3,2,"Voltage:  ");
+        wattrset(thrust_aft,rcomp(thrust_volt_aft.value(),THRUST_VOLT_WARN_LOW,THRUST_VOLT_ERR_LOW,THRUST_VOLT_WARN_HI,THRUST_VOLT_ERR_HI));
+        wprintw(thrust_aft,"%4.2fV",thrust_volt_aft.value());
+        wattrset(thrust_aft,0);
+
+        /* Current */
+        mvwprintw(thrust_aft,4,2,"Current:  ");
+        wattrset(thrust_aft,acomp(thrust_curr_aft.value(),THRUST_FA_CURR_WARN,THRUST_FA_CURR_ERR));
+        wprintw(thrust_aft,"%4.2fA",thrust_curr_aft.value()/1000.);
+        wattrset(thrust_aft,0);
+        
+        
+        /* Temp */
+        mvwprintw(thrust_aft,5,2,"Temp:     ");
+        wattrset(thrust_aft,acomp(thrust_temp_aft.value(), THRUST_TEMP_WARN, THRUST_TEMP_ERR));
+        wprintw(thrust_aft,"%3.1f C",thrust_temp_aft.value());
+        wattrset(thrust_aft,0);
+
+        mvwprintw(thrust_aft,7,2,"Board ID:    %2d",thrust_id_aft.value());
+    }
+    else { 
+        mvwprintw(thrust_aft,4,5,"Killed or");
+    	mvwprintw(thrust_aft,5,3,"not connected");
+    }
+
+    move(getmaxy(stdscr)-1,getmaxx(stdscr)-1);
+}
+
+/* End Thruster Windows */
+
+/* Thruster Overview Window */
+
+void update_thruster_overview() {
+    double sum_curr_warn = 2*THRUST_PS_CURR_WARN + 2*THRUST_FA_CURR_WARN;
+    double sum_curr_err = 2*THRUST_PS_CURR_ERR + 2*THRUST_FA_CURR_ERR;
+    /* Sum is in amps not mills */
+    sum_curr_warn /= 1000.;
+    sum_curr_err /=1000.;
+    
+    wborder(thrust_oview,0,0,0,0,0,0,0,0);
+
+    mvwprintw(thrust_oview,1,3,"Thruster Overview");
+    
+    /* Current Sum */
+    /* If we're killed, set current to 0, otherwise it will be garbage */
+    double sum = (hard_kill.value() || soft_kill.value()) ? 0 : 
+        ((thrust_curr_fore.value() + thrust_curr_aft.value() + 
+         thrust_curr_stbd.value() + thrust_curr_port.value()) / 1000.);
+
+    mvwprintw(thrust_oview,3,2,"Total Current: ");
+    wattrset(thrust_oview,acomp(sum,sum_curr_warn,sum_curr_err));
+    wprintw(thrust_oview,"%1.3fA",sum);
+    wattrset(thrust_oview,0);
+    
+    /* Hard Kill */
+    mvwprintw(thrust_oview,4,2,"Hard Kill:  ");
+    wattrset(thrust_oview, (hard_kill.value()) ? ATTR_ERR : ATTR_OK );
+    wprintw(thrust_oview,(hard_kill.value()) ? "  Killed" : "Unkilled");
+    wattrset(thrust_oview, 0);
+   
+   /* Soft Kill */
+    mvwprintw(thrust_oview,5,2,"Soft Kill:  ");
+    wattrset(thrust_oview, (soft_kill.value()) ? ATTR_ERR : ATTR_OK );
+    wprintw(thrust_oview,(soft_kill.value()) ? "  Killed" : "Unkilled");
+    wattrset(thrust_oview, 0);
+
+    move(getmaxy(stdscr)-1,getmaxx(stdscr)-1);
+}

@@ -1,0 +1,5 @@
+# Ignore everything in this directory
+*.pkl
+*/*.png
+# Except this file
+!.gitignore

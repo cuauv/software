@@ -1,0 +1,132 @@
+import serial
+import struct
+import time
+import traceback
+import os, re
+
+#try:
+import serial.tools.list_ports as list_ports
+#except ImportError:
+#print "can't import list_ports"
+
+functions = {
+'NOP': int("00",16),
+'READ':int("01",16),
+'READ_R':int("41",16),
+'WRITE':int("02",16),
+'WRITE_R':int("42",16),
+'OR':int("03",16),
+'OR_R':int("43",16),
+'AND':int("04",16),
+'AND_R':int("44",16),
+'XOR':int("05",16),
+'XOR_R':int("45",16),
+'RESTART':int("AA",16)
+}
+fmt_chars = {'bool' : 'H', 'uint8' : 'H', 'uint16' : 'H','int8' : 'h', 'int16' : 'h',
+		'uint32' : 'I', 'int32' : 'i', 'float' : 'f'}
+class serialTalker():
+	def __init__(self, board, port=None, baud=None):
+		self._baud = baud if baud != None else board._baud_rate
+		self._port = port if port != None else board._path
+		self._serial = serial.Serial(self._port, self._baud,timeout=1.0)
+	def reset_serial(self):
+		self._serial = serial.Serial(self._port, self._baud,timeout=1.0)
+	def readRegister(self, reg, lock):
+
+		packet = self.magicPack('READ',reg)
+		with lock:
+			try:
+				self._serial.write(packet)
+				rawdata = self._serial.read(5+2*reg.halfwords)
+				self._serial.flush()
+				time.sleep(.05)
+			except serial.SerialException:
+				print "serial disconnected?"
+		#print len(rawdata)
+		#print map(hex,[ord(x) for x in rawdata])
+		try:
+			self.checkResponse([ord(x) for x in rawdata])
+		except CheckSumException:
+			traceback.print_exc()
+			print "cs exception"
+		except USDException:
+			traceback.print_exc()
+			print "USD except"
+		#else:
+		response, payload = self.magicUnpack(rawdata,reg.type)
+		return payload
+	def writeRegister(self, reg, payload, lock):
+		packet = self.magicPack('WRITE',reg,payload)
+		print [hex(ord(x)) for x in packet]
+		with lock:
+			try:
+				self._serial.write(packet)
+				response = self._serial.read(5)
+				self._serial.flush()
+				time.sleep(.05)
+			except serial.SerialException:
+				print "serial disconnected?"
+		return response
+	def magicPack(self, function_key, reg, payload=None):
+		request = [functions[function_key], reg.halfwords, reg._addr]
+		if payload is not None:
+			request += [payload]
+			fmtstring = str.format("!BBH{0}",fmt_chars[reg.type])
+		else:
+			fmtstring = "!BBH"
+		cksum = self.calculateChecksum([ord(x) for x in struct.pack(fmtstring, *request)])
+		request += [cksum]
+		fmtstring += "B"
+		return struct.pack(fmtstring,*request)
+	def magicUnpack(self, barray, type):
+		
+		if(len(barray) > 1):
+			fmtstring = str.format("!BBH{0}B",fmt_chars[type])
+			result = struct.unpack(fmtstring,barray)
+			return result, result[len(result) - 2]
+		else:
+			return barray, None
+
+
+	def calculateChecksum(self, barray):
+		return sum(barray) % 256
+	def checkResponse(self, response):
+		if response[0] in USDException.encoding_meanings: raise USDException(response[0])
+		elif self.calculateChecksum(response[0:len(response)-1]) != response[len(response)-1]: raise CheckSumException()
+class CheckSumException(Exception):
+	def __str__(self):
+		return "0x81 Calculated checksum and transmitted checksum did not match"
+class USDException(Exception):
+	encoding_meanings = {0x81 : "Invalid Register(s): The read/write request specified registers that are non-existent.",
+	 0x82 : "Registers are Read Only: The write request included a register that is read-only.",
+	  0x83 : "Incorrect length: The packet did not have internal consistency about length. For example, specifying a register count of five and then only having data for four registers (this is detected via timeout, most likely, and will be the most common error--whenever we don't latch on the first byte correctly).",
+	   0x84 : "Bad checksum: The checksum for the incoming packet did not match the calculated checksum.",
+	    0x85 : "Invalid Function: An Invalid function was specified",
+	     0xBF: "Unknown failure: An unknown failure has occurred. Check for fires in or around the hydrophones."}
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+		return USDException.encoding_meanings[self.value]
+	def __repr__(self):
+		return __str__()
+def toHex(barr):
+	return map(hex,[ord(x) for x in barr])
+
+
+def list_serial_ports():
+    # Windows
+    if os.name == 'nt':
+        # Scan for available ports.
+        available = []
+        for i in range(256):
+            try:
+                s = serial.Serial(i)
+                available.append('COM'+str(i + 1))
+                s.close()
+            except serial.SerialException:
+                pass
+        return available
+    else:
+        # Mac / Linux
+        return [port[0] for port in filter(lambda s: re.match(".*(USB|ACM).*", s[0]), list_ports.comports())]

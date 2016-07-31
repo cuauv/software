@@ -1,0 +1,52 @@
+syntax = "proto2";
+
+package cuauv.serial.proto;
+
+option optimize_for = LITE_RUNTIME;
+
+// Top-level device config message
+message DeviceConfig {
+    // The device's name
+    required string name = 1;
+    // The device's type, as chosen by the device compiler
+    required string type = 2;
+    
+    // A single variable on the device
+    message Variable {
+        // The possible types for a variable
+        enum Type {
+            UINT8  = 0;
+            INT8   = 1;
+            UINT16 = 2;
+            INT16  = 3;
+            FLOAT  = 4;
+        }
+        
+        // The variable's name
+        required string name = 1;
+        // The variable's type
+        required Type type = 2;
+        // The variable's starting register
+        required uint32 base_register = 3;
+
+        // The optional default value of a variable
+        oneof default_val {
+            int32 int_default = 4;
+            float float_default = 5;
+        }
+    }
+
+    // All writeable variables
+    repeated Variable write_variables = 3;
+
+    // A group of readable variables, all polled together
+    message ReadGroup {
+        // The polling interval, in ms
+        required uint32 interval_ms = 1;
+        // The variables to be read in this group
+        repeated Variable read_variables = 2;
+    }
+
+    // All groups to read
+    repeated ReadGroup read_groups = 4;
+}

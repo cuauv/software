@@ -1,0 +1,34 @@
+{
+    "idmap": {
+        "merry": 17,
+        "frodo": 9,
+        "samwise": 14,
+        "aragorn": 12,
+        "legolas": 8,
+        "gandalf": 13,
+        "shadowfax": 2,
+        "brego": 3,
+        "error": 63
+    },
+    "types": {
+        "thruster": {
+            "hwid": 2,
+            "bindings": {
+                "setpoint": "target_speed",
+                "feedback_0": "current_speed",
+                "feedback_1": "current",
+                "flags": "flags"
+            }
+        },
+        "stepper": {
+            "hwid": 3,
+            "bindings": {
+                "setpoint": "target_position",
+                "feedback_0": "current_position",
+                "feedback_1": "current",
+                "feedback_2": "position_no_offset",
+                "flags": "flags"
+            }
+        }
+    }
+}

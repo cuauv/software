@@ -1,0 +1,5 @@
+capture_sources:
+    sonar:
+        type: BVTSonar
+modules:
+    [Sonar]

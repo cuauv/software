@@ -1,0 +1,28 @@
+syntax = "proto2";
+
+package cuauv.serial.cli.proto;
+
+option optimize_for = LITE_RUNTIME;
+
+// Top-level firmware definition
+message AUVFirmware {
+    // The device's name
+    required string deviceName = 1;
+    // The 3 device signature bytes
+    required uint32 sig1 = 2;
+    required uint32 sig2 = 3;
+    required uint32 sig3 = 4;
+    // The device's page size
+    required uint32 pageSize = 5;
+    
+    // A chunk of continuous data in the firmware
+    message Chunk {
+        // The start address of the chunk
+        required uint32 base = 1;
+        // The data contained in the chunk
+        required bytes data = 2;
+    }
+
+    // All data chunks in the firmware
+    repeated Chunk chunks = 6;
+}

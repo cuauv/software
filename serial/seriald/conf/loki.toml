@@ -1,0 +1,13 @@
+includes = [
+	"minipower.toml",
+	"sensuator.toml",
+	"him.toml",
+	"minithruster.toml",
+]
+
+ports = [
+	"/dev/ttyUSB_loki_MINIPOW",
+	"/dev/ttyUSB_loki_SENSU",
+	"/dev/ttyUSB_loki_HIM",
+	"/dev/ttyUSB_loki_VROOM",
+]

@@ -1,0 +1,4 @@
+((author "Jonathan Chan (CUAUV)")
+ (synopsis "Interface to CUAUV's shared memory library.")
+ (license "BSD")
+ (files "shm.scm" "dshm.scm" "cuauv-shm.setup"))

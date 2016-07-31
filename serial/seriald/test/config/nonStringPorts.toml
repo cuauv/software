@@ -1,0 +1,4 @@
+ports = [6, 2, 3] # what?
+
+[devices.led.vars]
+port_blue = "led.port_blue"

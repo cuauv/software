@@ -1,0 +1,26 @@
+Design
+
+Consider some unknown world W with parameterizable state S_W in some configuration space. We cannot directly observe this world, but we have various sensory apparati that allow us to perceive certain phenomena in this world with some unknown degree of error. We know, a priori, of some 
+
+O :: Observation
+W :: World (hidden)
+M :: Model of World
+
+A+ ~ A_t+1
+
+Bayes: P(A|B) = P(B|A) P(A) / P(B)
+
+Probability of state given observation = Probability observation given state * Prior state / Prior observation
+
+M+ = ( ratMeas * P(W|O) ) * M + P( ratProj * D(W|(M+dMproj)) )
+Pos(W|O) = P(O|W) * Pr(W) / P(O) fun of W
+dMProj = what we think we did to the world / how we think world transitioned
+ratProj ~ P(M+|M) ? Difference seems insignificant BUT WE ARE AN ACTOR. e.g. grabbing peg halfway across pool
+ratMeas ~ P(O|W) ?
+
+prob O|W = likelihood W | O i.e. for state S, obs O ratio S':not S' = p(O|S'):p(O|notS')
+
+==
+
+Bayesian updates on state space, lazily evaluated.
+Find maximum via simulated annealing (combined with gradient descent?) - also could use to estimate PDF

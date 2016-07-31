@@ -1,0 +1,13 @@
+<html>
+    <body>
+        <ul id="modules">
+            {% if modules|length == 0 %}
+            <span>No modules are running!</span>
+            {% else %}
+            {% for module in modules %}
+            <li><a href="{{ module }}">{{ module }}</a></li>
+            {% endfor %}
+            {% endif %}
+        </ul>
+    </body>
+</html>

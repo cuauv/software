@@ -1,0 +1,40 @@
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_1_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_1_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_2"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_2_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_2_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_3"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_4"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_3_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_3_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_5"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_6"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_4_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_4_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_7"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_8"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_5_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_5_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_9"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_10"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_6_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_6_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_11"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_12"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_7_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_7_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_ragnarok_13"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_ragnarok_14"

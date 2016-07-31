@@ -1,0 +1,9 @@
+.group {
+    background-color: rgb(238, 238, 238);
+    border: 1px solid rgb(198, 198, 198);
+}
+
+.variable {
+    background-color: rgb(198, 198, 198);
+    border: 1px solid rgb(158, 158, 158);
+}

@@ -1,0 +1,35 @@
+## Killick Serial Board
+
+# FTDI 1
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_gemini_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_gemini_2"
+
+# FTDI 2
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_gemini_3"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_gemini_4"
+
+# FTDI 3
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_gemini_5"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_gemini_6"
+
+# FTDI 4
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_gemini_7"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_gemini_8"
+
+# FTDI 5
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_gemini_9"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_gemini_10"
+
+# FTDI 6
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_gemini_11"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_gemini_12"
+
+# FTDI 7
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_gemini_13"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_gemini_14"
+
+## LCD Board
+# Ignore the C232H cable (for LCD)
+# We're using MPSSE mode for this, and it doesn't work if the ft232_sio driver loads it 
+# NOTE: libmpsse must be modified to avoid probing any other VID/PID
+SUBSYSTEMS=="usb", ATTRS{product}=="C232HM-DDHSL-0", ATTRS{idProduct}=="6014", ATTRS{idVendor}=="0403", OPTIONS=="ignore_device"

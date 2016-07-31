@@ -1,0 +1,48 @@
+name = "actuator"
+
+[writeVars.vars]
+trigger_0  = "uint8"
+trigger_1  = "uint8"
+trigger_2  = "uint8"
+trigger_3  = "uint8"
+trigger_4  = "uint8"
+trigger_5  = "uint8"
+trigger_6  = "uint8"
+trigger_7  = "uint8"
+trigger_8  = "uint8"
+trigger_9  = "uint8"
+trigger_10 = "uint8"
+trigger_11 = "uint8"
+
+desire_port = "int16"
+desire_starboard = "int16"
+
+mission_led = "uint8"
+
+[writeVars.defaults]
+trigger_0  = 0
+trigger_1  = 0
+trigger_2  = 0
+trigger_3  = 0
+trigger_4  = 0
+trigger_5  = 0
+trigger_6  = 0
+trigger_7  = 0
+trigger_8  = 0
+trigger_9  = 0
+trigger_10 = 0
+trigger_11 = 0
+
+desire_port = 0
+desire_starboard = 0
+
+mission_led = 0
+
+[readGroups.mission]
+interval_ms = 100
+    
+    [readGroups.mission.vars]
+    mission_start = "uint8"
+
+    [readGroups.mission.defaults]
+    mission_start = 0

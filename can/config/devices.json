@@ -1,0 +1,40 @@
+{
+    "devices": {
+        "vector_port": {
+            "type": "stepper",
+            "dev": "brego",
+            "status": "vector_status.status_port",
+            "vars": {
+                "target_position": "vector_desires.port",
+                "current_position": "vector_status.position_port",
+                "current": "vector_status.current_port",
+                "flags": "vector_status.flags_port"
+            },
+            "other_vars": [
+              {"group": "vector_settings", "var": "starting_speed", "payload": 8},
+              {"group": "vector_settings", "var": "max_speed", "payload": 9},
+              {"group": "vector_settings", "var": "accel", "payload": 10},
+              {"group": "vector_settings", "var": "deadband", "payload": 11},
+              {"group": "vector_settings", "var": "task_ramp_period", "payload": 12}
+            ]
+        },
+        "vector_starboard": {
+            "type": "stepper",
+            "dev": "shadowfax",
+            "status": "vector_status.status_starboard",
+            "vars": {
+                "target_position": "vector_desires.starboard",
+                "current_position": "vector_status.position_starboard",
+                "current": "vector_status.current_starboard",
+                "flags": "vector_status.flags_starboard"
+            },
+            "other_vars": [
+              {"group": "vector_settings", "var": "starting_speed", "payload": 8},
+              {"group": "vector_settings", "var": "max_speed", "payload": 9},
+              {"group": "vector_settings", "var": "accel", "payload": 10},
+              {"group": "vector_settings", "var": "deadband", "payload": 11},
+              {"group": "vector_settings", "var": "task_ramp_period", "payload": 12}
+            ]
+        }
+    }
+}

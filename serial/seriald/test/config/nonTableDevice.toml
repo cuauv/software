@@ -1,0 +1,6 @@
+ports = [
+	"/dev/tty0",
+]
+
+[devices]
+led = "a string?!?"

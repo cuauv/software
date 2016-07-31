@@ -1,0 +1,18 @@
+{% extends "site_template.html" %}
+
+depth = shm.depth.depth.get()
+pressure = shm.pressure.internal.get()
+voltage = shm.pod.voltage.get()
+pVolts = shm.pod.voltage_port.get()
+sVolts = shm.pod.voltage_starboard.get()
+current = shm.pod.current.get()
+currentPort = shm.pod.current_port.get()
+currentStarboard = shm.pod.current_starboard.get()
+aftPortStat = shm.motor_status.status_aft_port.get()
+aftStarboardStat = shm.motor_status.status_aft_starboard.get()
+forePortStat = shm.motor_status.status_fore_port.get()
+foreStarboardStat = shm.motor_status.status_fore_starboard.get()
+portStat = shm.motor_status.status_port.get()
+starboardStat = shm.motor_status.status_starboard.get()
+swayAftStat = shm.motor_status.status_sway_aft.get()
+swayForeStat = shm.motor_status.status_sway_fore.get()

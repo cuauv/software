@@ -1,0 +1,6 @@
+ports = [
+	"/dev/tty0",
+]
+
+[devices.led.vars]
+port_blue = "port_blue"

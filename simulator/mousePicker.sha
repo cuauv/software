@@ -1,0 +1,28 @@
+//Cg
+//
+//Cg profile arbvp1 arbfp1
+
+void vshader(float4 vtx_position : POSITION,
+            out float4 l_position : POSITION,
+            out float4 l_position2 : TEXCOORD1,
+            out float3 l_color : TEXCOORD0,   
+            uniform float4x4 mat_modelproj
+            )
+{
+  l_position = mul(mat_modelproj, vtx_position);
+  l_position2 = l_position;
+  l_color = float3(0, 0, 0);
+}
+
+
+void fshader(in float4 l_position : TEXCOORD1,
+            uniform float4 k_hi_id : C7,
+            out float4 o_color: COLOR,
+            out float o_depth : DEPTH
+            )
+{
+  o_color = float4(k_hi_id.x, k_hi_id.y/255.0, l_position.z/100, 1);
+  o_depth = l_position.z/1000 + 0.5 - k_hi_id.z;
+}
+
+

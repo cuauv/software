@@ -1,0 +1,65 @@
+#!/usr/bin/env python2
+'''
+Client side program for providing local battery alerts when sub broadcasts them.
+Jeff Heidel 2011
+'''
+
+import socket
+import struct
+import pygame
+import time
+import pynotify
+import commands
+import os
+import sys
+import signal
+import time
+
+MCAST_GRP = '224.1.1.1'
+MCAST_PORT = 5012
+
+keeptrying = True
+
+while keeptrying:
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind(('', MCAST_PORT))
+        mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        keeptrying = False
+    except:
+        time.sleep(1)
+        keeptrying=True
+
+
+
+pygame.init()
+
+def signal_handler(signal, frame):
+    print "Killing, please wait..."
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+signal.signal(signal.SIGTERM, signal_handler)
+
+
+def alert(the_message):
+    if "-s" in sys.argv:
+        os.system("amixer -c 0 set Master 100% unmute")  
+        os.system("amixer -q -c 0 sset PCM,0 100%")
+    pynotify.init("Battery Alert!")
+    notification = pynotify.Notification("AUV Critical Battery Alert", the_message, os.environ['CUAUV_SOFTWARE'].split(os.pathsep)[0] + "/healthdash/client/battery-caution.png")
+    notification.show()
+    pygame.mixer.music.load(os.environ['CUAUV_SOFTWARE'].split(os.pathsep)[0] + "/healthdash/client/alert.wav")
+    pygame.mixer.music.play()
+    time.sleep(3)
+
+
+while True:
+  try:
+    message = sock.recv(10240)
+    alert(message)
+  except:
+    time.sleep(1)

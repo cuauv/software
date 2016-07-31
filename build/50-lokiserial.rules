@@ -1,0 +1,19 @@
+## Loki Sensuator Board
+
+# FTDI 1
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Loki 1", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_loki_SENSU", MODE="0666", TAG+="systemd"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Loki 1", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_loki_MINIPOW", MODE="0666", TAG+="systemd"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Loki 1", ATTRS{bInterfaceNumber}=="02", SYMLINK+="ttyUSB_loki_HIM", MODE="0666", TAG+="systemd"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Loki 1", ATTRS{bInterfaceNumber}=="03", SYMLINK+="ttyUSB_loki_GX1", MODE="0666", TAG+="systemd"
+
+# FTDI 2
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Loki 2", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_loki_ALT", MODE="0666", TAG+="systemd"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Loki 2", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_loki_VROOM", MODE="0666", TAG+="systemd"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Loki 2", ATTRS{bInterfaceNumber}=="02", SYMLINK+="ttyUSB_loki_X1", MODE="0666", TAG+="systemd"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Loki 2", ATTRS{bInterfaceNumber}=="03", SYMLINK+="ttyUSB_loki_X2", MODE="0666", TAG+="systemd"
+
+## LCD Board
+# Ignore the C232H cable (for LCD)
+# We're using MPSSE mode for this, and it doesn't work if the ft232_sio driver loads it
+# NOTE: libmpsse must be modified to avoid probing any other VID/PID
+SUBSYSTEMS=="usb", ATTRS{product}=="C232HM-DDHSL-0", ATTRS{idProduct}=="6014", ATTRS{idVendor}=="0403", SYMLINK+="ttyUSB_argo_lcd_0", MODE="0666", TAG+="systemd"

@@ -1,0 +1,12 @@
+capture_sources:
+    forward:
+        type: UEyeCamera
+    forwardright:
+        type: UEyeCamera
+    downward:
+        type: UEyeCamera
+    sonar:
+        type: BVTSonar
+
+modules:
+    [Forward, ForwardRight, Downward, Sonar]

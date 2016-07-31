@@ -1,0 +1,2 @@
+SUBSYSTEM=="firewire", ATTRS{guid}=="0x000a47010f0a70b3", NAME="fw1"
+SUBSYSTEM=="firewire", ATTRS{guid}=="0x000a47010f0a6fb2", NAME="fw2"

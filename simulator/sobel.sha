@@ -1,0 +1,47 @@
+//Cg
+//
+//Cg profile arbvp1 arbfp1
+
+void vshader(float4 vtx_position : POSITION,
+             float2 vtx_texcoord0 : TEXCOORD0,
+             out float4 l_position : POSITION,
+             out float2 l_texcoord0 : TEXCOORD0,
+             uniform float4x4 mat_modelproj)
+{
+  l_position=mul(mat_modelproj, vtx_position);
+  l_texcoord0 = vtx_texcoord0;
+}
+
+void fshader(float2 l_texcoord0 : TEXCOORD0,
+             uniform sampler2D tex_0 : TEXUNIT0,
+             uniform float2 k_separation : C7,
+             uniform float4 attr_colorscale,
+             out float4 o_color : COLOR)
+{
+  // First get each entry of a 3x3 matrix of the pixels surrounding this one.
+  // The value of this pixel is not used.
+  float s = k_separation.x;
+  float4 color11 = tex2D(tex_0, l_texcoord0 + float2(-s, s));
+  float4 color12 = tex2D(tex_0, l_texcoord0 + float2(0, s));
+  float4 color13 = tex2D(tex_0, l_texcoord0 + float2(s, s));
+  float4 color21 = tex2D(tex_0, l_texcoord0 + float2(-s, 0));
+  float4 color23 = tex2D(tex_0, l_texcoord0 + float2(s, 0));
+  float4 color31 = tex2D(tex_0, l_texcoord0 + float2(-s, -s));
+  float4 color32 = tex2D(tex_0, l_texcoord0 + float2(0, -s));
+  float4 color33 = tex2D(tex_0, l_texcoord0 + float2(s, -s));
+
+  // Calculate the result of the sobel operator in the horizontal and vertical
+  // directions.
+  float3 neg = float3(-1, -2, -1);
+  float3 pos = float3(1, 2, 1);
+  float conv1 = dot(float3(color11.x, color12.x, color13.x), neg) +
+      dot(float3(color31.x, color32.x, color33.x), pos);
+  float conv2 = dot(float3(color11.x, color21.x, color31.x), neg) +
+      dot(float3(color13.x, color23.x, color33.x), pos);
+
+  // Add the two convolution results together, and scale down the result.
+  float gradMag = sqrt(conv1*conv1 + conv2*conv2)/5.0;
+
+  o_color = attr_colorscale;
+  o_color.w = o_color.w * saturate(gradMag);
+}

@@ -1,0 +1,30 @@
+Position Tracker 3 - Trackin' the Sub!
+This README explains usage, tips and tricks, of which there are many to
+come.
+
+~~~~~
+Available Features:
+    Help popup (press 'h' by default)
+    Zooming
+    Panning
+    Rotating
+    Follow Sub mode
+    Reset Path
+    Mission Tag point
+    Fixed path length
+    Smooth drawing!
+    Config file for user customization
+
+~~~~~
+Pending Features:
+    Grid density scaling?
+    User waypoints
+    Cooler fixed path length (dimmed line for further away)
+    *Pitch/Roll visualization on sub (red tinted areas)
+    Better help menu
+    **Mission Elements
+    
+
+~~~~~
+Please Report bugs here:
+    Display does not update when window not focused

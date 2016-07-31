@@ -1,0 +1,62 @@
+<html>
+<head>
+<title>CUAUV HTTP Interface Login</title>
+
+<script>
+function checktheurl(){
+var d_pass = gup( 'pass' );
+if(d_pass!=""){
+alert("Invalid Password\nPlease try again.");
+window.location="/";
+}
+}
+function gup( name )
+{
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( window.location.href );
+  if( results == null )
+    return "";
+  else
+    return results[1];
+}
+</script>
+<STYLE TYPE="text/css" MEDIA="screen, projection">
+body {
+margin: 0px;
+padding: 0px;
+background-image: url(bg.jpg);
+background-repeat: repeat-x;
+} 
+</style>
+</head>
+<body bgcolor=#BFBFBF onload="document.getElementById('passbox').focus();checktheurl()">
+<center>
+<table width=1024 align=left>
+        <img src="cuauvsmall.png"> <h3>HTTP Diagnostic Interface</h3>
+<table width=1024 height=500 bgcolor=white border=5 style="border-color:red" cellpadding=0 cellspacing=0><tr>
+<td style="border-style: solid; border-width: 1; border-color: black">
+
+<table width=100% height=100% cellspacing=20 cellpadding=5 border=1 align=center valign=middle style="border-style: solid; border-width: 1; border-color: black">
+<tr><td align=center>
+
+<table bgcolor=orange border=1 cellpadding=10><tr><td>
+
+<center><br>
+You must log in to control the sub through the Red Rover network.<br><br>
+
+<form action="login.php" name="loginform" method=GET>
+<input type=hidden name="IDC" value="7DF0A5E7F30CF7256F6985088613BE16A844E0B50AE41BC96AD9EE3DD8D0C8F9820859B99C9CB0D81CE55EB85A02C3CC1348DD55737D925735272224D66282C5277116E43536A185DD3EF1696F97BCD084D7AD658D9AB10776D207D4C589A124">
+Password: <input type=password name="pass" id="passbox"><br><br>
+<input type=submit value="Log In">
+</form>
+
+</td></tr></table>
+
+
+</center>
+</td><tr></table>
+</td></tr></table>
+</body>
+</html>

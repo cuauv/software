@@ -1,0 +1,48 @@
+syntax = "proto2";
+
+enum ReqType {
+  REQ_OBSERVE = 0;
+  REQ_MOVE = 1;
+  REQ_EVAL = 2;
+};
+
+message Real {
+  required double val = 1;
+};
+
+message Vec2 {
+  required double val0 = 1;
+  required double val1 = 2;
+};
+
+message Vec3 {
+  required double val0 = 1;
+  required double val1 = 2;
+  required double val2 = 3;
+};
+
+message Val {
+  oneof val {
+    Real real = 1;
+    Vec2 vec2 = 2;
+    Vec3 vec3 = 3;
+  }
+};
+
+message Req {
+  required ReqType type = 1;
+  required string func = 2;
+  repeated string vars = 3;
+  optional Val val = 4;
+};
+
+enum ResStatus {
+  RES_STATUS_OK = 0;
+  RES_STATUS_ERR = 1;
+};
+
+message Res {
+  required ResStatus status = 1;
+  repeated Val result = 2;
+  optional string error = 3;
+};

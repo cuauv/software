@@ -1,0 +1,7 @@
+capture_sources:
+    forward:
+        type: SimCamera
+    downward:
+        type: SimCamera
+modules:
+    [Forward, Downward]

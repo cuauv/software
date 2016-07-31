@@ -1,0 +1,31 @@
+name = "test"
+
+[writeVars.vars]
+wuint8  = "uint8"
+wint8   = "int8"
+wfloat  = "float"
+
+[readGroups.zero]
+interval_ms = 0
+
+    [readGroups.zero.vars]
+    r0int16 = "int16"
+    r0float = "float"
+
+[readGroups.r100]
+interval_ms = 100
+    
+    [readGroups.r100.vars]
+    r100uint16 = "uint16"
+
+[readGroups.empty]
+interval_ms = 250
+
+    [readGroups.empty.vars]
+
+[readGroups.slow]
+interval_ms = 65535
+    
+    [readGroups.slow.vars]
+    rslowuint8 = "uint8"
+    rslowint8 = "int8"

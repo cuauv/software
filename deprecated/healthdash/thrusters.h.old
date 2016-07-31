@@ -1,0 +1,35 @@
+#ifndef HD_THRUSTER_H
+#define HD_THRUSTER_H
+
+#include "common-include.h"
+
+using namespace AUV;
+using namespace std;
+
+/* Thruster Windows */
+extern WINDOW *main_thruster_status;
+extern WINDOW *thrust_port;
+extern WINDOW *thrust_stbd;
+extern WINDOW *thrust_fore;
+extern WINDOW *thrust_aft;
+extern WINDOW *thrust_oview;
+
+/* Status Functions */
+int port_thrust_status();
+int starboard_thrust_status();
+int aft_thrust_status();
+int fore_thrust_status();
+
+/* Main Page Thruster Window */
+void update_main_thruster();
+
+/* Thruster Windows on Thruster Pages */
+void update_thruster_port() ;
+void update_thruster_starboard();
+void update_thruster_fore();
+void update_thruster_aft();
+
+/* Thruster Overview Window */
+void update_thruster_overview();
+
+#endif /* HD_THRUSTER_H */

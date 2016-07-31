@@ -1,0 +1,3 @@
+true: package(ctypes), package(ctypes.foreign), \
+    package(lwt), package(utop), \
+    thread, safe_string

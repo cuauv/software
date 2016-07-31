@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/electrical/!svn/ver/6290/ragnarok/conf
+END
+actuator.conf
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/electrical/!svn/ver/6290/ragnarok/conf/actuator.conf
+END
+sensorpower.conf
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/electrical/!svn/ver/6244/ragnarok/conf/sensorpower.conf
+END
+imu_serial.conf
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/electrical/!svn/ver/6223/ragnarok/conf/imu_serial.conf
+END

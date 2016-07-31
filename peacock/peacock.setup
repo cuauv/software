@@ -1,0 +1,33 @@
+(compile -s -O2 -d1
+  peacock-internal.scm
+  -o peacock-internal.so -j peacock-internal)
+(compile -s -O2 -d0 peacock-internal.import.scm)
+
+(compile -s -O2 -d1
+  peacock.scm 
+  -o peacock.so -j peacock)
+(compile -s -O2 -d0 peacock.import.scm)
+
+(compile -s -O2 -d1
+  peacock-geometry.scm
+  -o peacock-geometry.so -j peacock-geometry)
+(compile -s -O2 -d0 peacock-geometry.import.scm)
+
+(compile -s -O2 -d1
+  peacock-util.scm
+  -o peacock-util.so -j peacock-util)
+(compile -s -O2 -d0 peacock-util.import.scm)
+
+(compile -s -O2 -d1
+  peacock-misc.scm
+  -o peacock-misc.so -j peacock-misc)
+(compile -s -O2 -d0 peacock-misc.import.scm)
+
+(install-extension
+  'peacock
+  '("peacock.so" "peacock.import.so"
+    "peacock-internal.so" "peacock-internal.import.so"
+    "peacock-util.so" "peacock-util.import.so"
+    "peacock-misc.so" "peacock-misc.import.so"
+    "peacock-geometry.so" "peacock-geometry.import.so"
+    ))

@@ -1,0 +1,26 @@
+#! /bin/sh
+# /etc/init.d/blah
+#
+# Instructions for installation on most systems:
+# 
+# 1. Copy script to /etc/init.d/battalert-startup (will require sudo)
+# 2. Modify script to work with your absolute paths (change username)
+# 3. Run 'sudo update-rc.d battalert-startup defaults' to run on startup
+# 3. To remove from startup, 'sudo update-rc.d -f battalert-startup remove'
+
+case "$1" in
+  start)
+    echo "Starting batteryalert script"
+    /home/[username]/trunk/healthdash/client/./auv-batteryalert-client &>/dev/null &
+    ;;
+  stop)
+    echo "Stopping batteryalert script"
+    pkill -f auv-batteryalert-client &>/dev/null
+    ;;
+  *)
+    echo "Usage: /etc/init.d/battalert-startup {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0

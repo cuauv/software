@@ -1,0 +1,69 @@
+; AVR Register Map. Format: 
+; ; denotes a comment, # denotes a section header, $ is the number of total registers, @ is the Device information
+; Types are: bool==uint8 (one reg),  uint16 (one reg), uint32 (two regs), int8 (one reg),  int16 (one reg), int32 (two regs), float (two regs)
+; arrays of 2 reg values must be an even length
+
+;$ is the number of total registers. It is required, but not used by the AVR defgen
+$64
+
+;@Device information: name, id, path to device, baud rate
+@ actuator, 69, /dev/ttyUSB_drekar_4, 57600
+
+; Required/Reserved stuff
+# 0,0,default registers
+1, uint16, deviceId, N, Y, Contains the device ID
+1, uint16, protocolRev, N, Y, Contains the supported protocol revision number, 0xMMmm, for Major/minor numbers
+2, uint32, buildDate, N, Y, 32-bit build date: 0xYYYYMMDD.
+1, uint16, hb0, N, N, Write to trigger a HB action
+1, uint16, hb1, N, Y, Read to verify HB action (hb0 is copied here on write).
+1, uint16, restartState, N, N, Restart status: 0 = fresh, -1 = watchdog. Will be set to -1 when a reset chip command is received.
+
+; Custom registers
+# 16,0,Write only registers
+;16
+1, uint8, /sensors/actuator/SRV0_PWM, N, N, The position to PWM SRV0 to.
+;17
+1, uint8, /sensors/actuator/SRV1_PWM, N, N, The position to PWM SRV1 to.
+;18
+1, uint8, /sensors/actuator/SRV2_PWM, N, N, The position to PWM SRV2 to.
+;19
+1, uint8, /sensors/actuator/SRV3_PWM, N, N, The position to PWM SRV3 to.
+;20
+1, uint16, /sensors/actuator/ACT0F, N, N, Firing countdown ACT0
+;21
+1, uint16, /sensors/actuator/ACT1F, N, N, Firing countdown ACT1
+;22
+1, uint16, /sensors/actuator/ACT2F, N, N, Firing countdown ACT2
+;23
+1, uint16, /sensors/actuator/ACT3F, N, N, Firing countdown ACT3
+;24
+1, uint16, /sensors/actuator/ACT4F, N, N, Firing countdown ACT4
+;25
+1, uint16, /sensors/actuator/ACT5F, N, N, Firing countdown ACT5
+;26
+1, uint16, /sensors/actuator/ACT6F, N, N, Firing countdown ACT6
+;27
+1, uint16, /sensors/actuator/ACT7F, N, N, Firing countdown ACT7
+;28
+1, uint8, /sensors/actuator/ACT0F_T, N, N, Firing toggle ACT0
+;29
+1, uint8, /sensors/actuator/ACT1F_T, N, N, Firing toggle ACT1
+;30
+1, uint8, /sensors/actuator/ACT2F_T, N, N, Firing toggle ACT2
+;31
+1, uint8, /sensors/actuator/ACT3F_T, N, N, Firing toggle ACT3
+;32
+1, uint8, /sensors/actuator/ACT4F_T, N, N, Firing toggle ACT4
+;33
+1, uint8, /sensors/actuator/ACT5F_T, N, N, Firing toggle ACT5
+;34
+1, uint8, /sensors/actuator/ACT6F_T, N, N, Firing toggle ACT6
+;35
+1, uint8, /sensors/actuator/ACT7F_T, N, N, Firing toggle ACT7
+;36
+1, uint8, /sensors/actuator/IS_KILLED, N, Y, 1 if board is killed. 0 if board is unkilled (running).
+;37
+1, uint8, /sensors/actuator/MISSION_STATUS, N, Y, Mission Status
+;38
+1, uint8, /sensors/actuator/MISSION_LED_CMD, N, N, Mission LED control (Active-High)
+

@@ -1,0 +1,5 @@
+((author "Jonathan Chan (CUAUV)")
+ (synopsis "Client library for the Fishbowl simulator.")
+ (license "BSD")
+ (files "queue.scm"
+        "fishbowl.scm"))

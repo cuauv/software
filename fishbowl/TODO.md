@@ -1,0 +1,1 @@
+- Why in `protocol_.hpp` do the functions have `uint8_t& rtype`? Why not a `response_type`?

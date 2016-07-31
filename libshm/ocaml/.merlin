@@ -1,0 +1,10 @@
+S .
+B _build
+B +threads
+
+PKG ctypes
+PKG ctypes.foreign
+
+PKG lwt
+
+PKG utop

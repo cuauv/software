@@ -1,0 +1,22 @@
+read(0, a
+        "a\n", 1024)                    = 2
+brk(0xc1f000)                           = 0xc1f000
+brk(0xc1c000)                           = 0xc1c000
+read(0, a
+        "a\n", 1024)                    = 2
+
+brk(0xc3d000)                           = 0xc3d000
+brk(0xc5e000)                           = 0xc5e000
+brk(0xc7f000)                           = 0xc7f000
+brk(0xca0000)                           = 0xca0000
+brk(0xcc1000)                           = 0xcc1000
+brk(0xce2000)                           = 0xce2000
+brk(0xd03000)                           = 0xd03000
+brk(0xd24000)                           = 0xd24000
+brk(0xd45000)                           = 0xd45000
+brk(0xd66000)                           = 0xd66000
+brk(0xd87000)                           = 0xd87000
+brk(0xda8000)                           = 0xda8000
+brk(0xdc9000)                           = 0xdc9000
+brk(0xdea000)                           = 0xdea000
+

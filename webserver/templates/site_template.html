@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %} My Great Title {% endblock %}
+<div class="jumbotron">
+    <div class ="container">
+    <h1>Information about Argo</h1>
+    <p> This page is intended to help team members understand more about the current status of Argo</p>
+    </div>
+</div>
+{% block content %}
+<script>
+$(document).ready(function(){
+    $("#self-test-btn").click(function(){
+        $.ajax({url: "/self-test", success: function(result){
+            console.log(result);
+            var json = $.parseJSON(result);
+            var testResults = json.results
+            
+            var items = $.map(testResults, function(obj) {
+                console.log(obj);
+                console.log(obj.key);
+                return "<li>"+obj.key+" :"+obj.pass+"</li>";
+            });
+            var results = "<ul>"+items.join("")+"</ul>";
+            $("#self-test-stat").html(results);
+        },error: function() {console.log("error :(");}});
+    });
+});
+</script>
+<script>
+$(document).keydown( function checkArrowKeys(e){
+    var arrs= ['left', 'up', 'right', 'down'], 
+    key= window.event? event.keyCode: e.keyCode;
+    var path;
+    switch (key) {
+            case 37: path = "/sway-left";
+            break;
+            case 38: path ="/go-forward"; break;
+            case 39: path ="/sway-right"; break;
+            case 40: path ="/go-backward"; break;
+            case 32: path="/soft-kill"; break;
+            case 85: path="/unkill"; break;
+            default: path ="/zero-out-controls";
+        };
+    $.ajax({url:path, success: $("#driving").html('ajax success') });
+});
+</script>
+
+<script>
+$(document).keyup( function checkArrowKeys(e){
+    var arrs= ['left', 'up', 'right', 'down'], 
+    key= window.event? event.keyCode: e.keyCode;
+    var path;
+    if(key && key>36 && key<41) alert(arrs[key-37])  {
+    $.ajax({url:  "/zero-out-controls", success: $("#driving").html('ajax success') });
+        };
+});
+</script>
+    <script>
+window.setInterval(function() {
+    $.ajax({
+        url: "/update-shm", success: function(result){
+            //console.log(result);
+            var json = $.parseJSON(result);
+            var testResults = json.results;
+            for (var obj in  json) {
+                //console.log(obj);
+                $(obj).html(json[obj]);
+            };
+        },
+        error: function() {
+            console.log("error :(");
+        }
+    });
+},5000);
+
+</script>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <h2>Vital Info </h2>
+            <p id="depth">Depth: {{depth}} m</p>
+            <p id="pressure">Pressure: {{pressure}} psi</p>
+        </div>
+        <div class="col-md-4">
+            <h2>Voltage</h2>
+            <p id="voltage">Voltage: {{voltage}} Volts</p>
+            <p id="voltage-port">Voltage Port: {{pVolts}} Volts</p>
+            <p id="voltage-starboard">Voltage Starboard: {{sVolts}} Volts</p>
+        </div>
+        <div class="col-md-4">
+            <h2>Current</h2>
+            <p id="current">Current: {{current}} Amps</p>
+            <p id="current-port">Current Port: {{currentPort}} Amps</p>
+            <p id="current-starboard">Current Starboard: {{currentStarboard}} Amps</p>
+        </div>
+     </div> <!-- end row -->
+</div> <!-- end container -->
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <h2>Motor Status</h2>
+            <div>
+                <p> The status numbers indicate 0: no connection, 1: ok, 2: invalid device </p>
+                <p id="aft-port">aft port: {{aftPortStat}}</p>
+                <p id="aft-starboard">aft starboard: {{aftStarboardStat}}</p>
+                <p id="fore-port">fore port: {{forePortStat}}</p>
+                <p id="fore-starboard">fore starboard: {{foreStarboardStat}}</p>
+                <p id="port">port: {{portStat}}</p>
+                <p id="starboard">starboard: {{starboardStat}}</p>
+                <p id="sway-aft">sway aft: {{swayAftStat}}</p>
+                <p id="sway-fore">sway fore: {{swayForeStat}}</p>
+            </div>
+        </div> <!-- end col -->
+        <div class ="col-md-4">
+            <h2>Tests</h2>
+            <button class="btn btn-default" id="self-test-btn">Run Self Test
+            </button>
+            <p id="self-test-stat">not run yet</p>
+            <button class="btn btn-default" id="actuator-test-btn">Run Actuator Test
+            </button>
+            <p id="actuator-test-stat">not run yet</p>
+            <p id="driving">no command yet</p>
+        </div>
+        <div class="col-md-4">
+            <h2>How to drive the sub from this page</h2>
+            <p>To drive forward, use the up arrow</p>
+            <p>To drive backwards, use the down arrow</p>
+            <p>To sway right, use the right arrow key</p>
+            <p>To sway left, use the left arrow key</p>
+            <p>Use the space bar to soft-kill the sub</p>
+            <p>Use the 'U' key to un soft-kill the sub</p>
+        </div>
+    </div> <!-- end row -->
+</div> <!-- end second container -->
+
+{#<div class="col-md-4">
+    <h2>Serial Ports</h2>
+    <ul>
+    {% for board in serials %}
+    <li>{{board}}</li>
+    {% endfor %}
+</div>#}
+{% endblock %}
+</body>

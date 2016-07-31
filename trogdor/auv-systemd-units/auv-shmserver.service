@@ -1,0 +1,9 @@
+[Unit]
+Description=Mangaes auv-shmserver
+
+[Service]
+User=software
+ExecStart=/home/software/cuauv/software/trogdor/auv-systemd-set-environment.sh auv-shm server
+
+[Install]
+WantedBy=trogdor.target

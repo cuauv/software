@@ -1,0 +1,49 @@
+; AVR Register Map. Format: 
+; ; denotes a comment, # denotes a section header, $ is the number of total registers, @ is the Device information
+; Types are: bool==uint8 (one reg),  uint16 (one reg), uint32 (two regs), int8 (one reg),  int16 (one reg), int32 (two regs), float (two regs)
+; arrays of 2 reg values must be an even length
+;number of registers, type, variable name, is pointer?, read only?, description (not included in source) 
+
+;Required registers: 
+;   roll,pitch,yaw velocity = float -> 6 registers
+;   gyro temp = float -> 2 register
+;   x,y,z acceleration = float -> 6 registers
+;   x,y,z offset = 8 bits -> 3 registers
+;   Status register -> 1 register
+;   Command register -> 1 register
+;   Gyro LPF = 8 bits -> 1 register
+
+$64
+@ imu, 25, /dev/ttyUSB0, 57600
+
+; Required/Reserved stuff
+# 0,0,default registers
+1, uint16, deviceId, N, Y, Contains the device ID
+1, uint16, protocolRev, N, Y, Contains the supported protocol revision number, 0xMMmm, for Major/minor numbers
+2, uint32, buildDate, N, Y, 32-bit build date: 0xYYYYMMDD.
+1, uint16, hb0, N, N, Write to trigger a HB action
+1, uint16, hb1, N, Y, Read to verify HB action (hb0 is copied here on write).
+1, uint16, restartState, N, N, Restart status: 0 = fresh, -1 = watchdog. Will be set to -1 when a reset chip command is received.
+
+; Custom registers
+# 16,0,Write only registers
+;16
+1, int16, x_accel_offset, N, N, accelerometer offset - x-direction
+1, int16, y_accel_offset, N, N, accelerometer offset - y-direction
+1, int16, z_accel_offset, N, N, accelerometer offset - z-direction
+;19
+1, int16, gyro_lpf, N, N, low pass filter for the gyro (see datasheet)
+1, int16, command, N, N, General Command register
+
+
+# 21,10,Read only registers
+;21
+1, int16, status, N, Y, general status register
+;22
+2, float, x_accel, N, Y, x-axis acceleration (m/s^2)
+2, float, y_accel, N, Y, y-axis acceleration (m/s^2)
+2, float, z_accel, N, Y, z-axis acceleration (m/s^2)
+2, float, roll_vel, N, Y, roll velocity (rad/s)
+2, float, pitch_vel, N, Y, pitch velocity (rad/s)
+2, float, yaw_vel, N, Y, yaw velocity (rad/s)
+2, float, gyro_temp, N, Y, Temp reported by gyro

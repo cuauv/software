@@ -1,0 +1,3 @@
+i7 ~ 100 GFLOPS
+
+Way to maintain some covariant, some non-covariant?

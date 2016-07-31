@@ -1,0 +1,7 @@
+capture_sources:
+    forward:
+        type: Video
+        filename: torpedoes_summer_2.avi
+        loop: true
+modules:
+    [Torpedoes]

@@ -1,0 +1,5 @@
+name = "empty"
+
+[writeVars.vars]
+
+[readGroups]

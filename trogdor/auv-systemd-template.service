@@ -1,0 +1,11 @@
+[Unit]
+Description=Manages auv-
+#Wants=dev-ttyUSB_thor_
+#After=dev-ttyUSB_thor_
+
+[Service]
+User=software
+ExecStart=/home/software/cuauv/software/trogdor/auv-systemd-set-environment.sh auv-
+
+[Install]
+WantedBy=trogdor.target

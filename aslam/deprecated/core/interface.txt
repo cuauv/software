@@ -1,0 +1,12 @@
+ASLAM:
+
+aslam.fork()
+
+aslam.delta(o1, o2)
+
+
+lazy ASLAM?
+
+aslam "objects" and "sensors"
+
+initial map: relations between objects

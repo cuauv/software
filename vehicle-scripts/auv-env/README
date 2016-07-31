@@ -1,0 +1,6 @@
+To install, just ensure cuauv.zsh is sourced on shell login. This can be done
+by linking the file "$HOME/.oh-my-zsh/custom/cuauv.zsh" to
+"$CUAUV_SOFTWARE/link-stage/auv-vehicle-env"
+
+
+

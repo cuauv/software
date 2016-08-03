@@ -188,7 +188,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkPaned" id="paned1">
+          <object class="GtkPaned" id="mainPaned">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
@@ -199,7 +199,7 @@
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkBox" id="box5">
+                  <object class="GtkBox" id="searchBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="homogeneous">True</property>
@@ -239,7 +239,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScrolledWindow" id="scrolledwindow1">
+                  <object class="GtkScrolledWindow" id="videoTreeScroll">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="shadow_type">in</property>
@@ -261,12 +261,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="box8">
+                  <object class="GtkBox" id="databaseButtons">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkButtonBox" id="buttonbox3">
+                      <object class="GtkButtonBox" id="buttonsRow1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="spacing">2</property>
@@ -339,7 +339,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButtonBox" id="buttonbox4">
+                      <object class="GtkButtonBox" id="buttonsRow2">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="spacing">2</property>
@@ -403,16 +403,16 @@ All Tags</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="box2">
+              <object class="GtkBox" id="mainBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkPaned" id="paned2">
+                  <object class="GtkPaned" id="mainTopBox">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <child>
-                      <object class="GtkBox" id="box3">
+                      <object class="GtkBox" id="videoAndControlsBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
@@ -456,7 +456,7 @@ All Tags</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButtonBox" id="buttonbox2">
+                          <object class="GtkButtonBox" id="videoControlsBox">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>

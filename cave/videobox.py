@@ -340,5 +340,3 @@ class VideoBox(Gtk.DrawingArea):
         #Draw tag-related components
         if self.tag_type_instance is not None:
             self.tag_type_instance.draw(widget, cr, vid_x_o, vid_y_o)
-
-        cr.save()

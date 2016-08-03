@@ -189,7 +189,7 @@ class VideoBox(Gtk.DrawingArea):
         self.connect("leave-notify-event", self._exit)
         self.connect("key-press-event", self._keypress)
         self.connect("scroll-event", self._scroll)
-        self.set_size_request (640, 480)
+        self.set_size_request(320, 240)
 
         self.frame = None
         self.video = None
@@ -325,18 +325,32 @@ class VideoBox(Gtk.DrawingArea):
         frame_width = allocation.width
         frame_height = allocation.height
 
+        if self.tag_type_instance is None:
+            scale_factor = min(float(frame_height) / self.height,
+                               float(frame_width) / self.width)
+        else:
+            scale_factor = 1.0
+
         #Video origin
-        vid_x_o = frame_width / 2 - self.width / 2
-        vid_y_o = frame_height / 2 - self.height / 2
+        vid_x_o = (frame_width / 2 / scale_factor - self.width / 2)
+        vid_y_o = (frame_height / 2 / scale_factor - self.height / 2)
 
         if self.frame is None:
             # Nothing to draw!
             return
 
         #Draw the video frame
+        cr.scale(scale_factor, scale_factor)
         cr.set_source_surface(self.frame, vid_x_o, vid_y_o)
         cr.paint()
 
         #Draw tag-related components
         if self.tag_type_instance is not None:
             self.tag_type_instance.draw(widget, cr, vid_x_o, vid_y_o)
+
+            # Warn that auto-scale was disabled.
+            cr.set_source_rgb(0.7,0,0)
+            cr.move_to(0, frame_height - 5)
+            # This is mostly because I'm too lazy right now to implement
+            # the rescaling logic needed for tagging.
+            cr.show_text("Video auto-scaling disabled in tagging mode.")

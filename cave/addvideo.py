@@ -2,12 +2,12 @@
 import sys
 import os
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 from misc.log import with_logging
 from libcave.cameralink import camera_map
 from meta import MetaParser
 
-__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0]))) 
+__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
 
 @with_logging
 class AddVideo:
@@ -76,7 +76,7 @@ class AddVideo:
         self.log_path = self.builder.get_object("logPathChooser")
         self.video_name_entry = self.builder.get_object("videoNameEntry")
         self.meta_entry = self.builder.get_object("metaEntry")
-        
+
         #Set default folders for the file-buttons
         if default_folder is not None:
             self.video_path.set_current_folder(default_folder)
@@ -94,6 +94,7 @@ class AddVideo:
 
         #Get the main window
         self.window = self.builder.get_object("addVideoWindow")
+        self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.window.show()
 
         #Link callback

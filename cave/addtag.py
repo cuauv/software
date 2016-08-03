@@ -1,14 +1,14 @@
 import sys
 import os
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 from misc.log import with_logging
 
 from libcave.registered_elements import get_registered_elements, get_registered_elements_implementing
 from libcave.tags.registered_tags import get_tagtype_names, get_required_functions_of_tag
 from libcave.util import populate_combo_box
 
-__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0]))) 
+__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
 
 @with_logging
 class AddTag:
@@ -73,11 +73,11 @@ class AddTag:
         self.gladefile = os.path.join(__location__, "gui", "addtag.glade")
         self.builder = Gtk.Builder()
         self.builder.add_from_file(self.gladefile)
-        
+
         # Automatically connect signals to functions defined above
         # not needed in commandline
         self.builder.connect_signals(self)
-        
+
         self.mission_element_combo = self.builder.get_object("missionElementCombo")
         self.tag_type_combo = self.builder.get_object("tagTypeCombo")
         self.tag_name_entry = self.builder.get_object("tagNameEntry")
@@ -90,8 +90,8 @@ class AddTag:
 
         #Get the main window
         self.window = self.builder.get_object("addTagWindow")
+        self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.window.show()
-
 
         #Link callback
         self.callback = callback

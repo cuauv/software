@@ -20,16 +20,16 @@ class VideoPlayer(Thread):
         self.kill = Event()
 
         self.parent = parent
-        
+
         self.video_box = parent.video_box
 
         self.start()
-    
+
     def set_play(self, play):
         with self.c:
             self.play = play
             self.c.notify()
-        
+
     def destroy(self):
         with self.c:
             self.kill.set()
@@ -42,7 +42,7 @@ class VideoPlayer(Thread):
                     self.c.wait()
                     if self.kill.is_set():
                         break
-            
+
             #Playing, increment frame count
             t1 = time()
             Gdk.threads_enter()

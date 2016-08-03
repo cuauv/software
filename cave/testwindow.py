@@ -22,7 +22,7 @@ except ImportError:
     print "Warning: pygame is not installed, there will be no sound!"
     pygame_present = False
 
-__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0]))) 
+__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
 
 @with_logging
 class TestWindow:
@@ -144,7 +144,7 @@ class TestWindow:
         start_enabled = self.total_frames > 0
         self.builder.get_object("startButton").set_sensitive(start_enabled)
         self.builder.get_object("trainButton").set_sensitive(start_enabled)
- 
+
 
     def __init__(self, parent):
         self.gladefile = os.path.join(__location__, "gui/testwindow.glade")
@@ -154,10 +154,10 @@ class TestWindow:
         self.t = None
         self.last_frame_time = None
         self.fps_hysteresis = TimedHysteresis(1.0) #1 second hysteresis
-        
+
         # Automatically connect signals to functions defined above
         self.builder.connect_signals(self)
-        
+
         self.mission_element_combo = self.builder.get_object("missionElementCombo")
         self.tag_type_combo = self.builder.get_object("tagTypeCombo")
         self.tag_name_entry = self.builder.get_object("tagNameEntry")
@@ -184,6 +184,7 @@ class TestWindow:
 
         #Get the main window
         self.window = self.builder.get_object("testWindow")
+        self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.window.show()
 
         #Disable the trees to prevent modifications

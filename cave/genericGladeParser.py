@@ -2,14 +2,14 @@
 import sys
 import os
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 from misc.log import with_logging
 
 from registered_elements import get_registered_elements, get_registered_elements_implementing
 from tags.registered_tags import get_tagtype_names, get_required_functions_of_tag
 from util import populate_combo_box
 
-__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0]))) 
+__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
 
 @with_logging
 class GenericGladeParser:
@@ -72,10 +72,10 @@ class GenericGladeParser:
         self.gladefile = os.path.join(__location__, location)
         self.builder = Gtk.Builder()
         self.builder.add_from_file(self.gladefile)
-        
+
         # Automatically connect signals to functions defined above
         self.builder.connect_signals(self)
-        
+
         #Populate dropdowns
         self.elements = get_registered_elements().keys()
         self.elements.sort()
@@ -84,8 +84,8 @@ class GenericGladeParser:
 
         #Get the main window
         self.window = self.builder.get_object("addTagWindow")
+        self.window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.window.show()
-
 
         #Link callback
         self.callback = callback

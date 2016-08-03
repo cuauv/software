@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
+  <requires lib="gtk+" version="3.10"/>
+  <object class="GtkImage" id="image1">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-add</property>
+  </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-edit</property>
+  </object>
+  <object class="GtkImage" id="image3">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-new</property>
+  </object>
+  <object class="GtkImage" id="image4">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-open</property>
+  </object>
   <object class="GtkWindow" id="caveWindow">
     <property name="width_request">1000</property>
     <property name="height_request">600</property>
@@ -137,28 +158,6 @@
                 </child>
               </object>
             </child>
-            <child>
-              <object class="GtkMenuItem" id="helpMenu">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Help</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="menu3">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem10">
-                        <property name="label">gtk-about</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -167,18 +166,18 @@
           </packing>
         </child>
         <child>
-          <object class="GtkPaned" id="paned1">
+          <object class="GtkPaned" id="mainPaned">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
-              <object class="GtkBox" id="box1">
+              <object class="GtkBox" id="panelBox">
                 <property name="width_request">200</property>
                 <property name="height_request">350</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkBox" id="box5">
+                  <object class="GtkBox" id="searchBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="homogeneous">True</property>
@@ -218,7 +217,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScrolledWindow" id="scrolledwindow1">
+                  <object class="GtkScrolledWindow" id="videoTreeScroll">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="shadow_type">in</property>
@@ -227,6 +226,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <signal name="cursor-changed" handler="videotree_selected" swapped="no"/>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -237,12 +239,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="box8">
+                  <object class="GtkBox" id="databaseButtons">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkButtonBox" id="buttonbox3">
+                      <object class="GtkButtonBox" id="buttonsRow1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="spacing">2</property>
@@ -315,7 +317,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButtonBox" id="buttonbox4">
+                      <object class="GtkButtonBox" id="buttonsRow2">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="spacing">2</property>
@@ -379,22 +381,22 @@ All Tags</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="box2">
+              <object class="GtkBox" id="mainBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkPaned" id="paned2">
+                  <object class="GtkPaned" id="mainTopBox">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <child>
-                      <object class="GtkBox" id="box3">
+                      <object class="GtkBox" id="videoAndControlsBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
                         <child>
                           <object class="GtkFrame" id="videoFrame">
-                            <property name="width_request">400</property>
+                            <property name="width_request">100</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label_xalign">0</property>
@@ -432,7 +434,7 @@ All Tags</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButtonBox" id="buttonbox2">
+                          <object class="GtkButtonBox" id="videoControlsBox">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
@@ -455,50 +457,6 @@ All Tags</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkBox" id="box6">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkCheckButton" id="exportCheck">
-                                    <property name="label" translatable="yes">Pipe frames to Vision</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Run "auv-visiond cave_test" to view these frames</property>
-                                    <property name="xalign">0</property>
-                                    <property name="draw_indicator">True</property>
-                                    <signal name="toggled" handler="frames_to_vision_checked" swapped="no"/>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkButton" id="button4">
-                                <property name="label" translatable="yes">Clear Tag</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="tooltip_text" translatable="yes">Clear data in the currently selected tag for the current frame</property>
-                                <signal name="clicked" handler="clear_tag" swapped="no"/>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">2</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkToggleButton" id="loopButton">
                                 <property name="label" translatable="yes">Replay Section</property>
                                 <property name="visible">True</property>
@@ -509,7 +467,23 @@ All Tags</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">True</property>
-                                <property name="position">3</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="fullScreenCheck">
+                                <property name="label" translatable="yes">Compact</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="tooltip_text" translatable="yes">Hides all the useless parts of the CAVE UI.</property>
+                                <property name="draw_indicator">True</property>
+                                <signal name="toggled" handler="full_screen_checked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </object>
@@ -527,52 +501,11 @@ All Tags</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="box7">
+                      <object class="GtkBox" id="settingsBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
-                        <child>
-                          <object class="GtkFrame" id="informationFrame">
-                            <property name="width_request">100</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label_xalign">0</property>
-                            <property name="shadow_type">none</property>
-                            <child>
-                              <object class="GtkAlignment" id="alignment1">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="left_padding">12</property>
-                                <child>
-                                  <object class="GtkLabel" id="label4">
-                                    <property name="width_request">0</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="halign">start</property>
-                                    <property name="valign">start</property>
-                                    <property name="label" translatable="yes">Name:
-Path:
-Log:</property>
-                                    <property name="ellipsize">end</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                            <child type="label">
-                              <object class="GtkLabel" id="label2">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">&lt;b&gt;Information&lt;/b&gt;</property>
-                                <property name="use_markup">True</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
+                        <property name="baseline_position">top</property>
                         <child>
                           <object class="GtkFrame" id="Settings">
                             <property name="visible">True</property>
@@ -601,7 +534,6 @@ Log Playback</property>
                                         <property name="receives_default">False</property>
                                         <property name="has_tooltip">True</property>
                                         <property name="tooltip_text" translatable="yes">Enable / disable output of log data to shared memory</property>
-                                        <property name="xalign">0</property>
                                         <property name="draw_indicator">True</property>
                                         <signal name="toggled" handler="frames_to_log_checked" swapped="no"/>
                                       </object>
@@ -620,7 +552,6 @@ Previews</property>
                                         <property name="receives_default">False</property>
                                         <property name="tooltip_text" translatable="yes">Video previews in the timeline can be disabled
 if performance is a concern (low powered systems)</property>
-                                        <property name="xalign">0</property>
                                         <property name="active">True</property>
                                         <property name="draw_indicator">True</property>
                                         <signal name="toggled" handler="enable_video_previews" swapped="no"/>
@@ -629,6 +560,23 @@ if performance is a concern (low powered systems)</property>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
                                         <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkCheckButton" id="exportCheck">
+                                        <property name="label" translatable="yes">Pipe frames
+to Vision</property>
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">False</property>
+                                        <property name="tooltip_text" translatable="yes">Run "auv-visiond cave_test" to view these frames</property>
+                                        <property name="draw_indicator">True</property>
+                                        <signal name="toggled" handler="frames_to_vision_checked" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">2</property>
                                       </packing>
                                     </child>
                                   </object>
@@ -649,6 +597,60 @@ if performance is a concern (low powered systems)</property>
                             <property name="fill">True</property>
                             <property name="padding">20</property>
                             <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFrame" id="Tagging">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label_xalign">0</property>
+                            <property name="shadow_type">none</property>
+                            <child>
+                              <object class="GtkAlignment" id="alignment1">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
+                                <child>
+                                  <object class="GtkButtonBox" id="TaggingButtons">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">5</property>
+                                    <property name="layout_style">start</property>
+                                    <child>
+                                      <object class="GtkButton" id="tagClearButton">
+                                        <property name="label" translatable="yes">Clear Tag</property>
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">True</property>
+                                        <property name="tooltip_text" translatable="yes">Clear data in the currently selected tag for the current frame</property>
+                                        <signal name="clicked" handler="clear_tag" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label2">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">&lt;b&gt;Tagging&lt;/b&gt;</property>
+                                <property name="use_markup">True</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="padding">20</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                       </object>
@@ -733,26 +735,5 @@ if performance is a concern (low powered systems)</property>
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkImage" id="image1">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="xalign">0.44999998807907104</property>
-    <property name="stock">gtk-add</property>
-  </object>
-  <object class="GtkImage" id="image2">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-edit</property>
-  </object>
-  <object class="GtkImage" id="image3">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-new</property>
-  </object>
-  <object class="GtkImage" id="image4">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-open</property>
   </object>
 </interface>

@@ -29,7 +29,7 @@ DATA_NEG = (0.8, 0.0, 0.0)
 DATA_RESULT_HEIGHT = 5
 
 PREVIEW_Y = 45
-PREVIEW_HEIGHT = 45 
+PREVIEW_HEIGHT = 45
 PREVIEW_WIDTH = 60
 
 X_BETWEEN_LABELS = 80
@@ -63,7 +63,7 @@ class Timeline(Gtk.DrawingArea):
         Gtk.DrawingArea.__init__(self)
         self.connect('draw', self._do_expose)
         self.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_MOTION_MASK | Gdk.EventMask.SCROLL_MASK |
-                Gdk.EventMask.BUTTON_RELEASE_MASK)        
+                Gdk.EventMask.BUTTON_RELEASE_MASK)
         self.connect("button-press-event", self._click) #mouse button is pressed (either left or right)
         self.connect("motion-notify-event", self._drag) #mouse is held down and in motion
         self.connect("button-release-event", self._release) #button was released
@@ -72,12 +72,12 @@ class Timeline(Gtk.DrawingArea):
         self.connect("scroll-event", self._scroll)
         self.set_size_request (400, 125)
 
-        self.x = 90 
+        self.x = 90
         self.y = 5
 
         self.view_start = 0 #Frame where view starts
         self.view_end = 100 #Frame where view ends
-    
+
         self.length = 100 #Number of frames within the timeline (can be changed)
 
         self.cursor = 0 #Frame at which to display the cursor
@@ -91,7 +91,7 @@ class Timeline(Gtk.DrawingArea):
         self.loop_end = float('nan')
         self.loop_enabled = False
         self.loop_set = False
-        
+
         #Callbacks
         self.cursor_change = None
 
@@ -185,7 +185,7 @@ class Timeline(Gtk.DrawingArea):
         self.origin_mouse = (event.x, event.y)
         self.origin_start = self.view_start
         self.origin_end = self.view_end
-       
+
         #Classify the click and assign click state (so that drag knows how to operate)
         if event.y >= a.height - SCROLL_HEIGHT: #Somewhere in scrollbar area clicked
             x_start = float(self.view_start) / self.length * a.width
@@ -205,9 +205,9 @@ class Timeline(Gtk.DrawingArea):
                 self.loop_start_temp = start_frame
                 self.loop_dragging = False
 
-        else: #Clicked the main region 
+        else: #Clicked the main region
             self.cs = CS.MAIN
-        
+
     def _release(self, area, event):
         if (self.cs == CS.CURSOR) and self.loop_enabled and self.loop_dragging:
             end_frame = self.get_frame(event.x)
@@ -266,7 +266,7 @@ class Timeline(Gtk.DrawingArea):
         dframes = int(dx / a.width * self.length)
 
         dlocalframes = -1 * int(dx / a.width * (self.origin_end - self.origin_start))
-      
+
         #Click and drag on the main area to seek
         if self.cs == CS.MAIN:
             ns = self.origin_start + dlocalframes
@@ -274,7 +274,7 @@ class Timeline(Gtk.DrawingArea):
             if ns >= 0 and ne <= self.length:
                 self.view_start = ns
                 self.view_end = ne
-            
+
         ### Scrollbar
         if self.cs == CS.SBAR:
             ns = self.origin_start + dframes
@@ -294,7 +294,7 @@ class Timeline(Gtk.DrawingArea):
         ### Cursor
         if self.cs == CS.CURSOR:
             self._change_cursor(event.x)
-                
+
         self.queue_draw()
 
     def preview_callback(self, frame_number, video):
@@ -309,10 +309,10 @@ class Timeline(Gtk.DrawingArea):
         width = allocation.width
         height = allocation.height
         self.available_width = width
-        
+
         #Draw frame ticks
         ticks = list(enumerate(range(self.view_start, self.view_end)))
-        
+
         cr.set_source_rgb(*TICK_COLOR)
         if len(ticks) < 1500:
             cr.set_line_width(1.0)
@@ -325,7 +325,7 @@ class Timeline(Gtk.DrawingArea):
             #There are so many frames that we can just draw a massive rectangle at this point
             cr.rectangle(0,0, width, TICK_HEIGHT)
             cr.fill()
-            
+
         #Label some of them ticks
         cr.set_source_rgb(0.3,0.3,0.3)
         cr.set_font_size(10)
@@ -347,7 +347,7 @@ class Timeline(Gtk.DrawingArea):
                 segment = map(operator.itemgetter(1),g)
                 first_frame = segment[0]
                 last_frame = segment[-1]
-                
+
                 #Draw box for the tag segment
                 x_start = int(float(first_frame - self.view_start) / len(ticks) * width)
                 x_end = int(float(last_frame + 1 - self.view_start) / len(ticks) * width)
@@ -363,7 +363,7 @@ class Timeline(Gtk.DrawingArea):
 
             cr.set_source_rgb(*DATA_POS)
             draw_frame_range(tag_select.test_pos, DATA_RESULT_HEIGHT)
-            
+
             cr.set_source_rgb(*DATA_NEG)
             draw_frame_range(tag_select.test_neg, DATA_RESULT_HEIGHT)
 
@@ -376,7 +376,7 @@ class Timeline(Gtk.DrawingArea):
             requested_frames.append(i)
             if frame is not None:
                 x = int((float(i) - self.view_start) / (self.view_end - self.view_start) * width)
-                cr.set_source_surface(frame, x, PREVIEW_Y) 
+                cr.set_source_surface(frame, x, PREVIEW_Y)
                 cr.paint()
             i += preview_frames
         self.video_preview_manager.clear_all_requests_except(requested_frames)
@@ -433,16 +433,14 @@ class Timeline(Gtk.DrawingArea):
         cr.move_to(x, height-SCROLL_HEIGHT)
         cr.line_to(x, height)
         cr.stroke()
-        
+
         #Draw scrollbar outline
         cr.set_source_rgb(0.0,0,0)
         cr.set_line_width(2.0)
         cr.rectangle(0, height-SCROLL_HEIGHT, width, SCROLL_HEIGHT)
         cr.stroke()
-       
+
         #Cursor text
         cr.set_source_rgb(0.3,0.3,0.3)
         cr.move_to(2, height-SCROLL_HEIGHT - 5)
         cr.show_text("Frame: %d" % self.cursor)
-
-        cr.save()

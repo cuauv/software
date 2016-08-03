@@ -25,7 +25,7 @@ class VideoManagerThread(Thread):
     def __init__(self, callback):
         Thread.__init__(self)
         self.next_frame = None
-        self.camlink = None 
+        self.camlink = None
         self.callback = callback
         self.video = None
         self.c = Condition()
@@ -39,7 +39,7 @@ class VideoManagerThread(Thread):
         self.last_frame = None #Last frame number captured
 
         self.new_link = None
-        
+
         self.start()
 
     def new_camlink(self, name, height, width, nchannels):
@@ -189,7 +189,7 @@ class VideoBox(Gtk.DrawingArea):
         self.connect("leave-notify-event", self._exit)
         self.connect("key-press-event", self._keypress)
         self.connect("scroll-event", self._scroll)
-        self.set_size_request (640, 480)
+        self.set_size_request(320, 240)
 
         self.frame = None
         self.video = None
@@ -208,7 +208,7 @@ class VideoBox(Gtk.DrawingArea):
         frame_height = allocation.height
 
         #Video origin
-        vid_x_o = frame_width / 2 - self.width / 2 
+        vid_x_o = frame_width / 2 - self.width / 2
         vid_y_o = frame_height / 2 - self.height / 2
 
         return int(sx - vid_x_o), int(sy - vid_y_o)
@@ -276,14 +276,14 @@ class VideoBox(Gtk.DrawingArea):
         if self.vmt is not None:
             self.vmt.destroy()
 
-    #Sets a tag for use here 
+    #Sets a tag for use here
     def set_tag(self, tag):
         if tag is None:
             self.tag_type_instance = None
         else:
             TagTypeClass = get_class_from_tagtype(tag.tag_type)
-            self.tag_type_instance = TagTypeClass(tag, lambda : self.parent.timeline.cursor) 
-    
+            self.tag_type_instance = TagTypeClass(tag, lambda : self.parent.timeline.cursor)
+
     #Loads a new video for playback
     #@supress_output
     def load_video(self, video):
@@ -308,7 +308,7 @@ class VideoBox(Gtk.DrawingArea):
         self.cap_source_cache[video] = cap
 
         self.vmt.new_camlink(video.linked_camera, self.height, self.width, self.nchannels)
-        
+
         self.vmt.set_cap(cap, video)
         self.vmt.request_frame(0)
 
@@ -316,7 +316,7 @@ class VideoBox(Gtk.DrawingArea):
     def set_frame(self, frame):
         frame = max(0, min(self.length, frame)) #bounds check
         self.vmt.request_frame(frame)
-    
+
     #Carries out on-screen drawing when queue_draw is called
     def _do_expose(self, widget, cr):
 
@@ -325,17 +325,32 @@ class VideoBox(Gtk.DrawingArea):
         frame_width = allocation.width
         frame_height = allocation.height
 
+        if self.tag_type_instance is None:
+            scale_factor = min(float(frame_height) / self.height,
+                               float(frame_width) / self.width)
+        else:
+            scale_factor = 1.0
+
         #Video origin
-        vid_x_o = frame_width / 2 - self.width / 2 
-        vid_y_o = frame_height / 2 - self.height / 2
+        vid_x_o = (frame_width / 2 / scale_factor - self.width / 2)
+        vid_y_o = (frame_height / 2 / scale_factor - self.height / 2)
+
+        if self.frame is None:
+            # Nothing to draw!
+            return
 
         #Draw the video frame
-        if self.frame is not None:
-            cr.set_source_surface(self.frame, vid_x_o, vid_y_o)
-            cr.paint()
+        cr.scale(scale_factor, scale_factor)
+        cr.set_source_surface(self.frame, vid_x_o, vid_y_o)
+        cr.paint()
 
         #Draw tag-related components
         if self.tag_type_instance is not None:
             self.tag_type_instance.draw(widget, cr, vid_x_o, vid_y_o)
-        
-        cr.save()
+
+            # Warn that auto-scale was disabled.
+            cr.set_source_rgb(0.7,0,0)
+            cr.move_to(0, frame_height - 5)
+            # This is mostly because I'm too lazy right now to implement
+            # the rescaling logic needed for tagging.
+            cr.show_text("Video auto-scaling disabled in tagging mode.")

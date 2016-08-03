@@ -36,9 +36,9 @@ from misc.utils import register_exit_signals
 
 load_tag_modules()
 
-__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0]))) 
+__location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
 
-ap = argparse.ArgumentParser(description='CUAUV Automated Vision Evaluator: A program for video ' + 
+ap = argparse.ArgumentParser(description='CUAUV Automated Vision Evaluator: A program for video ' +
         'database management and automated vision testing')
 ap.add_argument('database', type=str, default="", nargs='?', help='filename of the database to load (optional)')
 ap.add_argument('--filter', type=str, default="", help='filename of the config file   \
@@ -56,7 +56,7 @@ class Cave:
     """
 
     config_file = "~/.cave"
-     
+
     def window_destroy(self, event):
         # Close this application
         self.logger.critical("Program shutdown!")
@@ -91,7 +91,7 @@ class Cave:
     #Add Video callback; compute paths and add video to database
     def database_add_callback(self, av):
         self.logger.debug("Callback executed")
-       
+
         if av.log_filename is None:
             log_path = ""
         else:
@@ -146,7 +146,7 @@ class Cave:
             self.statusbar.display("Opened database %s" % path, 3)
             self.logger.info("Opened database %s" % os.path.basename(path))
             self.video_tree_manager.redraw()
-            
+
             #Enable all operations
 
     def video_remove(self, event):
@@ -215,6 +215,19 @@ class Cave:
         button = self.builder.get_object("logCheck")
         self.logplayer.set_enabled(button.get_active())
 
+    def full_screen_checked(self, event):
+        button = self.builder.get_object("fullScreenCheck")
+        settings = self.builder.get_object("settingsBox")
+        panel = self.builder.get_object("panelBox")
+        if button.get_active():
+            self.log.info('Activating compact mode.')
+            settings.hide()
+            panel.hide()
+        else:
+            self.log.info('Disabling compact mode.')
+            settings.show()
+            panel.show()
+
     def enable_video_previews(self, event):
         button = self.builder.get_object("previewCheck")
         self.video_preview_manager.set_enabled(button.get_active())
@@ -233,7 +246,7 @@ class Cave:
         if vid_select is None:
             self.logger.error("Edit of video failed. No video was selected.")
             self.statusbar.display("No video selected", 3)
-        else:           
+        else:
             ev = EditVideo(self.edit_video_callback, vid_select)
 
     def edit_video_callback(self, av):
@@ -292,8 +305,8 @@ class Cave:
             query += tokenquery % tokens[-1]
         else:
             query = ""
-        
-        self.video_tree_manager.redraw(query) 
+
+        self.video_tree_manager.redraw(query)
 
     def _change_frame(self, frame):
         #Sets the videobox and logplayer frame
@@ -309,7 +322,7 @@ class Cave:
         # Automatically connect signals to functions defined above
         self.builder.connect_signals(self)
 
-        #Set up the video tree 
+        #Set up the video tree
         self.video_tree = self.builder.get_object("videoTreeView")
         self.video_tree_manager = VideoTreeManager(self.video_tree, self)
 
@@ -321,7 +334,7 @@ class Cave:
         self.video_box = VideoBox(self)
         self.video_box.show()
         self.video_box_container.pack_start(self.video_box, True, True, 0)
-        
+
         #Create & Link timeline widget
         self.timeline_box = self.builder.get_object("timelineBox")
         self.timeline = Timeline(self)
@@ -390,7 +403,7 @@ class Cave:
         #Make the window more shrinkable
         self.window.set_size_request(400,400)
 
-        #Fire up the main window 
+        #Fire up the main window
         self.log.info("Launching GUI. Welcome to CAVE!")
         self.init = True
         Gdk.threads_enter()

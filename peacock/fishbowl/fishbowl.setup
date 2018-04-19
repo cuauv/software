@@ -1,0 +1,15 @@
+(compile -s -O2 -d1
+  queue.scm
+  -o queue.so -j queue)
+(compile -s -O2 -d0 queue.import.scm)
+
+(compile -s -O2 -d1
+  fishbowl.scm
+  -o fishbowl.so -j fishbowl)
+(compile -s -O2 -d0 fishbowl.import.scm)
+
+(install-extension
+  'fishbowl
+  '("queue.so" "queue.import.so"
+    "fishbowl.so" "fishbowl.import.so"
+    ))

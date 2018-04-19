@@ -1,0 +1,4 @@
+.stack-work/
+bin/
+pooltest.cabal
+stack.yaml

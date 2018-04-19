@@ -1,0 +1,16 @@
+{% extends "base.html"%}
+{% block head %}
+<link href="{{ static_url('css/vision-module.css') }}" rel="stylesheet">
+<link href="{{ static_url('css/jquery-ui.min.css') }}" rel="stylesheet" >
+{% endblock %}
+{% block content %}
+<div id="app"></div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ static_url('js/jquery-ui.min.js') }}"></script>
+<script src="{{ static_url('bundle.js') }}"></script>
+<script>
+window.MODULE_NAME = "{{ module_name }}";
+</script>
+{% endblock %}

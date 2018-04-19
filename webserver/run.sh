@@ -1,0 +1,1 @@
+webpack && ./auv-webserver.py

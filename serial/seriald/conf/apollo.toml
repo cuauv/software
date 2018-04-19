@@ -1,0 +1,9 @@
+includes = [
+	"ports.toml",
+	"actuator.toml",
+	"gpio.toml",
+	"brendhim.toml",
+	"merge.toml",
+	"powerDistribution.toml",
+	"apolloThruster.toml",
+]

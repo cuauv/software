@@ -1,0 +1,9 @@
+ports = [
+	"/dev/tty0",
+]
+
+[devices.hydrophones.vars]
+var1 = "hydrophones_results.var1"
+
+[devices]
+hydrophones = "what?"

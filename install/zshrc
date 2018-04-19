@@ -1,0 +1,134 @@
+export ZSH=$HOME/.oh-my-zsh
+ZSH_THEME="robbyrussell"
+plugins=(git)
+source $ZSH/oh-my-zsh.sh
+
+# From the old days.
+software_path="$HOME/cuauv/software"
+# Used by a lot of software. Need the trailing slash! Use it in your programs too.
+export CUAUV_SOFTWARE=$software_path/
+# So you can use the binaries we build easily.
+export PATH=$software_path/link-stage:$PATH
+# So Python will let you do import shm, etc.
+export PYTHONPATH=$software_path:  # we think we need the : at the end
+# So you can use Go packages in gocode.
+export GOPATH=$software_path/gocode:$GOPATH
+# So Go will be able to use libshm.
+export CGO_LDFLAGS=-L$software_path/link-stage
+export PROMPT_COLOR=red
+# Like PYTHONPATH, but for Guile.
+export GUILE_LOAD_PATH="$CUAUV_SOFTWARE/guile"
+# For ocaml libshm
+export OCAMLPATH=$software_path/libshm/ocaml
+
+# Can set to other locales in the conf directory.
+export CUAUV_LOCALE="simulator"
+export CUAUV_VEHICLE="artemis"
+export CUAUV_CONTEXT="development" # Optionally set to reduce build dependencies, see configure.py
+
+export VISION_TEST_PATH="/home/software/videos/"
+export CUAUV_LOG="/var/log/auv/"
+
+# Allow applications to forward X11 display to host system
+export DISPLAY=:0
+
+# Configure OCaml env with opam
+. /home/software/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true
+
+# Set up home directory
+setopt no_share_history
+
+# auto ls
+chpwd() {
+    emulate -L zsh
+    ls
+}
+
+# Useful aliases
+alias build="ninja -C "$CUAUV_SOFTWARE" -k 1000" # Build the software repo
+alias cs="cd $CUAUV_SOFTWARE"
+alias e="emacsclient -ca ''"
+alias t="trogdor"
+alias c="auv-control-helm"
+alias s="auv-shm-editor"
+alias auv-mr="auv-mission-runner"
+alias auv-pt="auv-pooltest"
+alias aslam="auv-aslam-cli"
+alias shm="auv-shm-cli"
+
+# Check pooltest status
+if [[ "$CUAUV_CONTEXT" = "vehicle" ]]; then
+	LINK="$CUAUV_LOG/current"
+	if [[ -h "$LINK" ]]; then
+		CURRENT="$(readlink "$LINK")"
+		NAME="$(basename "$CURRENT")"
+		if ! [[ "$NAME" = "none" ]]; then
+			START="$(jq < "$LINK"/metaStart.json .startTime)"
+			DATE="$(date -d@"$START")"
+			echoInfo "Pooltest currently running!" '\c'
+			echoInfo "Name:" "$blu""$NAME""$endColor"
+			echoInfo "Start Time:" "$red""$DATE""$endColor"
+		else
+			echoWarn "No pooltest currently running!"
+		fi
+	else
+		echoWarn "No pooltest currently running!"
+	fi
+	echo
+fi
+
+# CUAUV shell prompt
+
+# Show path relative to current git repo
+# Stolen from https://github.com/shashankmehta/dotfiles/blob/master/thesetup/zsh/.oh-my-zsh/custom/themes/gitster.zsh-theme
+get_pwd() {
+	git_root=$PWD
+	while [[ $git_root != / && ! -e $git_root/.git ]]; do
+		git_root=$git_root:h
+	done
+	if [[ $git_root = / ]]; then
+		unset git_root
+		prompt_short_dir=%~
+	else
+		parent=${git_root%\/*}
+		prompt_short_dir=${PWD#$parent/}
+	fi
+	echo $prompt_short_dir
+}
+
+RPROMPT='%{$fg[green]%}[%*]%{$reset_color%}'
+
+ret_status="%(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ )"
+pooltest=""
+
+vehicle_prompt() {
+	# Shows hostname and current pooltest if on a real sub
+	[[ "$CUAUV_CONTEXT" != "vehicle" ]] && return
+
+    pooltest="$(basename "$(readlink "$CUAUV_LOG/current")") "
+	ptcolor=""
+	if [[ "$pooltest" = " " ]] || [[ "$pooltest" = "none " ]]; then
+		pooltest="no pooltest "
+		ptcolor="red"
+	else
+		ptcolor="magenta"
+	fi
+	echo "%{$fg_bold[white]%}%M %{$fg_bold[$ptcolor]%}$pooltest%{$reset_color%}"
+}
+
+function fast_git_prompt_info() {
+  ref=$(git symbolic-ref HEAD 2> /dev/null) || return
+  echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}$ZSH_THEME_GIT_PROMPT_SUFFIX"
+}
+
+PROMPT='
+$(vehicle_prompt)%{$fg_bold[blue]%}$(get_pwd)%{$reset_color%}$(fast_git_prompt_info)
+%_$ret_status %{$reset_color%}'
+
+ZSH_THEME_GIT_PROMPT_PREFIX=" %{$fg_bold[cyan]%}| %{$fg_bold[cyan]%}"
+ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_DIRTY=" %{$fg[red]%}⚡"
+ZSH_THEME_GIT_PROMPT_CLEAN=""
+
+# Start in software repo
+cs

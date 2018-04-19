@@ -1,0 +1,12 @@
+[devices.merge.vars]
+VehicleCurrent = "merge_status.total_current"
+VehicleVoltage = "merge_status.total_voltage"
+CurrentA = "merge_status.current_starboard"
+CurrentB = "merge_status.current_port"
+VoltageA = "merge_status.voltage_starboard"
+VoltageB = "merge_status.voltage_port"
+MissionStart = "merge_status.mission_start"
+MissionLED = "merge.mission_led"
+
+[devices.merge.options]
+canHardKill = true

@@ -1,0 +1,12 @@
+capture_sources:
+    forward:
+        type: Video
+        filename: navigate_1.mp4
+        loop: true
+    downward:
+        type: UEyeCamera
+    sonar:
+        type: BVTSonar
+
+modules:
+    [Navigate]

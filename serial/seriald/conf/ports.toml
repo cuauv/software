@@ -1,0 +1,13 @@
+ports = [
+	"/dev/ttyUSB_arpolis_GPIO",
+	"/dev/ttyUSB_arpolis_VROOM",
+	"/dev/ttyUSB_arpolis_VROOOOM",
+	"/dev/ttyUSB_arpolis_ACT",
+	"/dev/ttyUSB_arpolis_PD",
+	"/dev/ttyUSB_arpolis_POD",
+	"/dev/ttyUSB_arpolis_H2O",
+	"/dev/ttyUSB_arpolis_LED",
+	"/dev/ttyUSB_arpolis_MERGE",
+	"/dev/ttyUSB_arpolis_POE"
+	"/dev/ttyUSB_arpolis_HIM"
+]

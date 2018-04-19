@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+PORT=8000
+if [ -n "$1" ]; then
+    PORT=$1
+fi
+
+echo "Serving at http://localhost:$PORT..."
+python3 -m http.server --cgi $PORT >/dev/null

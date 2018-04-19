@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+echo "Packing into peacock-docs.tar.xz..."
+tar -cJvf peacock-docs.tar.xz \
+    peacock.pdc \
+    normalize.css style.css \
+    peacock.html
+

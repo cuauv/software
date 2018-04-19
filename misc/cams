@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# Script opens both forward camera + downward camera
+#      (auv-vsp-viewer) in a seperate process when run.
+# Running the script a second time will kill all instances of auv-vsp-viewer.
+
+# Jeff Heidel 2012
+
+if ! pgrep -f auv-vsp-viewer &> /dev/null; then
+    echo "Starting cameras"
+    auv-vsp-viewer forward &
+    auv-vsp-viewer downward &
+else
+    echo "Stopping cameras"
+    pkill auv-vsp-viewer
+fi
+
+exit 0

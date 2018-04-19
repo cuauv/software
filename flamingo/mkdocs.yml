@@ -1,0 +1,7 @@
+site_name: Flamingo Docs
+markdown_extensions: ['admonition', 'mdx_math']
+pages:
+    - Spec Level 0: index.md
+
+extra_javascript: 
+    - http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML

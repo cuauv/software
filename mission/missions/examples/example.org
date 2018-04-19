@@ -1,0 +1,160 @@
+#+TITLE: Mission System Intro
+* Welcome to the mission system intro
+
+  This will help you learn the basics on the CUAUV mission system
+
+  By /Zander Bolgar/
+
+* What is the mission system
+
+  The mission system is a framework designed to help you writing logic to complete
+  tasks in our competition.
+
+** Side note: What is Flamingo?
+
+   Don't worry about it yet. It's the mission system V2. It's fancy and tries to
+   handle errors for you.
+
+* What are missions made of?
+
+  Missions are comprised on Tasks. In fact, a Mission is just a root level Task.
+
+  Tasks primarily contain a function that gets run very often. This function
+  should try to accomplish the goal of the overall Task.
+
+* Example Task usage
+
+  Here is an example that brings the sub to the surface:
+
+  #+INCLUDE: "./01-my-first-task.py" src python
+
+  #+BEGIN_SRC bash
+  auv-mr --no-record examples.01-my-first-task.go_to_surface
+  #+END_SRC
+
+** What's going on here?
+
+   * *Import* an existing Task from the Mission Framework
+   * *Instantiate* a Task and set an argument
+   * *Run* the task via the mission runner
+
+* Building up Tasks with combinators
+
+  Sometimes you want to do more than a single thing. This can be achieved by
+  doing one thing and then another, or both at the same time. The first approach
+  is accomplished using the ~Sequential~ combinator Task, while the second is
+  achieved using the ~Concurrent~ combinator Task.
+
+  #+INCLUDE: "./02-basic-combinators.py" src python
+
+  #+BEGIN_SRC bash
+  auv-mr --no-record examples.02-basic-combinators.seq
+  auv-mr --no-record examples.02-basic-combinators.con
+  #+END_SRC
+
+** What's going on here?
+
+   * Sequential waits for each task to finish before starting the next
+     * When the last Task in the Sequential finishes, the entire Sequential
+       finishes
+   * Concurrent run all the tasks at the same time
+     * When all Tasks are finished (which can happen out of order), the entire
+       Concurrent finishes
+
+* What does it mean for a Task to finish? What else can tasks do?
+
+** Finishing
+
+   Tasks can choose to report themselves as finished while running. For example:
+
+   * The ~Depth~ Task reports itself as finished when the current depth is
+    sufficiently close to the desired depth
+   * The ~Timer~ Task reports itself as finished when a the amount of time since
+     the first run of the Task is at least the desired amount
+
+** First run
+
+   A function can be defined to run the first time a Task is run. This is useful
+   for setting up things for the Task, such as recording initial state, logging
+   messages and more!
+
+*** Side note about finishing
+    A function can also be defined to run when a Task finishes. This is useful
+    for cleaning up anything created by the Task, logging messages and more!
+
+** Timing
+
+   Tasks automatically provide various timing information that is commonly used.
+   This includes:
+
+   * The first time the Task was run
+   * The time the current run was started
+   * The time the last run started
+
+   The first run and current run timing are useful for determining how long the
+   task has been running in total. The last run and current run timing are
+   useful for determining how long is has been between runs (useful for
+   calculating the real tick rate, PID loops are an example that use this).
+
+* Writing your first custom Task
+
+  To create a Task, just import the base Task class and extend it. To run an
+  instance of a Task, just call it like a function. It will automatically handle
+  first run and other framework related things.
+
+  The important functions to override are ~.on_run~ and possibly ~.on_first_run~
+  / ~.on_finish~.
+
+  #+INCLUDE: "./03-create-a-task.py" src python
+
+  #+BEGIN_SRC bash
+  auv-mr --no-record examples.03-create-a-task.run_10_times
+  #+END_SRC
+
+* Framework cheatsheet
+
+  The mission framework has lots of Tasks already built for you. Feel free to
+  look through the implementation of any framework task (in fact, I encourage
+  you to do so)!).
+
+** ~primitive.py~
+
+   * ~Log(message)~: Log a message - useful for printing in combinators.
+   * ~Succeed(task)~/~Fail(task)~/~InvertSuccess(task)~: Manipulate the success of a
+     finished task.
+
+** ~movement.py~
+
+   * ~Heading~/~Pitch~/~Roll~/~Depth~/~VelocityX~/~VelocityY~: Sets a
+     desire for the controller.
+   * ~RelativeToInitial___~: Records the current value on first run, sets desires
+     relative to the first run value.
+   * ~RelativeToCurrent___~: Set desires relative to current value. This is
+     rarely useful. If you find a use, let Zander know.
+   * ~Velocity___~: Update the target value to mimick the desire changing at a
+     certain rate. This can be used to make the sub spin continuously. Also not
+     very useful.
+
+** ~position.py~
+
+   * ~MoveX~/~MoveY~: Use the positional controller to target locations. This
+     doesn't work on the minisub currently.
+
+** ~targeting.py~
+
+   Both point and target are tuples (x, y) of normalized coordinates. The point
+   and target can also be a function that returns a tuple, or a tuple of
+   functions that each return a number.
+
+   * ~ForwardTarget(point, target)~/~DownwardTarget(point, target)~: Align the
+     sub to a target using the chosen camera by translating (not spinning)
+   * ~HeadingTarget(point, target)~: Forward center by controlling depth and
+     heading.
+   * ~DownwardAlign(angle)~: Align the subs with the angle given. Useful to
+     alignign to a pipe, or preparing to drop/pick up object.
+
+** ~timing.py~
+
+   * ~timer(seconds)~: Finish after ~seconds~ seconds.
+   * ~timeout(task, seconds)~: Run ~task~ and timeout/fail after ~seconds~
+     seconds if it is still running.

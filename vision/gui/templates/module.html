@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{{ module_name }}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/module.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/jquery-ui.min.css') }}" rel="stylesheet" >
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-2.2.2.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/module.js') }}"></script>
+
+  </head>
+
+  <body role="document">
+
+    <!-- Fixed navbar -->
+    <nav id="nav" class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">CUAUV Vision GUI</a>
+          <ul class="nav navbar-nav">
+            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Modules<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                {% for module in modules %}
+                  {% if module == module_name %}
+                    <li class="active"><a href="/{{module}}">{{module}}</a></li>
+                  {% else %}
+                    <li><a href="/{{module}}">{{module}}</a></li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div id="body" class="container-fluid" role="main">
+      <input type="checkbox" id="preprocessor-toggle">
+      <label for="preprocessor-toggle">Toggle Preprocessor Options</label>
+      <button id="clear-images">Clear Images</button>
+      <div class="row">
+        <div class="col-xs-10">
+          <ul class="list-group row" id="images">
+          </ul>
+        </div>
+        <div class="col-xs-2">
+          <ul class="list-group row" id="options">
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>

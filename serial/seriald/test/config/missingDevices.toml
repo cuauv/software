@@ -1,0 +1,4 @@
+ports = [
+	"/dev/tty0",
+	"/dev/tty2",
+]

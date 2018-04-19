@@ -1,0 +1,6 @@
+((author "Jonathan Chan (CUAUV)")
+ (synopsis "Mission testing framework.")
+ (license "BSD")
+ (files "peacock.scm" "peacock-internal.scm"
+        "peacock-util.scm"
+        "peacock.setup"))

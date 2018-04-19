@@ -1,0 +1,2 @@
+Don't edit the *.json files directly! They are generated from the *.conf files,
+which support comments.

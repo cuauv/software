@@ -1,0 +1,28 @@
+body {
+    width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+
+    font-family: "Times New Roman", serif;
+}
+
+h1 {
+    font-size: 1.5em;
+}
+
+h2 {
+    font-size: 1.25em;
+}
+
+h3 {
+    font-size: 1em;
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: "Helvetica", "Arial", sans-serif;
+}
+
+code {
+    font-family: "DejaVu Sans Mono", "Courier", monospace;
+    font-size: 0.875em;
+}

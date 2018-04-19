@@ -1,0 +1,23 @@
+name = "hydrophones"
+
+[writeVars.vars]
+gain = "uint16"
+agLow = "float"
+agHigh = "float"
+color = "uint8"
+
+[readGroups.foo]
+interval_ms = 0
+
+    [readGroups.foo.vars]
+    fault_code = "uint8"
+	fsActual = "float"
+
+[readGroups.bar]
+interval_ms = 10
+    
+    [readGroups.bar.vars]
+	phaseX = "float"
+	phaseY = "float"
+	phaseZ = "float"
+	period = "uint16"

@@ -1,0 +1,21 @@
+# Blender MTL File: 'teagle.blend'
+# Material Count: 2
+
+newmtl tile_material
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0 0 0
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd TransdecFloor.png
+
+newmtl water_material
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.078483 0.299838 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 0.309735
+illum 2

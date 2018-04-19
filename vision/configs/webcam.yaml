@@ -1,0 +1,5 @@
+capture_sources:
+    forward:
+        type: GenericVideoCapture
+modules:
+    [Forward]

@@ -1,0 +1,81 @@
+#compdef auv-visiond
+
+_auv-visiond() {
+  local context curcontext="$curcontext" state line
+  typeset -A opt_args
+
+  local ret=1
+
+  _arguments -C \
+    '1: :_visiond_cmds' \
+    '*::arg:->args' \
+  && ret=0
+
+  case $state in
+    (args)
+      curcontext="${curcontext%:*:*}:play-cmd-$words[1]:"
+      case $line[1] in
+        (start)
+          _arguments '*:visiond module:_all_modules' && ret=0
+        ;;
+        (stop)
+          _arguments '1:Module names:_running_modules' && ret=0
+        ;;
+        *)
+          _message 'no more args'
+        ;;
+      esac
+    ;;
+  esac
+}
+
+(( $+functions[_visiond_cmds] )) ||
+_visiond_cmds() {
+  local commands;
+  
+  if ! [ $(pgrep -f visiond) > /dev/null 2>&1 ]; then
+    commands=('start:Start a config or a set of modules')
+  else
+    commands=(
+      'start:Start a config or a set of modules'
+      'stop:Stop modules or the vision system')
+  fi;
+  
+  _describe -t commands 'visiond command' commands "$@"
+}
+
+(( $+functions[_all_modules] )) ||
+_all_modules() {
+    local modules;
+  modules=( $(~/trunk/link-stage/auv-shm-cli vision_modules | awk '!/(Variable    Type      Value|----------  ------  -------|vision_modules|^$)/{print $1}') )
+
+  for i in "${words[@]}"; do
+      modules=(${modules[@]/#%$i})
+  done
+  
+  if [ ${#words[@]} -eq 2 ] && ! [ $(pgrep visiond) > /dev/null 2>&1 ]; then
+      _arguments '1:config file:{_files -g "*.yaml"}' && ret=0
+  fi;
+  
+  _describe -t modules 'visiond command' modules "$@"
+  
+}
+
+(( $+functions[_running_modules] )) ||
+_running_modules() {
+
+  local modules;
+  modules=( $(~/trunk/link-stage/auv-shm-cli vision_modules | sed -n '/1/p' | awk '!/(Variable    Type      Value|----------  ------  -------|vision_modules|^$)/{print $1}') )
+  
+  for i in "${words[@]}"; do
+      modules=(${modules[@]/#%$i})
+  done    
+
+  if [ ${#modules[@]} -eq 0 ]; then
+    _message 'No running modules'
+  else
+    _describe -t modules 'visiond command' modules "$@"
+  fi;
+}
+
+_auv-visiond $@

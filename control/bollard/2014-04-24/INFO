@@ -1,0 +1,42 @@
+Bollard pull test on 04/24/14 - 04/25/14
+
+Test explanation:
+    set value in set {20, 30, ..., 250, 255} (or negative for reverse)
+    wait 10 seconds to achieve steady state
+    take 5 samples over 2.5 seconds and average results
+    set motor to 0
+    wait 5 seconds
+    repeat
+
+Batteries were changed after every 2 runs (i.e. forward trial, reverse trial) to minimize the effects of drained batteries on results.
+
+Some thrusters encounted "dead regions". For these thrusters, we consducted a re-test. If the re-test failed, we moved on to the next thruster. These thrusters are suspected to be "bad".
+
+2 Videorays and 1 small videoray were not tested due to lack of an adapter mount. They will be tested at a later date.
+
+---
+
+All thruster names are given in "Markus notation".
+
+videorays:
+    mirrored
+    45deg
+    port (untested)
+    starboard (untested)
+    derp (small videoray, untested)
+
+seabotix:
+    all others
+
+--
+
+reversed thrusters:
+    45deg
+    fore-port
+
+    (These are thrusters that had to have set values flipped
+    because they are hard-wired differently than the others)
+
+lever arm info:
+33.5" (thruster side) : 7" (scale side)
+

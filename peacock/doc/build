@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+OUTPUT=
+if [ -z $1 ]; then
+    OUTPUT="peacock.html"
+else
+    OUTPUT=$1
+fi
+
+pandoc -s -o $OUTPUT \
+    --mathjax --toc --smart \
+    --number-sections \
+    -c normalize.css -c style.css \
+    peacock.pdc

@@ -1,0 +1,10 @@
+capture_sources:
+    forward:
+        type: XimeaCamera
+    downward:
+        type: UEyeCamera
+    sonar:
+        type: BVTSonar
+
+modules:
+    [Navigate]

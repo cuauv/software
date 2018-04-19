@@ -1,0 +1,14 @@
+heading kalman.heading linear_heading.heading desires.heading
+pitch kalman.pitch threedmg.pitch desires.pitch
+roll kalman.roll threedmg.roll desires.roll
+surge kalman.velx dvl.velocity_x desires.speed
+sway kalman.vely desires.sway_speed dvl.velocity_y
+depth kalman.depth desires.depth control_internal_depth.desire
+thrusters motor_desires.port motor_desires.starboard motor_desires.fore_starboard motor_desires.aft_port motor_desires.fore_port motor_desires.aft_starboard motor_desires.sway_fore motor_desires.sway_aft
+heading_rate kalman.heading_rate threedmg.heading_rate him.yaw_vel
+pressure pressure.hull
+position kalman.north kalman.east navigation_desires.north navigation_desires.east
+sparton_accel sparton.accelx sparton.accely sparton.accelz
+sparton_gyro sparton.heading_rate sparton.pitch_rate sparton.roll_rate
+opt_errors control_internal_opt_errors.f_z control_internal_opt_errors.f_x control_internal_opt_errors.t_z control_internal_opt_errors.t_y control_internal_opt_errors.t_x control_internal_opt_errors.f_y
+gx1_gyros threedmg.heading_rate threedmg.pitch_rate threedmg.roll_rate

@@ -1,0 +1,9 @@
+[devices.gpio.vars]
+DepthOffset = "depth.offset"
+Depth = "depth.depth"
+Pressure = "pressure.hull"
+Temperature = "temperature.hull"
+WallSense_1 = "gpio.wall_1"
+WallSense_2 = "gpio.wall_2"
+WallSense_3 = "gpio.wall_3"
+LeLeds = "led.val"

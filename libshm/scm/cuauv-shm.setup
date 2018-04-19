@@ -1,0 +1,8 @@
+(compile -C -fpic -s -O2 -d1 -lshm shm.scm -o cuauv-shm.so -j cuauv-shm -j cuauv-dshm)
+(compile -s -O2 -d0 -lshm cuauv-shm.import.scm)
+(compile -s -O2 -d0 -lshm cuauv-dshm.import.scm)
+
+(install-extension
+  'cuauv-shm
+  '("cuauv-shm.so" "cuauv-shm.import.so" "cuauv-dshm.import.so")
+  )

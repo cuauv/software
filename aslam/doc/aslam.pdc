@@ -1,0 +1,294 @@
+---
+title: ASLAM
+author: Christopher Goes <<cwgoes@protonmail.ch>>
+date: 22 May 2016
+abstract: ASLAM (Adaptive Simultaneous Location & Mapping) is a CUAUV software subsystem which utilizes Bayesian mathematics to enable fusion of sensor inputs, submarine controls, and known uncertainties to provide statistically optimal estimates of submarine and object positions, exposed through a convenient Python abstraction layer to mission and vision code.
+header-includes:
+    - \usepackage{fancyhdr}
+    - \usepackage{graphicx}
+    - \pagestyle{fancy}
+    - \fancyhead[RE,LO]{Spring 2016 ASLAM Technical Report}
+    - \fancyhead[LE,RO]{\includegraphics[width=2cm]{aslam/doc/logo.jpg}}
+    - \fancyhead[CO,CE]{}
+    - \fancyfoot[CO,CE]{ASLAM}
+    - \fancyfoot[LE,RO]{\thepage}
+---
+
+# Motivation
+
+The RoboSub course is fundamentally static. Once the submarine has been put in the water, and usually for several hours beforehand, the course is immutable: no divers will move any elements, no other submarines will interfere, no mission requirements will change. Thus a submarine equipped with perfect positional information should not need to gather any information during the mission run. Prior knowledge of the course layout, point distribution, and game rules should be sufficient to determine an exact plan of action before the tether is unplugged.
+
+Much of the difficulty of RoboSub lies in its deviance from this ideal. Prior object positional estimates are constructed from either sub mapping or human cartographical estimates, both of which are frequently off by several meters. Submarines with accurate velocity measurement, usually via Doppler velocity logs, can perform some level of dead reckoning, but after crossing half of TRANSDEC even they are off by a meter or so. Submarines without, which must integrate acceleration twice, don't have a chance, and usually don't even try.
+
+Worse, the majority of mission algorithms only consider data collected at the current timestep: if the buoy in the last frame was to the left, move left, if it was to the right, move right. If the submarine misidentifies the buoy, the submarine will chase the misidentified object instead of the buoy, even if it's in a position the sub could have known the buoy was extremely unlikely to be in. Most desired positional offsets for specific actions, such as firing a torpedo, are absolute: the sub should be a meter in front of the target and six centimeters above the hole to launch the torpedo perfectly through the center. Yet instead our missions must use tuned heuristics based on object pixel size and timed waits.
+
+ASLAM attempts to solve these problems by giving the submarine a reliable way to track both its own position and the positions of various objects as it moves through the TRANSDEC course. It provides a system whereby the submarine can incorporate observations taken over a period of time with different sensors to generate a statistically optimial estimate of course state and an interface that vision or mission modules can use to check the chance that we would have made a particular observation, and so easily reject any somewhat-buoy-shaped contours in completely the wrong location.
+
+# Inspiration
+
+ASLAM is based on a modified version of [the FastSLAM algorithm originally published by Sebastian Thrun][FastSLAM]. Several aspects of the algorithm have been altered to fit CUAUV's use case. The original algorithm was written for a robot moving on a two-dimensional plane, and had parallel left/right wheels with independent odometers instead of absolute heading measurement. ASLAM operates in a full three-dimension world space (north, east, depth) and three-dimension orientation space (heading, pitch, roll), and orientations are taken as deltas from the Kalman filter such that ASLAM can track accumulated heading error over time but is not reliant on the correctness of heading rate. The iterative algorithm described in the paper further presumes that observations and control measurements are made simultaenously. This is not necessarily the case with CUAUV's submarines, so ASLAM seperates out the control and measurement update steps, allowing any number of observations to be incorporated in each iteration (particle weight adjustments are multiplicative).
+
+# Usage
+
+## Locale Configuration: `conf/$CUAUV_LOCALE.conf`
+
+### Submarine Specification
+
+Submarine control parameters are specified in terms of initial position and control covariance, both in terms of six-degree pose (north, east, depth, heading, pitch, roll).
+
+Covariance is in terms of meters per second for north, east, and depth, and radians per second for heading, pitch, and roll. Higher covariance values will cause ASLAM to spread the submarine position point cloud more rapidly and thus assume more error in measurement is due to a change in submarine position instead of an incorrect object position.
+
+```json
+"submarine": {
+  "initial_pose": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+  "control_covariance": [ [0.01, 0.0, 0.0, 0.0, 0.0, 0.0],
+                          [0.0, 0.01, 0.0, 0.0, 0.0, 0.0],
+                          [0.0, 0.0, 0.01, 0.0, 0.0, 0.0],
+                          [0.0, 0.0, 0.0, 0.01, 0.0, 0.0],
+                          [0.0, 0.0, 0.0, 0.0, 0.01, 0.0],
+                          [0.0, 0.0, 0.0, 0.0, 0.0, 0.01] ]
+}
+```
+
+### Object Specification
+
+Objects are specified in a list in the locale configuration. Each object must specify a name, initial position, and initial covariance (uncertainty). Objects may optionally specify components, given as a map of component names to offsets in world-space (north, east, depth) from component center.
+
+```json
+"objects": [
+  {
+    "name": "buoy_a",
+    "initial_position": [3.0, 3.0, 1.0],
+    "initial_covariance": [ [1.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0],
+                            [0.0, 0.0, 1.0] ],
+    "components": {
+      "top_left": [0.1, -0.2, 0.3]
+    }
+  }
+]
+```
+
+### Particle Count
+
+The locale configuration file must also specify a particle count. Because ASLAM resamples every timestamp, this doesn't need to be particularly large. The default value of 100 should be fine for current known use cases.
+
+```json
+"num_particles": 100
+```
+
+## Submarine Configuration: `conf/$CUAUV_VECHICLE.conf`
+
+Submarine components are specified in terms of x, y, and z offsets from submarine center, in the standard CUAUV coordinate system (x - forward, y - starboard, z - down).
+
+```json
+"components": {
+  "port_forecam": [0.03, -0.01, 0.02],
+  "starboard_forecam": [0.03, 0.01, 0.02]
+}
+
+```
+
+## Python Interface: `aslam/py/core.py`
+
+ASLAM provides a simple Python interface for working with object observations and positions, which uses numpy internally and interfaces with the ASLAM daemon through SHM.
+
+To setup:
+
+```python
+import aslam
+import numpy as n
+```
+
+ASLAM exposes the submarine, submarine components, all objects specified in the locale configuration file, and their components as Python objects:
+
+```python
+aslam.sub
+  => <aslam.py.core.Submarine instance at 0x7f7a441f47e8>
+aslam.world.buoy_a
+  => <aslam.py.core.Object instance at 0x7f7a441f4a28>
+aslam.world.buoy_b
+  => <aslam.py.core.Object instance at 0x7f7a441f4b00>
+aslam.world.buoy_c
+  => <aslam.py.core.Object instance at 0x7f7a441f4b90>
+aslam.world.buoy_d
+  => <aslam.py.core.Object instance at 0x7f7a441f4c20>
+```
+
+The submarine and objects may have components (whatever was specified in the configuration file):
+
+```python
+aslam.sub.components.downcam
+  => <aslam.py.core.Component instance at 0x7f7a441f4950>
+aslam.world.buoy_a.components.top_left
+  => <aslam.py.core.Component instance at 0x7f7a441f4ab8>
+```
+
+All objects and components expose a `position` method which returns their current estimated absolute position in world coordinates (north, east, depth):
+
+```python
+aslam.sub.position()
+  => array([-3.01449846,  2.2576738 ,  1.01541351])
+aslam.world.buoy_a.components.top_left.position()
+  => array([ 0.79428536,  1.22094556,  2.27413838])
+```
+
+The submarine object additionally exposes a `move_to` method which sets navigation desires to the provided north, east, and depth and can be used directly with another position output:
+
+```python
+aslam.sub.move_to(aslam.world.buoy_a.components.top_left.position())
+```
+
+Observations are constructed as objects, and require a source, destination, value, and uncertainty. Source and destination are both objects or components (the source must be the sub or a sub component). Value and uncertainty are passed as three-vectors of heading, pitch, and distance (and heading, pitch, and distance uncertainty). Heading and pitch along with their uncertainties are specified in radians.
+
+```python
+obs = aslam.Observation(aslam.sub.components.port_forecam, 
+                        aslam.world.buoy_a.components.top_left,
+                        n.array([0.75, 0.0, 1.0]),
+                        n.array([0.1, 0.1, 0.1]))
+```
+
+Observations can optionally be passed a `timestamp` parameter indicating when the observation was made. By default, ASLAM uses the current time, which should be fine when the data processing is effectively instantaneous.
+
+Once created, observations expose two useful methods: `prior` and `apply`.
+
+`prior` returns the probability that the observation would have been made given what we currently expect the state of the world to be. For example, if we know that a buoy is in front of us by a meter or so and we mistakenly identify a contour in a totally different part of the visual field as a buoy, the prior for that observation would be quite low since we didn't expect the buoy to be there. This can be used to perform rejection filtering.
+
+```python
+obs.prior()
+  => 0.3
+```
+
+`apply` writes the observation to ASLAM through SHM. Note that you must also call `mark_visible` on the object (and `mark_invisible` when the object is no longer observable).
+
+```python
+obs.apply()
+```
+
+<!--
+# Theoretical Background
+
+## Knowns & Known Unknowns
+
+> Reports that say that something hasn't happened are always interesting to me, because as we know, there are known knowns; there are things we know we know. We also know there are known unknowns; that is to say we know there are some things we do not know. But there are also unknown unknowns – the ones we don't know we don't know. And if one looks throughout the history of our country and other free countries, it is the latter category that tend to be the difficult ones.
+
+*Donald Rumsfeld, United States Secretary of Defense, February 12, 2002*
+-->
+
+# Implementation
+
+## Extended Kalman Filter: `aslam/src/math/ekf.cpp`
+
+This file implements a [standard Extended Kalman Filter][EKF] parameterized using C++ templates over state, state covariance, control, and control covariance types at the instance level and transition function, transition Jacobian, observation function, and observation Jacobian types at the function level. Eigen's Householder Q/R decomposition is used to invert the residual covariance matrix. The norm of the recalculated Kalman gain is checked for validity each timestep to prevent occaisional numerical instability.
+
+## FastSLAM: `aslam/src/math/fastslam.cpp`
+
+This file implements the primary algorithm, a modified version of [FastSLAM][FastSLAM] as a *Map* class. A *Map* is instantiated with initial pose, control covariance, and a number of particles.
+
+Important interface components:
+
+```c++
+template<typename X, typename Y, typename A, typename B>
+observe(int index, A observation_func, B observation_jacobian,
+  X observation, Y covariance)
+```
+
+> Update object Kalman filters for the associated object and particle weights on all particles given an observation.
+
+```c++
+void step_controls(const Vec6& rate, double dt)
+```
+
+> Iterate over particles, apply current motion prediction (velocity * dt) and Gaussian noise according to control covariance.
+
+```c++
+void step_resample()
+```
+
+> Iterate over particles, resample with replacement according to particle weights.
+
+```c++
+std::tuple<Vec6, std::map<std::string, Vec6>> predict()
+```
+
+> Calculate estimates of sub position, sub pose, object positions, and object positional uncertainties.
+
+## Daemon: `aslam/src/interface/aslamd.cpp`
+
+This file implements the interface between SHM and the FastSLAM algorithm. Each iteration, ASLAM reads observation variables, updates object Kalman filters and particle weights for all visible objects, resamples the particle set, and writes object and sub positional estimates out to SHM.
+
+## Python Interface: `aslam/py/core.py`
+
+This file implements the Python abstraction layer over SHM described above, using the submarine and locale configurations (e.g. `conf/thor.conf` and `conf/teagle.conf`).
+
+## Notes / Miscellaneous
+
+ASLAM code makes heavy use of C++ templates and is designed to be easily ported to environments with varying parameters (observation functions, robot pose dimension, etc).
+
+# Future Directions
+
+## Algorithmic
+
+### EKF Limitations / Multimodal Distributions
+
+Extended Kalman filters cannot represent multimodal belief distributions (the idea that we believe 70% that the buoy is in place A and 30% that it's in place B). It is as yet unknown how often this will appear in practice, but potential approaches include [ensemble Kalman filters](EnsembleKF) and [multiple-model Kalman filters](MultipleModelEKF).
+
+## Model Incorporation
+
+Currently, ASLAM just incorporates submarine pose into object/sub position estimation, but the probabalistic model could incorporate other unknown aspects of submarine state, such as thruster response curves, drag profiles, etc. Of note is that most of these are static — possessed of unknown but constant error — as opposed to position and pose, which have some measurement error that can accumulate over time. Thus it likely makes sense to simulate them in a layer above sub position. For example, ASLAM could create several particles with slightly different thruster response curves and test how well each predicts the observations we see, possibly adjusting weights accordingly as is done for position.
+
+## Relevant CUAUV Subsytems
+
+### SHM
+
+ASLAM uses several SHM groups for each object which have consistent structure across objects. At the moment, the best way to add these is with editor macros — some sort of scripted SHM generation (even just to generate `libshm/vars.conf`) would be helpful.
+
+### Vision
+
+At the moment, vision works in a "positive" identification model: given a frame, we look for positive examples of things that might be in it. There are better and worse ways to do this, which I do not discuss here, but fundamentally this method wastes a lot of information. Looking at a vision frame, what we care about is what state of the world was most likely to cause us to see exactly what we did. For example, *not* seeing a buoy is quite a bit of evidence — it means we aren't in a place where we would have seen a buoy! At the moment we ignore this completely.
+
+That kind of reverse simulation should also fix the issue of parameter sensitivity. We would just care what world state made the frame most likely — if the buoy was grayer than expected, the relative probability might be lower but we would still prioritize the world with a buoy in front of us (presuming we vary over the right world state variables, in this case buoy color). Difficulty remains in actually implementing this, as simulating the entire state space is infeasible, but there are plenty of potential options: one could create a scalar distance function over images and use that to make rougher comparisions, simulate transformations on the images as opposed to the images themselves (for example, histograms would probably be sufficient to distinguish between most objects), and use the current position of the sub to limit the potential visual fields considered.
+
+### Mission
+
+With the full usage of ASLAM, missions aren't that far off from becoming discrete optimization problems. Consider a method in which we represent missions as desired world states, current world states, and sets of possible actions that apply certain deltas to world states with certain probabilities.
+
+A (vastly simplified) conceptual example:
+
+```javascript
+{
+  world_actual: {
+    torpedo_fired: false,
+    torpedo_through_hole: false
+  },
+  world_desired: {
+    torpedo_fired: true,
+    torpedo_through_hole: true
+  },
+  actions: {
+    fire_torpedo: function(w) {
+      if (!w.torpedo_fired) { 
+        w.torpedo_fired = true;
+        if (sub.within_range) w.torpedo_through_hole = true;
+      } 
+      return w;
+    }
+  }
+}
+```
+
+In this case, the sub should search the state space of actions and find that the desired action is firing the torpedo after moving to within range (some positional bounding box).
+
+Missions written in this form would be far easier to write and conceptualize than the current system of finite state machines and, more importantly, cover, verifiably, the entire domain of (specifiable) world states instead of the current practice of covering only the domain we end up testing.
+
+### Simulation
+
+It would be helpful to be able to explicitly parameterize the simulator and mission verification system over the configuration space of sub and mission characteristics: within what error in thruster curves, noise in sensor measurement, error in initial buoy position estimate, etc. do we succeed? Eventually, we should know from testing exactly what bounds of error in our characterizations (which, when the simulator is running in "perfect" mode, represent the divergence between simulation and reality) our missions can reliably tolerate.
+
+Pushing the bounds of feasibility, this could be used in a learning loop to train parameters such as presumed submarine positional error in ASLAM, thresholds in missions, etc. to target the desired error tolerances.
+
+[FastSLAM]: http://ai.stanford.edu/~koller/Papers/Montemerlo+al:AAAI02.pdf
+[EnsembleKF]: https://en.wikipedia.org/wiki/Ensemble_Kalman_filter
+[MultipleModelEKF]: https://www.cs.utexas.edu/~pstone/Courses/393Rfall11/resources/RC09-Quinlan.pdf
+[EKF]: https://en.wikipedia.org/wiki/Extended_Kalman_filter
+[logo]: logo.png

@@ -1,0 +1,10 @@
+[Unit]
+Description=Starts trogdor
+
+[Service]
+User=software
+KillMode=process
+ExecStart=/home/software/cuauv/software/trogdor/auv-systemd-set-environment.sh trogdor_boot
+
+[Install]
+WantedBy=multi-user.target

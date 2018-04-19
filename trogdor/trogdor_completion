@@ -1,0 +1,24 @@
+# Add this to /etc/bash_completion.d/ to enable trogdor bash autocompletion
+
+_trogdor()
+{
+    local cur prev services all_services commands opts wordfile
+    COMPREPLY=()
+    wordfile=`which trogdor`
+    all_services=$(for x in `sed -n 's/SERVICES=(\(.*\))/\1/p' < ${wordfile}`; do echo ${x} ; done )
+    commands="start stop restart burninate"
+    services=`comm -23 <(echo ${all_services} | sed 's/ /\n/g' | sort -u) <(echo ${COMP_WORDS[@]} | sed 's/ /\n/g' | sort -u)`
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    
+    for i in ${commands[@]}
+    do
+        if [ $i == $prev ] ; then
+            return 0
+        fi
+    done
+    COMPREPLY=($(compgen -W "${services} ${commands}" -- ${cur}))
+    return 0
+}
+complete -F _trogdor trogdor t
+

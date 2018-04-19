@@ -1,0 +1,34 @@
+ports = [
+	"fifo:hydrophones",
+	"fifo:led",
+	"fifo:lcd",
+	"fifo:pressure",
+]
+
+[devices.hydrophones.vars]
+# write vars
+gain = "hydrophones_settings.gain"
+agLow = "hydrophones_settings.agLow"
+agHigh = "hydrophones_settings.agHigh"
+color = "led.port_blue" # don't ask
+
+# read vars
+phaseX = "hydrophones_results.phaseX"
+phaseY = "hydrophones_results.phaseY"
+phaseZ = "hydrophones_results.phaseZ"
+period = "hydrophones_filtered.period"
+
+# never-read vars
+fault_code = "hydrophones_results.fault_code"
+fsActual = "hydrophones_results.fsActual"
+
+[devices.led.vars]
+red = "led.starboard_red"
+green = "led.starboard_green"
+blue = "led.starboard_blue"
+
+[devices.led.options]
+canHardKill = false
+
+[devices.lcd.vars]
+[devices.pressure.vars]

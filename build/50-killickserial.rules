@@ -1,0 +1,41 @@
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_1_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_1_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 1", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_2"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_2_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_2_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_3"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 2", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_4"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_3_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_3_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_5"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 3", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_6"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_4_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_4_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_7"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 4", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_8"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_5_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_5_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_9"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 5", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_10"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_6_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_6_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_11"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 6", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_12"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_7_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_7_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_killick_13"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Killick Serial Unit 7", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_killick_14"
+

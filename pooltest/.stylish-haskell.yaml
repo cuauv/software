@@ -1,0 +1,25 @@
+steps:
+  - imports:
+      align: global
+  - language_pragmas:
+      style: compact
+      remove_redundant: true
+  - records: {}
+  - trailing_whitespace: {}
+  - unicode_syntax:
+      add_language_pragma: false
+
+columns: 80
+
+language_extensions:
+  - TemplateHaskell
+  - UnicodeSyntax
+  - QuasiQuotes
+  - MultiWayIf
+  - LambdaCase
+  - ScopedTypeVariables
+  - FlexibleContexts
+  - BangPatterns
+  - StandaloneDeriving
+  - MagicHash
+  - MultiParamTypeClasses

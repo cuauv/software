@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+
+from fishbowl import Fishbowl
+
+with Fishbowl() as f:
+  if f.connect():
+    f.unpause()

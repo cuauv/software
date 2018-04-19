@@ -1,0 +1,41 @@
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 1", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_1_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 1", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_1_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 1", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 1", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_2"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 2", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_2_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 2", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_2_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 2", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_3"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 2", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_4"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 3", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_3_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 3", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_3_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 3", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_5"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 3", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_6"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 4", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_4_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 4", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_4_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 4", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_7"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 4", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_8"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 5", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_5_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 5", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_5_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 5", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_9"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 5", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_10"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 6", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_6_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 6", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_6_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 6", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_11"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 6", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_12"
+
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 7", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_7_0"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 7", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_7_1"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 7", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_tachyon_13"
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Tachyon Serial Unit 7", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_tachyon_14"
+

@@ -1,0 +1,1 @@
+../libserial/proto/python/DeviceConfig_pb2.py

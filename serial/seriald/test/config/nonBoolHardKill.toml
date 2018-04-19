@@ -1,0 +1,14 @@
+ports = [
+	"/dev/tty0",
+	"/dev/tty1",
+	"/dev/tty3",
+]
+
+[devices.hydrophones.vars]
+phaseX = "hydrophones_results.phaseX"
+
+[devices.hydrophones.options]
+canHardKill = 7
+
+[devices.led.vars]
+port_red = "led.port_red"

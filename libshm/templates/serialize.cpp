@@ -1,0 +1,256 @@
+#include "serialize.h"
+
+#include "libshm/c/shm.h"
+
+#include <iostream>
+#include <set>
+#include <string.h>
+#include <sys/socket.h>
+
+using namespace std;
+
+static int32_t magic_start = 0xabcd1234;
+static int32_t magic_end = 0x1337d00d;
+
+static pthread_mutex_t socket_m = PTHREAD_MUTEX_INITIALIZER;
+static std::set<Serialize*> sockets;
+static bool initialized = false;
+
+struct shm_group {
+    int num_fields;
+    struct shm_meta* m;
+    char* field[MAX_FIELDS];
+    int type[MAX_FIELDS]; // The number of bytes in the data or 0 if string.
+};
+
+std::vector<shm_group> groups;
+
+Serialize::Serialize(int fd)
+  : closed(false),
+    fd(fd) {
+
+    char checksum[SHM_CHECKSUM_LEN];
+    Send(SHM_CHECKSUM_LEN, shm->header.checksum);
+    Recv(SHM_CHECKSUM_LEN, checksum);
+
+    if (strcmp(checksum, shm->header.checksum) != 0) {
+        cout << "Shm version mismatch.\n";
+        return;
+    }
+
+    // Everything's good. Register the client.
+    pthread_mutex_lock(&socket_m);
+    sockets.insert(this);
+    LoadGroups();
+    pthread_mutex_unlock(&socket_m);
+
+}
+
+void Serialize::Handle(bool rebroadcast) {
+    while (ReadOne(rebroadcast))
+        ;
+}
+
+void* Serialize::Serve(void*) {
+    ClearStream();  // to ensure client doesn't stream its values on linkup
+    watcher_t w = WatchAll();
+    while (true) {
+        wait_watcher(w, false); // Don't block if there have been changes
+        WriteChanged(false);
+    }
+    return NULL;
+}
+
+bool Serialize::Close() {
+    if (!closed) {
+        closed = true;
+        close(fd);
+        pthread_mutex_lock(&socket_m);
+        sockets.erase(this);
+        pthread_mutex_unlock(&socket_m);
+    }
+    return false;
+}
+
+bool Serialize::ReadOne(bool rebroadcast) {
+    if (closed) {
+        return false;
+    }
+
+    int32_t magic = 0;
+    Recv(4, &magic);
+    if (magic != magic_start) {
+        return Close();
+    }
+
+    uint32_t n;
+    Recv(4, &n);
+    if (n < 0 || n >= groups.size()) {
+        return Close();
+    }
+
+    shm_group& g = groups[n];
+
+    char* tempdata[g.num_fields];
+    int bytes[g.num_fields];
+    // First write the incoming values to a temporary array
+    // keeping track of the number of bytes of each field.
+    // Reading data that's never written to without a lock must be safe...
+    // i.e. we didn't lock but we're reading g.num_fields, g.type
+    for (int i = 0; i < g.num_fields; i++) {
+        uint32_t len = g.type[i];
+        if (!len) {  // this one is a string, we don't know the size
+            Recv(4, &len);
+        }
+        tempdata[i] = new char[len];
+        Recv(len, tempdata[i]);
+        bytes[i] = len;
+    }
+
+
+    _shm_lock(&g.m->m);
+    // finally copy data to shm when we know we can't hang
+    for (int i = 0; i < g.num_fields; i++) {
+        memcpy(g.field[i], tempdata[i], bytes[i]);
+        delete[] tempdata[i];
+    }
+
+    // Let everyone know the group has been updated.
+    g.m->f = 1;
+    if (rebroadcast) {
+        g.m->stream = 1;
+    }
+    g.m->last_client = this;
+    shm_notify(g.m->w);
+    pthread_mutex_unlock(&g.m->m);
+
+    Recv(4, &magic);
+    if (magic != magic_end) {
+        return Close();
+    }
+    return true;
+}
+
+bool Serialize::Write(uint32_t n) {
+    if (closed || n < 0 || n >= groups.size()) {
+        return false;
+    }
+
+    // get a snapshot of the group in temp array
+    shm_group& g = groups[n];
+    _shm_lock(&g.m->m);
+
+    // If this was the last client to update the group,
+    // don't send a pointless update
+    if (g.m->last_client == this) {
+        pthread_mutex_unlock(&g.m->m);
+        return true;
+    }
+    char* tempdata[g.num_fields];
+    for (int i = 0; i < g.num_fields; i++) {
+        int bytes = g.type[i] ? g.type[i] : strlen(g.field[i]) + 1;
+        tempdata[i] = new char[bytes];
+        memcpy(tempdata[i], g.field[i], bytes);
+    }
+    pthread_mutex_unlock(&g.m->m);
+
+    // now send the data outside the lock
+    Send(4, &magic_start);
+    Send(4, &n);
+    for (int i = 0; i < g.num_fields; i++) {
+        uint32_t len = g.type[i];
+        if (!len) {   // sending a string, must send its length
+            len = strlen(tempdata[i]) + 1;
+            Send(4, &len);
+        }
+        Send(len, tempdata[i]);
+        delete[] tempdata[i];
+    }
+
+    return Send(4, &magic_end);
+}
+
+void Serialize::WriteToAll(uint32_t n) {
+    for (set<Serialize*>::iterator it = sockets.begin(); it != sockets.end(); it++) {
+        (*it)->Write(n);
+    }
+}
+
+bool Serialize::Recv(size_t len, void* buf) {
+    if (this->closed) {
+        return false;
+    }
+    size_t n = recv(this->fd, buf, len, MSG_WAITALL);
+    if (n != len) {
+        return Close();
+    }
+    return true;
+}
+
+bool Serialize::Send(size_t len, void* buf) {
+    if (this->closed) {
+        return false;
+    }
+    size_t n = send(this->fd, buf, len, 0);
+    if (n != len) {
+        return Close();
+    }
+    return true;
+}
+
+/*
+ * Autogenerated Code Follows:
+ */
+
+void Serialize::WriteChanged(bool everything) {
+    pthread_mutex_lock(&socket_m);
+    uint32_t n = 0;
+<!--(for g in groups)-->
+    if (everything || shm->$!g['groupname']!$.m.stream) {
+        WriteToAll(n);
+        shm->$!g['groupname']!$.m.stream = 0;
+    }
+    n++;
+<!--(end)-->
+    pthread_mutex_unlock(&socket_m);
+}
+
+void Serialize::LoadGroups() {
+    if (initialized) {
+        return;
+    }
+
+    shm_group g;
+    int n;
+<!--(for g in groups)-->
+    n = 0;
+    <!--(for k in g['varnames'])-->
+    g.field[n] = (char*)&shm->$!g['groupname']!$.g.$!k!$;
+        <!--(if g['vars'][k]['type'] == 'string')-->
+    g.type[n] = 0;
+        <!--(else)-->
+    g.type[n] = sizeof(shm->$!g['groupname']!$.g.$!k!$);
+        <!--(end)-->
+    n++;
+    <!--(end)-->
+    g.num_fields = n;
+    g.m = &shm->$!g['groupname']!$.m;
+    groups.push_back(g);
+<!--(end)-->
+}
+
+watcher_t Serialize::WatchAll() {
+    watcher_t w = create_watcher();
+<!--(for g in groups)-->
+    shm_watch($!g['groupname']!$, w);
+<!--(end)-->
+    return w;
+}
+
+void Serialize::ClearStream() {
+<!--(for g in groups)-->
+    shm_lock($!g['groupname']!$);
+    shm->$!g['groupname']!$.m.stream = 0;
+    shm_unlock($!g['groupname']!$);
+<!--(end)-->
+}

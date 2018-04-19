@@ -1,0 +1,8 @@
+name = "cuauv-shm"
+version = "0.0.1"
+requires = "ctypes ctypes.foreign lwt"
+
+archive(byte) = "CUAUV_shm.cma"
+archive(native) = "CUAUV_shm.cmxa"
+
+linkopts = "-cclib -lshm"

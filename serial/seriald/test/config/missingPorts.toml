@@ -1,0 +1,4 @@
+[devices.led.vars]
+port_red = "led.port_red"
+port_green = "led.port_green"
+port_blue = "led.port_blue"

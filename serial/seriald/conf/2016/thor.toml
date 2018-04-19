@@ -1,0 +1,15 @@
+includes = [
+	"actuator.toml",
+	"gpio.toml",
+	"merge.toml",
+	"powerDistribution.toml",
+	"thruster.toml",
+]
+
+ports = [
+	"/dev/ttyUSB_thor_ACT",
+	"/dev/ttyUSB_thor_GPIO",
+	"/dev/ttyUSB_thor_PD",
+	"/dev/ttyUSB_thor_MERGE",
+	"/dev/ttyUSB_thor_THRUST"
+]

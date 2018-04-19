@@ -1,0 +1,10 @@
+[Unit]
+Description=Ping router from sub, softkill if disconnected
+After=syslog.target network.target
+
+[Service]
+ExecStart=/home/software/cuauv/software/deadman/deadman.py
+User=software
+
+[Install]
+WantedBy=multi-user.target

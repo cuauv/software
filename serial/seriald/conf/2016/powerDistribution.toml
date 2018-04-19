@@ -1,0 +1,47 @@
+[devices.powerDistribution.vars]
+Voltage5VDCDC = "power_distribution_status.voltage_5v"
+Current5VDCDC = "power_distribution_status.current_5v"
+Voltage12VDCDC = "power_distribution_status.voltage_12v"
+Current12VDCDC = "power_distribution_status.current_12v"
+
+Enable5VGPIO = "power_distribution.enable_5v_gpio"
+EnableLCD = "power_distribution.enable_5v_lcd"
+EnableACT = "power_distribution.enable_5v_actuator"
+EnableHIM = "power_distribution.enable_5v_him"
+Enable5VX1 = "power_distribution.enable_5v_x1"
+Enable5VX2 = "power_distribution.enable_5v_x2"
+
+Enable12VGPIO = "power_distribution.enable_12v_gpio"
+EnableH2O = "power_distribution.enable_12v_hydrophones"
+EnableGX4 = "power_distribution.enable_12v_gx4"
+EnableDownCam = "power_distribution.enable_12v_downcam"
+Enable12VX1 = "power_distribution.enable_12v_x1"
+Enable12VX2 = "power_distribution.enable_12v_x2"
+
+EnableSonar = "power_distribution.enable_24v_sonar"
+EnableDVL = "power_distribution.enable_24v_sonar"
+Enable24VX = "power_distribution.enable_24v_x1"
+
+EnableForeCam = "power_distribution.enable_48v_forecam"
+Enable48VX = "power_distribution.enable_48v_x1"
+
+Current5VGPIO = "power_distribution_status.current_5v_gpio"
+CurrentLCD = "power_distribution_status.current_5v_lcd"
+CurrentACT = "power_distribution_status.current_5v_actuator"
+CurrentHIM = "power_distribution_status.current_5v_him"
+Current5VX1 = "power_distribution_status.current_5v_x1"
+Current5VX2 = "power_distribution_status.current_5v_x2"
+
+Current12VGPIO = "power_distribution_status.current_12v_gpio"
+CurrentH2O = "power_distribution_status.current_12v_hydrophones"
+CurrentGX4 = "power_distribution_status.current_12v_gx4"
+CurrentDownCam = "power_distribution_status.current_12v_downcam"
+Current12VX1 = "power_distribution_status.current_12v_x1"
+Current12VX2 = "power_distribution_status.current_12v_x2"
+
+CurrentSonar = "power_distribution_status.current_24v_sonar"
+CurrentDVL = "power_distribution_status.current_24v_sonar"
+Current24VX = "power_distribution_status.current_24v_x1"
+
+CurrentForeCam = "power_distribution_status.current_48v_forecam"
+Current48VX = "power_distribution_status.current_48v_x1"

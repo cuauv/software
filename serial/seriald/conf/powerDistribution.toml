@@ -1,0 +1,18 @@
+[devices.powerDistribution.vars]
+Enable12VGX4 = "power_distribution.enable_12v_gx"
+Enable12VH2O = "power_distribution.enable_12v_hydrophones"
+Enable12VDCAM = "power_distribution.enable_12v_downcam"
+Enable12VGPIO = "power_distribution.enable_12v_gpio"
+Enable12VX1 = "power_distribution.enable_12v_x1"
+Enable12VX2 = "power_distribution.enable_12v_x2"
+
+Enable5VGPIO = "power_distribution.enable_5v_gpio"
+Enable5VHIM = "power_distribution.enable_5v_him"
+Enable5VSwitch = "power_distribution.enable_5v_switch"
+Enable5VX1 = "power_distribution.enable_5v_x1"
+Enable5VX2 = "power_distribution.enable_5v_x2"
+
+Enable24VDVL = "power_distribution.enable_24v_dvl"
+Enable24VX1 = "power_distribution.enable_24v_x1"
+Enable5VPOE = "power_distribution.enable_5v_poe"
+Enable48VPOE = "power_distribution.enable_48v_poe"

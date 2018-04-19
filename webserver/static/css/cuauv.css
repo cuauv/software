@@ -1,0 +1,150 @@
+body {
+    overflow-y: scroll;
+    padding-bottom: 20px;
+}
+
+.page-header {
+    margin-top: 20px;
+}
+
+.navbar {
+    margin-bottom: 10px;
+}
+
+.navbar-logo {
+    margin-top: -5px;
+    display: inline-block !important;
+}
+
+.navbar-logo svg {
+    height: 30px;
+}
+
+#navbar-status-indicator {
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: -21px; /* (.navbar-logo{margin-top} - height) */
+    margin-left: 8px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
+
+.drive-button {
+    width: 100%;
+    height: 40px;
+}
+
+.softkill-button {
+    margin-top: 20px;
+    width: 100%;
+    height: 60px;
+}
+
+/* The console container element */
+#console {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    background-color: black;
+}
+
+/* The inner console element. */
+#console .jqconsole {
+    padding: 10px;
+    background-color: black;
+}
+
+#console pre {
+    font-size: 12px;
+}
+
+/* The cursor. */
+#console .jqconsole-cursor {
+    background-color: gray;
+}
+
+/* The current prompt text color */
+#console .jqconsole-prompt {
+    color: #0d0;
+}
+
+/* The command history */
+#console .jqconsole-old-prompt {
+    color: gray;
+    font-weight: normal;
+}
+
+/* The prompt text input color */
+#console .jqconsole-prompt-text {
+    color: white;
+}
+
+/* The text color when in input mode. */
+#console .jqconsole-input .jqconsole-prompt-text {
+    color: #dd0;
+}
+
+/* Previously entered input. */
+#console .jqconsole-old-input {
+    color: #bb0;
+    font-weight: normal;
+}
+
+/* The text color of the output. */
+#console .jqconsole-output {
+    color: white;
+}
+
+#console .jqconsole-ansi-bold {
+    font-weight: bold;
+}
+#console .jqconsole-ansi-color-red {
+    color: red;
+}
+#console .jqconsole-ansi-color-cyan {
+    color: cyan;
+}
+#console .jqconsole-ansi-color-magenta {
+    color: magenta;
+}
+#console .jqconsole-ansi-color-green {
+    color: green;
+}
+#console .jqconsole-ansi-color-yellow {
+    color: yellow;
+}
+
+.test-button-wrapper {
+    margin-bottom: 10px;
+}
+
+.shm-group a {
+    cursor: pointer;
+    text-decoration: none !important;
+}
+.shm-group th.key,
+.shm-group td.key {
+    text-align: right;
+    width: 50%;
+    padding-right: 8px;
+}
+.shm-group th.value,
+.shm-group td.value {
+    text-align: left;
+    width: 50%;
+    padding-left: 8px;
+}
+
+.search-wrapper {
+	padding-bottom: 10px;
+	text-decoration: none;
+	box-shadow:0 0 0; 
+	border-color:#ccc
+}
+.search-wrapper .form-control {
+	padding: 8px;
+	background-color: transparent;
+	width: 100%;
+	
+}

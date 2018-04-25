@@ -1,0 +1,34 @@
+## Castor / Pollux Hubless Serial Board
+
+KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", MODE="0666", TAG+="systemd"
+
+# # FTDI 1
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 1", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_pastor_GX4", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 1", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_pastor_GPIO", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 1", ATTRS{bInterfaceNumber}=="02", SYMLINK+="ttyUSB_pastor_VROOOOM", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 1", ATTRS{bInterfaceNumber}=="03", SYMLINK+="ttyUSB_pastor_ACT", MODE="0666", TAG+="systemd"
+
+# # FTDI 2
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 2", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_pastor_PD", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 2", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_pastor_VROOM", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 2", ATTRS{bInterfaceNumber}=="02", SYMLINK+="ttyUSB_pastor_POD", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 2", ATTRS{bInterfaceNumber}=="03", SYMLINK+="ttyUSB_pastor_H2O", MODE="0666", TAG+="systemd"
+
+# # FTDI 3
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 3", ATTRS{bInterfaceNumber}=="00", SYMLINK+="ttyUSB_pastor_LED", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 3", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_pastor_X1", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 3", ATTRS{bInterfaceNumber}=="02", SYMLINK+="ttyUSB_pastor_X3", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 3", ATTRS{bInterfaceNumber}=="03", SYMLINK+="ttyUSB_pastor_X2", MODE="0666", TAG+="systemd"
+
+# # FTDI 4
+KERNEL=="ttyUSB0", DRIVERS=="ftdi_sio", SYMLINK+="ttyUSB_pastor_DVL", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 4", ATTRS{bInterfaceNumber}=="01", SYMLINK+="ttyUSB_pastor_MERGE", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 4", ATTRS{bInterfaceNumber}=="02", SYMLINK+="ttyUSB_pastor_HIM", MODE="0666", TAG+="systemd"
+# KERNEL=="ttyUSB*", DRIVERS=="ftdi_sio", ATTRS{interface}=="Pastor 4", ATTRS{bInterfaceNumber}=="03", SYMLINK+="ttyUSB_pastor_POE", MODE="0666", TAG+="systemd"
+
+## LCD Board
+# Ignore the C232H cable (for LCD)
+# We're using MPSSE mode for this, and it doesn't work if the ft232_sio driver loads it 
+# NOTE: libmpsse must be modified to avoid probing any other VID/PID
+# Why is argo here??
+SUBSYSTEMS=="usb", ATTRS{product}=="C232HM-DDHSL-0", ATTRS{idProduct}=="6014", ATTRS{idVendor}=="0403", SYMLINK+="ttyUSB_argo_lcd_0", MODE="0666", TAG+="systemd"

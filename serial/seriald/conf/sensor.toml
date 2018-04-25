@@ -1,0 +1,5 @@
+[devices.Sensor.vars]
+DepthOffsetWriteVar = "depth.offset"
+DepthReadVar = "depth.depth"
+PressureReadVar = "pressure.hull"
+TemperatureReadVar = "temperature.hull"

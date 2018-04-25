@@ -1,0 +1,10 @@
+includes = [
+	"ports.toml",
+	"castorThruster1.toml",
+	"castorThruster2.toml",
+	"brendhim.toml",
+	"powerDistribution.toml",
+  	"sensor.toml",
+	# "actuator.toml",
+	# "merge.toml",
+]

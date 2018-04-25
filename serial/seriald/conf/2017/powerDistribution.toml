@@ -1,4 +1,4 @@
-[devices.PD.vars]
+[devices.powerDistribution.vars]
 Enable12VGX4 = "power_distribution.enable_12v_gx"
 Enable12VH2O = "power_distribution.enable_12v_hydrophones"
 Enable12VDCAM = "power_distribution.enable_12v_downcam"

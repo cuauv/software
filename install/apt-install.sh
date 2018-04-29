@@ -6,23 +6,25 @@ packages=(
     bc
     dialog
     htop
+    iotop
     ipython
     ipython3
     jq
     libboost-python-dev
-    libdc1394-22-dev
     libeigen3-dev
     libncurses-dev
     libpopt-dev
     libpython-dev
     nano
     neovim
-    stow
-    wget
-    bc
-    tmux
-    silversearcher-ag
+    nload
+    screen
     shellcheck
+    silversearcher-ag
+    stow
+    tmux
+    usbutils
+    wget
 
     # mission
 
@@ -39,7 +41,7 @@ packages=(
     # vision
     libavcodec-dev
     libavformat-dev
-    libdc1394-22
+    libdc1394-22-dev
     libswscale-dev
     python3-yaml
     python-gi-cairo
@@ -81,7 +83,9 @@ add-apt-repository ppa:neovim-ppa/stable
 apt-get clean -y
 apt-get update -o Acquire::CompressionTypes::Order::=gz -y
 
-apt-get install -y "${packages[@]}"
+apt-get install -y "${packages[@]}" ||
+    apt-get install -y "${packages[@]}" ||
+    apt-get install -y "${packages[@]}"
 
 # Add Neovim alternatives (https://github.com/neovim/neovim/wiki/Installing-Neovim)
 update-alternatives --install /usr/bin/vi vi /usr/bin/nvim 60

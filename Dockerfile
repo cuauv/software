@@ -1,4 +1,4 @@
-FROM phusion/baseimage:0.9.22
+FROM cuauv/phusion-baseimage:0.10.0
 CMD ["/sbin/my_init"]
 RUN rm -f /etc/service/sshd/down && \
     sed -i'' 's/http:\/\/archive.ubuntu.com/http:\/\/us.archive.ubuntu.com/' /etc/apt/sources.list

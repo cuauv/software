@@ -7,6 +7,7 @@ import base64
 import cv2
 import tornado.websocket
 from tornado.web import HTTPError
+from tornado.ioloop import PeriodicCallback
 
 from webserver import BaseHandler
 from vision import camera_message_framework, vision_common, options
@@ -18,11 +19,36 @@ all_vision_modules = vision_common.all_vision_modules()
 MAX_IMAGE_DIMENSION = 510
 module_listeners = collections.defaultdict(int)
 
+SEND_BUFFER_FLUSH_PERIOD = 50 # Empty send buffer every 50 ms
 websocket_listeners = []
+message_send_buffer = {}
+
 
 def get_active_modules():
     prefix = "auv_visiond-module-"
     return [block[len(prefix):] for block in os.listdir('/dev/shm') if block.startswith(prefix)]
+
+
+def add_websocket_listener(websocket_listener):
+    websocket_listeners.append(websocket_listener)
+    message_send_buffer[websocket_listener] = []
+
+
+def remove_websocket_listener(websocket_listener):
+    websocket_listeners.remove(websocket_listener)
+    del message_send_buffer[websocket_listener]
+
+
+def send_message(websocket_listener, message):
+    message_send_buffer[websocket_listener].append(message)
+
+
+def flush_send_buffer():
+    for websocket_listener in message_send_buffer:
+        buffer = message_send_buffer[websocket_listener]
+        for message in buffer:
+            websocket_listener.write_message(message)
+        message_send_buffer[websocket_listener] = []
 
 
 def send_image(module_name, image_name, image, receivers=websocket_listeners):
@@ -40,7 +66,7 @@ def send_image(module_name, image_name, image, receivers=websocket_listeners):
                       'image': jpeg_bytes,
                       'image_index': idx}
         for websocket_listener in receivers:
-            websocket_listener.write_message(value_dict)
+            send_message(websocket_listener, value_dict)
     except Exception as e:
         print(e)
 
@@ -58,7 +84,7 @@ def send_option(module_name, option_name, value, receivers=websocket_listeners):
         option.populate_value_dict(value_dict)
         #print("Sending option: " + str(value_dict))
         for websocket_listener in receivers:
-            websocket_listener.write_message(value_dict)
+            send_message(websocket_listener, value_dict)
     except Exception as e:
         print(e)
 
@@ -76,7 +102,7 @@ class VisionSocketHandler(tornado.websocket.WebSocketHandler):
         if module_name not in module_frameworks:
             self.close(code=404)
 
-        websocket_listeners.append(self)
+        add_websocket_listener(self)
 
         all_option_values = module_frameworks[module_name].get_option_values()
         for option_name, option_value in all_option_values.items():
@@ -102,7 +128,7 @@ class VisionSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         print("Connection to vision gui closed")
-        websocket_listeners.remove(self)
+        remove_websocket_listener(self)
         module_listeners[self.module_name] -= 1
 
 
@@ -113,6 +139,10 @@ class VisionIndexHandler(BaseHandler):
 
 
 class VisionModuleHandler(BaseHandler):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        PeriodicCallback(flush_send_buffer, SEND_BUFFER_FLUSH_PERIOD).start()
 
     def get_image_observer(self, module_name):
         def observe(name, value):
@@ -133,6 +163,7 @@ class VisionModuleHandler(BaseHandler):
             if module_listeners[module_name] == 0:
                 return
             send_option(module_name, name, value)
+
         return observe
 
     def initialize_module(self, module_name):

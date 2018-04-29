@@ -2,8 +2,10 @@
 
 import os
 import argparse
+import asyncio
 import tornado.web
 from tornado.web import url
+from tornado.platform.asyncio import AnyThreadEventLoopPolicy
 
 from handlers.index import IndexHandler
 from handlers.login import LoginHandler
@@ -61,6 +63,7 @@ if __name__ == "__main__":
     print("AUV Webserver 0.0.0.0:{}... waiting for requests".format(args.port))
 
     auv_webserver = make_app(debug=args.debug)
+    asyncio.set_event_loop_policy(AnyThreadEventLoopPolicy())
     auv_webserver.listen(args.port)
     io_loop = tornado.ioloop.IOLoop.instance()
 

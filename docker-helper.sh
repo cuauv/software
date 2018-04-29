@@ -15,17 +15,21 @@ read -r -d '' HELP << EOM
     build                         Builds the docker container and tags it as
                                   lezed1/cuauv
 
-    run                           runs the docker container tagged as
-                                  lezed1/cuauv, starts it's ssh, and runs bash
-                                  in that container in the forground. When
+    run                           Runs the docker container tagged as
+                                  lezed1/cuauv, starts it's SSH server, and runs
+                                  bash in that container in the forground. When
                                   bash exits the container will be deactivated
 
-    ssh                           ssh into a container. This requires the ip
-                                  of the container (which is printed out on the first
-                                  line when the container first runs). See examples
-                                  for how to provide the ip address. If no ip
-                                  address is provided the script will prompt for
-                                  it.
+    vehicle VEHICLE_NAME          Similar to `run`, but sets up extra
+                                  environmental information for running directly
+                                  on a vehicle
+
+    ssh                           SSH into a container. This requires the ip
+                                  of the container (which is printed out on the
+                                  first line when the container first runs). See
+                                  examples for how to provide the ip address. If
+                                  no ip address is provided the script will
+                                  prompt for it.
 
     help                          this information screen
 
@@ -97,6 +101,28 @@ dockerMacRun() {
     rm -f $CUAUV_DOCKER_TMP_FILE
 }
 
+dockerVehicle() {
+    CUAUV_DIR=$(dirname "$(realpath "$0")")
+
+    docker run \
+           -it \
+           # -e 'DISPLAY=${DISPLAY}' \
+           -e "CUAUV_LOCALE=teagle" \
+           -e "CUAUV_VEHCILE=${2}" \
+           -e "CUAUV_CONTEXT=vehicle" \
+           -v "$CUAUV_DIR:/home/software/cuauv/software" \
+           # -v "/tmp/.X11-unix:/tmp/.X11-unix" \
+           -v /usr/share/icons:/usr/share/icons:ro \
+           -v /dev:/dev
+           #--device "/dev/dri:/dev/dri" \
+           --privileged
+           --ipc=host \
+           asb322/cuauv-jetson \
+           /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \
+        | tee $CUAUV_DOCKER_TMP_FILE
+    rm -f $CUAUV_DOCKER_TMP_FILE
+}
+
 dockerSsh() {
     if [ "$(uname)" == "Darwin" ]; then
         dockerMacSsh
@@ -120,8 +146,9 @@ dockerMacSsh() {
 }
 
 case ${1} in
-    build) dockerBuild;;
-    run  ) dockerRun;;
-    ssh  ) dockerSsh "${2}";;
-    *    ) scriptHelp;;
+    build  ) dockerBuild;;
+    run    ) dockerRun;;
+    vehicle) dockerVehicle;;
+    ssh    ) dockerSsh "${2}";;
+    *      ) scriptHelp;;
 esac

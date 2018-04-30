@@ -1,0 +1,90 @@
+diff --git a/conf/castor.conf b/conf/castor.conf
+index aaacc5f..6646346 100644
+--- a/conf/castor.conf
++++ b/conf/castor.conf
+@@ -10,9 +10,9 @@
+ 
+     // Moments of inertia (kg * m^2) from solidworks.
+     // In the model frame.
+-    "I": [[ 0.5804, -0.0223, 0.0753],
+-          [ -0.0223, 2.3923, -0.0096],
+-          [ 0.0753, -0.0096, 2.3529]],
++    "I": [[ 1.685, -0.0136, -0.0265],
++          [ -0.0136, 1.7300, 0.0850],
++          [ -0.0265, 0.0850, 0.69006]],
+ 
+     // Ib and body_rot calculated using auv-body-frame-calc.
+     "Ib": [0.771676, 3.57266, 3.79317],
+@@ -27,7 +27,7 @@
+         {
+             "name": "fore_port",
+             "type": "T200",
+-            "pos": [0.334, -0.276, -0.063],
++            "pos": [0.196, -0.172, -0.051],
+             "heading_pitch": [0, -90],
+             "reversed": false,
+             "broken": false
+@@ -35,7 +35,7 @@
+         {
+             "name": "port",
+             "type": "T200",
+-            "pos": [-0.223, -0.325, -0.0],
++            "pos": [0.042, -0.325, 0.037],
+             "heading_pitch": [0, 0],
+             "reversed": false,
+             "broken": false
+@@ -43,7 +43,7 @@
+         {
+             "name": "aft_port",
+             "type": "T200",
+-            "pos": [-0.357, -0.240, 0.095],
++            "pos": [-0.280, -0.172, -0.057],
+             "heading_pitch": [0, -90],
+             "reversed": true,
+             "broken": false
+@@ -51,7 +51,7 @@
+         { 
+             "name": "sway_aft",
+             "type": "T200",
+-            "pos": [-0.485, -0.002, -0.079],
++            "pos": [-0.400, 0.050, -0.008],
+             "heading_pitch": [-90, 0],
+             "min_neg_pwm": -2,
+             "reversed": false,
+@@ -60,7 +60,7 @@
+         { 
+             "name": "aft_starboard", 
+             "type": "T200", 
+-            "pos": [-0.357, 0.245,  0.106], 
++            "pos": [-0.279, 0.183, -0.057], 
+             "heading_pitch": [0, -90],
+             "reversed": false,
+             "broken": false
+@@ -69,14 +69,14 @@
+             "name": "starboard",
+             "type": "T200", 
+             "heading_pitch": [0, 0],
+-            "pos": [-0.223, 0.330, -0.0],
+-            "reversed": true,
+-            "broken": true
++            "pos": [0.042, 0.343, 0.037],
++            "reversed": false,
++            "broken": false
+         },
+         { 
+             "name": "fore_starboard",
+             "type": "T200",
+-            "pos": [0.334,  0.283, 0.063],
++            "pos": [0.196,  0.186, -0.051],
+             "heading_pitch": [0, -90],
+             "reversed": false,
+             "broken": false
+@@ -84,7 +84,7 @@
+         { 
+             "name": "sway_fore",
+             "type": "T200",
+-            "pos": [0.477, 0.002, -0.079],
++            "pos": [0.388, -0.036, -0.009],
+             "heading_pitch": [-90, 0],
+             "min_neg_pwm": -2,
+             "reversed": false,

@@ -1,32 +1,32 @@
 import os
 
-from test import vehicle, level, Test, ARTEMIS, APOLLO, WARN, ERR
+from test import vehicle, level, Test, CASTOR, POLLUX, WARN, ERR
 
 # Syscheck self-tests, so meta
-@vehicle(APOLLO)
+@vehicle(POLLUX)
 class IsApollo(Test):
-    def is_apollo():
-        return "apollo" == os.getenv("CUAUV_VEHICLE")
+    def is_pollux():
+        return "pollux" == os.getenv("CUAUV_VEHICLE")
 
     class IsApollo(Test):
-        def is_apollo():
-            return "apollo" == os.getenv("CUAUV_VEHICLE")
+        def is_pollux():
+            return "pollux" == os.getenv("CUAUV_VEHICLE")
 
-    @vehicle(ARTEMIS)
+    @vehicle(CASTOR)
     class IsArtemis(Test):
-        def is_artemis():
-            return "artemis" == os.getenv("CUAUV_VEHICLE")
+        def is_castor():
+            return "castor" == os.getenv("CUAUV_VEHICLE")
 
-@vehicle(ARTEMIS)
+@vehicle(CASTOR)
 class IsArtemis(Test):
-    def is_artemis():
-        return "artemis" == os.getenv("CUAUV_VEHICLE")
+    def is_castor():
+        return "castor" == os.getenv("CUAUV_VEHICLE")
 
     class IsArtemis(Test):
-        def is_artemis():
-            return "artemis" == os.getenv("CUAUV_VEHICLE")
+        def is_castor():
+            return "castor" == os.getenv("CUAUV_VEHICLE")
 
-    @vehicle(APOLLO)
+    @vehicle(POLLUX)
     class IsApollo(Test):
-        def is_apollo():
-            return "apollo" == os.getenv("CUAUV_VEHICLE")
+        def is_pollux():
+            return "pollux" == os.getenv("CUAUV_VEHICLE")

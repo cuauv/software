@@ -51,12 +51,12 @@ greenlets = []
 
 cuauv_vehicle = os.environ.get("CUAUV_VEHICLE")
 
-if cuauv_vehicle == 'artemis':
-    vehicle_id = test.ARTEMIS
-elif cuauv_vehicle == 'apollo':
-    vehicle_id = test.APOLLO
+if cuauv_vehicle == 'castor':
+    vehicle_id = test.CASTOR
+elif cuauv_vehicle == 'pollux':
+    vehicle_id = test.POLLUX
 else:
-    raise ValueError("CUAUV_VEHICLE must be set to one of {artemis, apollo}!")
+    raise ValueError("CUAUV_VEHICLE must be set to one of {castor, pollux}!")
 
 environment_id = 2
 if(not  args.environment):

@@ -130,13 +130,12 @@ def convert_dvl_velocities(sub_quat, dvl_vel):
     return vel_spitz_frame
 
 def get_velocity(sub_quat):
-    vel = np.array([vel_vars[vel_var].get() for vel_var in \
+    vel = np.array([-vel_vars[vel_var].get() for vel_var in \
                     ["velx", "vely", "velz"]])
     if dvl_present:
         # Rotate DVL velocities
-        tmp = vel[0]
-        vel[0] = -vel[1]
-        vel[1] = tmp
+        # vel[0] *= -1
+        # vel[1] *= -1
 
         vel = convert_dvl_velocities(sub_quat, vel)
 
@@ -268,7 +267,7 @@ while True:
 
 
         # Check whether the DVL beams are good
-        beams_good = sum( [not var.get() for var in beam_vars] ) >= 2
+        beams_good = True# sum( [not var.get() for var in beam_vars] ) >= 2
 
         # And if not, disable them
         if not beams_good and dvl_present:

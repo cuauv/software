@@ -227,32 +227,43 @@ ssize_t SerialPort::readnWithTimeout(unsigned char *buf, size_t toRead, long uwa
 {
     //check to see if serial port isn't working out
     if (fd == -1) {
+        printf("SAD 4\n");
         return -1;
     }
 
     //note on my logic: no special handling for uwait = 0.  readn is meaningless in that case
 
-    if(uwait < 0)
+    if(uwait < 0){
+        printf("SAD 3\n");
         return -1;
+    }
    
     ssize_t nRead = 0;
     ssize_t ret;
     struct timeval tv;
-    if(gettimeofday(&tv, NULL) != 0)
-        return -1;
+    if(gettimeofday(&tv, NULL) != 0) {
+	printf("Timeofday\n");
+        return -1; 
+    }
     long current_time = tv.tv_usec + tv.tv_sec * 1000000;
     long end_time = current_time + uwait;
 
     while(current_time <= end_time && nRead < (ssize_t)toRead)
     {
         ret = readWithTimeout(buf + nRead, toRead - nRead, end_time - current_time);
-        if(ret < 0)
+        if(ret < 0){ 
+            printf("SAD 1\n");
             return -1;
+	}
         nRead += ret;
-        if(gettimeofday(&tv, NULL) != 0)
+        if(gettimeofday(&tv, NULL) != 0) {
+            printf("SAD 2\n");
             return -1;
+	}
         current_time = tv.tv_usec + tv.tv_sec * 1000000;
     }
+
+    printf("%ld\n", nRead);
     return nRead;
 }
 

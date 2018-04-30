@@ -1,7 +1,7 @@
 import types, inspect, collections
 
 OK, WARN, ERR = 0, 1, 2
-ARTEMIS, APOLLO = 0, 1
+CASTOR, POLLUX = 0, 1
 LAND, WATER = 0, 1
 
 test = collections.namedtuple('test', ['name', 'expr', 'raw', 'on_success', 'on_error'])

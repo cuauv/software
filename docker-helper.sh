@@ -20,7 +20,7 @@ read -r -d '' HELP << EOM
                                   bash in that container in the forground. When
                                   bash exits the container will be deactivated
 
-    vehicle VEHICLE_NAME          Similar to `run`, but sets up extra
+    vehicle VEHICLE_NAME          Similar to "run", but sets up extra
                                   environmental information for running directly
                                   on a vehicle
 
@@ -106,16 +106,16 @@ dockerVehicle() {
 
     docker run \
            -it \
-           # -e 'DISPLAY=${DISPLAY}' \
            -e "CUAUV_LOCALE=teagle" \
            -e "CUAUV_VEHCILE=${2}" \
            -e "CUAUV_CONTEXT=vehicle" \
            -v "$CUAUV_DIR:/home/software/cuauv/software" \
-           # -v "/tmp/.X11-unix:/tmp/.X11-unix" \
            -v /usr/share/icons:/usr/share/icons:ro \
-           -v /dev:/dev
-           #--device "/dev/dri:/dev/dri" \
-           --privileged
+           -v /dev:/dev \
+           -p 22:22 \
+           -p 5000:5000 \
+           -p 8080:8080 \
+           --privileged \
            --ipc=host \
            asb322/cuauv-jetson \
            /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \

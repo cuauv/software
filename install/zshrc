@@ -32,9 +32,6 @@ export CUAUV_LOG="/var/log/auv/"
 # Pick up Jetson/GPU libraries on Jeston
 export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/tegra/
 
-# Allow applications to forward X11 display to host system
-export DISPLAY=:0
-
 # Configure OCaml env with opam
 . /home/software/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true
 

@@ -24,6 +24,7 @@ packages=(
     stow
     tmux
     usbutils
+    wireshark
     wget
 
     # mission

@@ -110,7 +110,6 @@ dockerVehicle() {
            -e "CUAUV_VEHCILE=${2}" \
            -e "CUAUV_CONTEXT=vehicle" \
            -v "$CUAUV_DIR:/home/software/cuauv/software" \
-           -v /usr/share/icons:/usr/share/icons:ro \
            -v /dev:/dev \
            -p 22:22 \
            -p 5000:5000 \

@@ -22,7 +22,9 @@ packages=(
     python3-numpy
     python3-pip
     python3-scipy
+    screen
     sudo
+    wireshark
     xorg
     x11-apps
 )
@@ -35,3 +37,8 @@ done
 # Upgrade pip
 pip2 install --upgrade pip
 pip3 install --upgrade pip
+
+# Allow wireshark to be run by non-root users
+echo "wireshark-common wireshark-common/install-setuid boolean true" | sudo debconf-set-selections
+dpkg-reconfigure wireshark-common
+

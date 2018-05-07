@@ -104,10 +104,17 @@ dockerMacRun() {
 dockerVehicle() {
     CUAUV_DIR=$(dirname "$(realpath "$0")")
 
+    if [ "${1}" == "pollux" ]; then
+        CUAUV_VEHICLE_TYPE="minisub"
+    else
+        CUAUV_VEHICLE_TYPE="mainsub"
+    fi
+
     docker run \
            -it \
            -e "CUAUV_LOCALE=teagle" \
-           -e "CUAUV_VEHCILE=${2}" \
+           -e "CUAUV_VEHICLE=${1}" \
+           -e "CUAUV_VEHICLE_TYPE=$CUAUV_VEHICLE_TYPE" \
            -e "CUAUV_CONTEXT=vehicle" \
            -v "$CUAUV_DIR:/home/software/cuauv/software" \
            -v /dev:/dev \
@@ -147,7 +154,7 @@ dockerMacSsh() {
 case ${1} in
     build  ) dockerBuild;;
     run    ) dockerRun;;
-    vehicle) dockerVehicle;;
+    vehicle) dockerVehicle "${2}";;
     ssh    ) dockerSsh "${2}";;
     *      ) scriptHelp;;
 esac

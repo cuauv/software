@@ -24,6 +24,7 @@ export OCAMLPATH=$software_path/libshm/ocaml
 # Can set to other locales in the conf directory.
 export CUAUV_LOCALE="${CUAUV_LOCALE:-simulator}"
 export CUAUV_VEHICLE="${CUAUV_VEHICLE:-castor}"
+export CUAUV_VEHICLE_TYPE="${CUAUV_VEHICLE_TYPE:-mainsub}"
 export CUAUV_CONTEXT="${CUAUV_CONTEXT:-development}" # Optionally set to reduce build dependencies, see configure.py
 
 export VISION_TEST_PATH="/home/software/videos/"

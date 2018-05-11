@@ -20,7 +20,7 @@ MAX_IMAGE_DIMENSION = 510
 module_listeners = collections.defaultdict(int)
 
 SEND_BUFFER_FLUSH_PERIOD = 50 # Empty send buffer every 50 ms
-websocket_listeners = []
+websocket_listeners = collections.defaultdict(list)
 message_send_buffer = {}
 
 
@@ -29,13 +29,13 @@ def get_active_modules():
     return [block[len(prefix):] for block in os.listdir('/dev/shm') if block.startswith(prefix)]
 
 
-def add_websocket_listener(websocket_listener):
-    websocket_listeners.append(websocket_listener)
+def add_websocket_listener(module_name, websocket_listener):
+    websocket_listeners[module_name].append(websocket_listener)
     message_send_buffer[websocket_listener] = []
 
 
-def remove_websocket_listener(websocket_listener):
-    websocket_listeners.remove(websocket_listener)
+def remove_websocket_listener(module_name, websocket_listener):
+    websocket_listeners[module_name].remove(websocket_listener)
     del message_send_buffer[websocket_listener]
 
 
@@ -51,7 +51,9 @@ def flush_send_buffer():
         message_send_buffer[websocket_listener] = []
 
 
-def send_image(module_name, image_name, image, receivers=websocket_listeners):
+def send_image(module_name, image_name, image, receivers=None):
+    if receivers is None:
+        receivers = websocket_listeners[module_name]
     try:
         if module_name not in module_frameworks:
             return
@@ -71,7 +73,9 @@ def send_image(module_name, image_name, image, receivers=websocket_listeners):
         print(e)
 
 
-def send_option(module_name, option_name, value, receivers=websocket_listeners):
+def send_option(module_name, option_name, value, receivers=None):
+    if receivers is None:
+        receivers = websocket_listeners[module_name]
     try:
         if module_name not in module_frameworks:
             return
@@ -102,7 +106,7 @@ class VisionSocketHandler(tornado.websocket.WebSocketHandler):
         if module_name not in module_frameworks:
             self.close(code=404)
 
-        add_websocket_listener(self)
+        add_websocket_listener(module_name, self)
 
         all_option_values = module_frameworks[module_name].get_option_values()
         for option_name, option_value in all_option_values.items():
@@ -128,7 +132,7 @@ class VisionSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         print("Connection to vision gui closed")
-        remove_websocket_listener(self)
+        remove_websocket_listener(self.module_name, self)
         module_listeners[self.module_name] -= 1
 
 

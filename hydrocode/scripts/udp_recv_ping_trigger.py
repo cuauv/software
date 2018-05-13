@@ -10,12 +10,12 @@ matplotlib.use('WX')
 import matplotlib.pyplot as plt
 import numpy, scipy
 CHANNEL_DEPTH = 128
-UDP_PAYLOAD_SIZE = 818 #Derived from wireshark.
+UDP_PAYLOAD_SIZE = 768 #818 #Derived from wireshark.
 UDP_IP="" #This means all interfaces?
 UDP_PORT=8899
 
 print "Enter trigger threshold between 0 and 4096"
-threshold=2100.0
+threshold=11000
 if len(sys.argv) > 1:
     threshold = float(sys.argv[1])
 #sock.setblocking(0)
@@ -50,7 +50,7 @@ plt.xlabel("Sample (n)")
 plt.ylabel("Amplitude")
 ax = fig.add_subplot(111)
 ax.set_xlim((0,CHANNEL_DEPTH))
-ax.set_ylim((0,4100))
+ax.set_ylim((0,16000))
 
 #line1,line2,line3 = ax.plot(x, y, 'r-',label='ADC1',x,y,'b-',label='ADC2',x,y,'g-',label='ADC3') # Returns a tuple of line objects, thus the comma
 line1,line2,line3 = ax.plot(x, y, 'r-',x,y,'b-',x,y,'g-') # Returns a tuple of line objects, thus the comma

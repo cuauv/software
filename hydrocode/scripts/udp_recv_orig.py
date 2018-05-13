@@ -9,30 +9,35 @@ matplotlib.use('WX')
 
 import matplotlib.pyplot as plt
 import numpy, scipy
+
 CHANNEL_DEPTH = 128
-UDP_PAYLOAD_SIZE = 818 #Derived from wireshark.
-UDP_IP="" #This means all interfaces?
-UDP_PORT=8899
+UDP_PAYLOAD_SIZE = 768 #818 #Derived from wireshark.
+UDP_IP = "" #This means all interfaces?
+UDP_PORT = 8899
 
 #sock.setblocking(0)
 class UDPThread(threading.Thread):
     def __init__(self):
         super(UDPThread,self).__init__()
-        self.sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind((UDP_IP,UDP_PORT))
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind((UDP_IP, UDP_PORT))
         self.lock = threading.Lock()
         self.data = ''
         self.addr = ''
-        self.packet_counter = 0;
+        self.packet_counter = 0
+
     def run(self):
         while(1):
-            self.lock.acquire()
-            try:
-                self.data, self.addr = self.sock.recvfrom(UDP_PAYLOAD_SIZE);
-                self.packet_counter += 1
-            finally:
-                self.lock.release()
-                time.sleep(.00001)
+            with self.lock:
+                try:
+                    print "Starting receive"
+                    self.data, self.addr = self.sock.recvfrom(UDP_PAYLOAD_SIZE)
+                    print "Got receive"
+                    self.packet_counter += 1
+                finally:
+                    pass
+            time.sleep(.001)
+
 udpthread = UDPThread()
 udpthread.start()
 plt.ion()
@@ -46,21 +51,24 @@ plt.xlabel("Sample (n)")
 plt.ylabel("Amplitude")
 ax = fig.add_subplot(111)
 ax.set_xlim((0,CHANNEL_DEPTH))
-ax.set_ylim((0,4100))
+ax.set_ylim((0,16000))
 
 #line1,line2,line3 = ax.plot(x, y, 'r-',label='ADC1',x,y,'b-',label='ADC2',x,y,'g-',label='ADC3') # Returns a tuple of line objects, thus the comma
 line1,line2,line3 = ax.plot(x, y, 'r-',x,y,'b-',x,y,'g-') # Returns a tuple of line objects, thus the comma
 start_time = time.time()
 while(1):
     print "drawloop"
-    udpthread.lock.acquire()
-    data = ''
-    addr = ''
-    try:
-        data = udpthread.data
-        addr = udpthread.addr
-    finally:
-        udpthread.lock.release()
+    with udpthread.lock:
+        print "got lock"
+        data = ''
+        addr = ''
+
+        try:
+            data = udpthread.data
+            addr = udpthread.addr
+        finally:
+            pass
+
     print 'Connected by:', addr, 'bufsize', len(data), 'Recieved', udpthread.packet_counter, ' packets. ', float(udpthread.packet_counter)/(time.time() - start_time), ' per second'
     #print binascii.hexlify(data)
     #print binascii.hexlify(data)[1200:]

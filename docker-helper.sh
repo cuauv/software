@@ -121,6 +121,7 @@ dockerVehicle() {
            -p 22:22 \
            -p 5000:5000 \
            -p 8080:8080 \
+           -p 8899:8899/udp \
            --privileged \
            --ipc=host \
            asb322/cuauv-jetson \

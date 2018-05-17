@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -xeuo pipefail
 
+if [[ "$(uname -m)" != "x86_64" ]]; then
+	echo "Cannot install OCaml on $(uname -m)"
+	exit 0
+fi
+
 export DEBIAN_FRONTEND=noninteractive
 
 packages=(

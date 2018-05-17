@@ -56,7 +56,7 @@ void do_track(){
             track_filterA = iirfilt_crcf_create_sos(b,a,NUMBER_OF_SECTIONS);
             track_filterB = iirfilt_crcf_create_sos(b,a,NUMBER_OF_SECTIONS);
             track_filterC = iirfilt_crcf_create_sos(b,a,NUMBER_OF_SECTIONS);
-
+	    
             shm_results_track.track_state = 0;
 
             local_track_freq = shm_settings.track_frequency_target;
@@ -129,7 +129,7 @@ void do_track(){
 
             float kz_2 = 1 - kx * kx - ky * ky;
             if (kz_2 < 0) {
-              std::cerr << "WARNING: z mag is negative! " << kz_2 << std::endl;
+              std::cerr << "WARNING1: z mag is negative! " << kz_2 << std::endl;
               kz_2 = 0;
             }
 
@@ -280,11 +280,11 @@ int main (int argc, char ** argv) {
     while (loop(&spt) == 0) {
         shm_getg(hydrophones_settings, shm_settings);
 		for (int i = 0; i < 3*CHANNEL_DEPTH; i+=3) {
-            windowcf_push(w,    std::complex<float>(spt.data[i+1],0)); //This uses channel B
+            windowcf_push(w,    std::complex<float>(spt.data[i+2],0)); //This uses channel B
 
             windowcf_push(wchA, std::complex<float>(spt.data[i],0));
-            windowcf_push(wchB, std::complex<float>(spt.data[i+1],0));
-            windowcf_push(wchC, std::complex<float>(spt.data[i+2],0));
+            windowcf_push(wchB, std::complex<float>(spt.data[i+2],0));
+            windowcf_push(wchC, std::complex<float>(spt.data[i+1],0));
         }
         current_sample_count+=CHANNEL_DEPTH;
 		packet_count++;

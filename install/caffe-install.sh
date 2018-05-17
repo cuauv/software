@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ "$(uname -m)" != "x86_64" ]]; then
+	echo "Cannot install Caffe on $(uname -m)"
+	exit 0
+fi
+
 # based on https://github.com/BVLC/caffe/wiki/Ubuntu-16.04-or-15.10-Installation-Guide
 
 apt-get install -y unzip

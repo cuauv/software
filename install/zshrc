@@ -22,16 +22,16 @@ export GUILE_LOAD_PATH="$CUAUV_SOFTWARE/guile"
 export OCAMLPATH=$software_path/libshm/ocaml
 
 # Can set to other locales in the conf directory.
-export CUAUV_LOCALE="${CUAUV_LOCALE:-simulator}"
+export CUAUV_LOCALE="${CUAUV_LOCALE:-teagle}"
 export CUAUV_VEHICLE="${CUAUV_VEHICLE:-castor}"
 export CUAUV_VEHICLE_TYPE="${CUAUV_VEHICLE_TYPE:-mainsub}"
-export CUAUV_CONTEXT="${CUAUV_CONTEXT:-development}" # Optionally set to reduce build dependencies, see configure.py
+export CUAUV_CONTEXT="${CUAUV_CONTEXT:-vehicle}" # Optionally set to reduce build dependencies, see configure.py
 
 export VISION_TEST_PATH="/home/software/videos/"
 export CUAUV_LOG="/var/log/auv/"
 
 # Pick up Jetson/GPU libraries on Jeston
-export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/tegra/
+export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/tegra/:/usr/local/lib/
 
 # Configure OCaml env with opam
 . /home/software/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true

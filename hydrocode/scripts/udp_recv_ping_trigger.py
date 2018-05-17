@@ -79,10 +79,11 @@ while(1):
     transducer2 = nd[2::3]
     if numpy.max(transducer2) > threshold or numpy.max(transducer1) > threshold or numpy.max(transducer0) > threshold:
     #if numpy.max(transducer2) > threshold:
+        print("ping")
         t = numpy.arange(0,len(transducer1))
-        line1.set_ydata(transducer0)
-        line2.set_ydata(transducer1)
-        line3.set_ydata(transducer2)
+        line1.set_ydata(transducer0,c='red')
+        line2.set_ydata(transducer1,c='blue')
+        line3.set_ydata(transducer2,c='green')
         #print "ydata seet"
         plt.draw()
         plt.pause(.00001)

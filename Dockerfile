@@ -1,7 +1,8 @@
 FROM cuauv/phusion-baseimage:0.10.0
 CMD ["/sbin/my_init"]
 RUN rm -f /etc/service/sshd/down && \
-    sed -i'' 's/http:\/\/archive.ubuntu.com/http:\/\/us.archive.ubuntu.com/' /etc/apt/sources.list
+    sed -i'' 's/http:\/\/archive.ubuntu.com/http:\/\/us.archive.ubuntu.com/' /etc/apt/sources.list && \
+    sed -i'' 's/http:\/\/ports.ubuntu.com/http:\/\/us.ports.ubuntu.com/' /etc/apt/sources.list
 
 RUN mkdir /dependencies && chmod -R 755 /dependencies
 
@@ -9,6 +10,9 @@ COPY install/aptstrap.sh /dependencies/
 
 COPY install/foundation-install.sh /dependencies/
 RUN bash /dependencies/aptstrap.sh /dependencies/foundation-install.sh
+
+COPY install/jetson-install.sh /dependencies/
+RUN bash /dependencies/aptstrap.sh /dependencies/jetson-install.sh
 
 COPY install/opencv-install.sh /dependencies/
 RUN bash /dependencies/aptstrap.sh /dependencies/opencv-install.sh
@@ -40,7 +44,7 @@ COPY install/apt-install.sh /dependencies/
 RUN bash /dependencies/aptstrap.sh /dependencies/apt-install.sh
 
 COPY install/pip-install.sh /dependencies/
-RUN bash /dependencies/pip-install.sh
+RUN bash /dependencies/aptstrap.sh /dependencies/pip-install.sh
 
 COPY install/misc-install.sh /dependencies/
 RUN bash /dependencies/aptstrap.sh /dependencies/misc-install.sh
@@ -49,4 +53,5 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.cache/
 
 USER software
 WORKDIR /home/software/cuauv/software
-# CMD ip a && sudo service ssh start && echo "CUAUV Docker container running! C-c to stop the container" && cat
+CMD echo "CUAUV Docker container should be started through a wrapping tool (cdw or docker-helper.sh"
+

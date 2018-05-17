@@ -18,4 +18,4 @@ print "UDP target port", UDP_PORT
 #msg = com.SerializeToString()
 #print msg
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.sendto("10",(UDP_IP,UDP_PORT))
+sock.sendto("14",(UDP_IP,UDP_PORT))

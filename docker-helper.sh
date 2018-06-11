@@ -111,7 +111,7 @@ dockerVehicle() {
     fi
 
     docker run \
-           -it \
+           -i \
            -e "CUAUV_LOCALE=teagle" \
            -e "CUAUV_VEHICLE=${1}" \
            -e "CUAUV_VEHICLE_TYPE=$CUAUV_VEHICLE_TYPE" \
@@ -123,6 +123,7 @@ dockerVehicle() {
            -p 8080:8080 \
            -p 8899:8899/udp \
            --privileged \
+           --network host \
            --ipc=host \
            asb322/cuauv-jetson \
            /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \

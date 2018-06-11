@@ -3,8 +3,7 @@ A generic Kalman filter.
 Based on the paper "An Introduction to the Kalman Filter" Welch, Bishop
 www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf
 '''
-from numpy import transpose, identity, dot, linalg
-
+from cupy import transpose, identity, dot, linalg
 ''' 
 The following variables are used throught the program:
 n - size of state vector
@@ -59,8 +58,7 @@ class KalmanFilter(object):
         else:
             H = self.H
 
-        K = linalg.solve((H.dot(PMinus).dot(H.T) + self.R).T, H.dot(PMinus.T)).T
-        #K = dot(PMinus, dot(H.T, linalg.inv(dot(H, dot(PMinus, H.T)) + self.R)))
+        K = dot(PMinus, dot(H.T, linalg.inv(dot(H, dot(PMinus, H.T)) + self.R)))
         xHat = xHatMinus + dot(K,(z - dot(H, xHatMinus)))
         P = dot((self.I - dot(K, H)),PMinus)
 

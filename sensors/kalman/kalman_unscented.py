@@ -1,5 +1,5 @@
-from numpy.linalg import inv
-import numpy as np
+from cupy.linalg import inv
+import cupy as np
 from unscented_tools import calculate_sigmas, unscented_transform
 '''
 In this implementation of the UKF, the following variables are used,
@@ -90,7 +90,7 @@ class UnscentedKalmanFilter(object):
                                                     self.sp_h[i] - Hx_bar)
         # Calculate K and measurement residual
         K = np.dot(cross_var, inv(PHx))
-        residual = self.difference(z, Hx_bar)
+        residual = self.difference(np.array(z), Hx_bar)
         # Update predicted to new values for state and variance
         self.x_hat += np.dot(K, residual)
         self.P -= np.dot(K, np.dot(PHx, K.T))

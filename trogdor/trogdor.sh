@@ -19,7 +19,8 @@ export PYTHONPATH=$ROOT
 
 # PORT MAPPINGS
 
-GX_PORT=/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if00-port0
+# GX_PORT=/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if00-port0
+GX_PORT=/dev/ttyUSB8
 DVL_PORT=/dev/serial/by-id/usb-CUAUV_PASTOR_4_AUV-PASTOR4-if03-port0
 
 # CONFIGS
@@ -31,7 +32,7 @@ VISION_CONFIG=$ROOT/vision/configs/master.yaml
 SUBMARINE=$CUAUV_VEHICLE
 
 if [ "$SUBMARINE" = "castor" ]; then
-  SERVICES=(seriald gx1d linearizerd dvld kalmand navigated controld3 shmserver ueye
+  SERVICES=(seriald gx4d linearizerd dvld kalmand navigated controld3 shmserver ueye
   logging visiongui cameras webgui hydromathd modules deadman uptime )
 elif [ "$SUBMARINE" = "pollux" ]; then
   SERVICES=(seriald gx4d kalmand navigated controld3 shmserver logging

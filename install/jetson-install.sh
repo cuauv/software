@@ -59,3 +59,5 @@ apt-get update -o Acquire::CompressionTypes::Order::=gz -y
 apt-get install -y --allow-unauthenticated cuda-toolkit-9.0
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/lib/aarch64-linux-gnu/tegra
 ln -s /usr/lib/aarch64-linux-gnu/libcuda.so /usr/lib/aarch64-linux-gnu/libcuda.so.1
+ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.28.2.0 /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.1
+ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.28.2.0 /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so

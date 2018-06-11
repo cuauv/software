@@ -66,8 +66,8 @@ def fx_quat(x, dt):
     # I don't think the below is correct.
     # Because HPR != axis of angular velocity
     # TODO XXX FIX
-    disp_quat = Quaternion(hpr=([math.degrees(vel * dt) for vel in ang_vel]))
-    q_final = q_initial * disp_quat
+    # disp_quat = Quaternion(hpr=([math.degrees(vel * dt) for vel in ang_vel]))
+    q_final = q_initial # * disp_quat
     x[0] = q_final[0]
     x[1] = q_final[1]
     x[2] = q_final[2]
@@ -78,11 +78,11 @@ def hx_quat(x):
     return x
 
 def fx_euler(x, dt):
-    x[0] += x[3]*dt
-    x[1] += x[4]*dt
-    x[2] += x[5]*dt
+    # x[0] += x[3]*dt
+    # x[1] += x[4]*dt
+    # x[2] += x[5]*dt
 
-    x[0] = x[0] % 360
+    # x[0] = x[0] % 360
     return x
 
 def hx_euler(x):
@@ -154,6 +154,10 @@ kalman_xHat = np.array([[ x_vel, 0, y_vel, 0, 0, 0, depth, 0]]).reshape(8, 1)
 position_filter = PositionFilter(kalman_xHat)
 
 start = time.time()
+
+show_rate = True
+real_start = time.time()
+
 iteration = 0
 while True:
     # TODO Should we wait on gx4 group write?
@@ -229,6 +233,8 @@ while True:
 
             euler_orientation_filter.predict()
 
+            quat_in_old = quat_in
+
             quat_in = Quaternion(q=list(quat_in))
             hpr_in = quat_in.hpr()
 
@@ -241,15 +247,26 @@ while True:
 
             outputs = shm.kalman.get()
             keys = ['heading', 'pitch', 'roll', 'heading_rate', 'pitch_rate', 'roll_rate']
+
+            deadband = 50
+            in_bad_zone = hpr_in[0] % 360 < (0 + deadband) or hpr_in[0] % 360 > (360 - deadband)
+            if in_bad_zone:
+                data =  [hpr_in[0] % 360, hpr_in[1], hpr_in[2], heading_rate_in, pitch_rate_in, roll_rate_in]
+                outputs.update(**{'q0': quat_in_old[0],
+                                  'q1': quat_in_old[1],
+                                  'q2': quat_in_old[2],
+                                  'q3': quat_in_old[3]})
+            else:
+                outputs.heading_rate = math.degrees(outputs.heading_rate)
+                outputs.pitch_rate = math.degrees(outputs.pitch_rate)
+                outputs.roll_rate = math.degrees(outputs.roll_rate)
+                outputs.update(**{'q0': quat[0],
+                                  'q1': quat[1],
+                                  'q2': quat[2],
+                                  'q3': quat[3]})
+
             output = dict(zip(keys, data))
             outputs.update(**output)
-            outputs.heading_rate = math.degrees(outputs.heading_rate)
-            outputs.pitch_rate = math.degrees(outputs.pitch_rate)
-            outputs.roll_rate = math.degrees(outputs.roll_rate)
-            outputs.update(**{'q0': quat[0],
-                              'q1': quat[1],
-                              'q2': quat[2],
-                              'q3': quat[3]})
 
 
         x_vel, y_vel, z_vel = get_velocity(sub_quat)
@@ -267,7 +284,7 @@ while True:
 
 
         # Check whether the DVL beams are good
-        beams_good = True# sum( [not var.get() for var in beam_vars] ) >= 2
+        beams_good = sum( [not var.get() for var in beam_vars] ) >= 2
 
         # And if not, disable them
         if not beams_good and dvl_present:
@@ -305,5 +322,11 @@ while True:
         shm.kalman.set(outputs)
 
         iteration += 1
+
+        if show_rate:
+            if (iteration % 100 == 0):
+                iteration = 0
+                real_start = time.time()
+            print(iteration/(real_start-time.time()))
 
     time.sleep(dt/5.)

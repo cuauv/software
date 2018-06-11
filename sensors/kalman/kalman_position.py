@@ -9,7 +9,7 @@ from conf.vehicle import measurement_error
 
 from auv_math.quat import Quaternion
 
-from numpy import array, radians, sin, cos, zeros, eye
+from cupy import array, radians, sin, cos, zeros, eye
 
 class PositionFilter(generic_kalman.KalmanFilter):
     def __init__(self, xHatStart):
@@ -86,7 +86,7 @@ class PositionFilter(generic_kalman.KalmanFilter):
                     [0, 0, 0, 0, 0, 0, 1, 0],
                     [0, 0, 0, 0, 0, 0, 0, 1] ]).reshape(n,n)
 
-        super(PositionFilter, self).__init__( n,m,l, xHatStart, P, A,B,H,R,Q)
+        super(PositionFilter, self).__init__( n,m,l, array(xHatStart), P, A,B,H,R,Q)
 
         #We also do position integration here
         self.forward = 0.0
@@ -103,6 +103,8 @@ class PositionFilter(generic_kalman.KalmanFilter):
                     roll=None):
         if thruster_vals is None:
             thruster_vals = []
+        if active_measurements is not None:
+            active_measurements = array(active_measurements)
 
         #TODO: use active_measurements
 
@@ -111,12 +113,19 @@ class PositionFilter(generic_kalman.KalmanFilter):
         roll = radians(roll)
 
         #Data relative to north-east
-        z = array([ x_vel*cos(heading) - y_vel*sin(heading),
-                    x_acc*cos(heading) - y_acc*sin(heading),
-                    x_vel*sin(heading) + y_vel*cos(heading),
-                    y_acc*sin(heading) + y_acc*cos(heading),
-                    depth
-                    ]).reshape(self.m,1)
+        z = zeros((5,1))
+        z[0] = x_vel*cos(heading) - y_vel*sin(heading)
+        z[1] = x_acc*cos(heading) - y_acc*sin(heading)
+        z[2] = x_vel*sin(heading) + y_vel*cos(heading)
+        z[3] = y_acc*sin(heading) + y_acc*cos(heading)
+        z[4] = depth
+        z = z.reshape(self.m,1) 
+        # z = array([ x_vel*cos(heading) - y_vel*sin(heading),
+        #             x_acc*cos(heading) - y_acc*sin(heading),
+        #             x_vel*sin(heading) + y_vel*cos(heading),
+        #             y_acc*sin(heading) + y_acc*cos(heading),
+        #             depth
+        #             ]).reshape(self.m,1)
         if active_measurements is not None:
             z *= active_measurements
 
@@ -149,11 +158,22 @@ class PositionFilter(generic_kalman.KalmanFilter):
         has_dvl = 1 if dvl_present else 0
         c = cos(heading)
         s = sin(heading)
+        # self.H = array([ [has_dvl, 0, 0, 0, 0, 0, 0, 0],
+        #                  [0, 1, 0, 0, c,-s, 0, 0],
+        #                  [0, 0, has_dvl, 0, 0, 0, 0, 0],
+        #                  [0, 0, 0, 1, s, c, 0, 0],
+        #                  [0, 0, 0, 0, 0, 0, 1, 0] ]).reshape(self.m,self.n)
+        # 
         self.H = array([ [has_dvl, 0, 0, 0, 0, 0, 0, 0],
-                         [0, 1, 0, 0, c,-s, 0, 0],
+                         [0, 1, 0, 0, 0, 0, 0, 0],
                          [0, 0, has_dvl, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 1, s, c, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 1, 0] ]).reshape(self.m,self.n)
+                         [0, 0, 0, 1, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 1, 0] ])
+        self.H[1][4] = c
+        self.H[1][5] = -s
+        self.H[3][4] = s
+        self.H[3][5] = c
+        self.H = self.H.reshape(self.m, self.n)
         if active_measurements is not None:
             self.H *= active_measurements
             #self.H = array([ [0, 0, 0, 0, 0, 0, 0, 0],

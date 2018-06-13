@@ -3,6 +3,15 @@ if [[ "$(uname -m)" != "aarch64" ]]; then
 	exit 0
 fi
 
+
+# IDS uEye driver
+
+pushd /tmp
+wget https://cuauv.org/nix-res-private/uEyeSDK-4.90.00-ARM_LINUX_IDS_AARCH64_GNU.tgz
+pushd /
+tar -xvf /tmp/uEyeSDK-4.90.00-ARM_LINUX_IDS_AARCH64_GNU.tgz
+
+
 # Inspired by https://github.com/charlielito/jetsontx2-opencv-tf/blob/master/Dockerfile
 
 # COPY qemu-aarch64-static /usr/bin/

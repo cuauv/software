@@ -5,6 +5,7 @@ packages=(
     autossh
     bc
     dialog
+    gnuplot
     htop
     iotop
     iputils-ping

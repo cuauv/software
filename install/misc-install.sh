@@ -55,4 +55,16 @@ rm -rf /build_tmp_sloth
 
 # **************** sloth ****************
 
+mkdir -p /tmp/ueye
+pushd /tmp/ueye
+
+apt-get -y install libqtgui4
+
+if [[ "$(uname -m)" == "x86_64" ]]; then
+    wget https://cuauv.org/nix-res-private/uEye-Linux-4.90.06-64.tgz
+    tar -xvf uEye-Linux-4.90.06-64.tgz
+    ./ueyesdk-setup-4.90.06-eth-amd64.gz.run
+fi
+
+
 mkdir /var/log/auv && chown software /var/log/auv & chgrp software /var/log/auv

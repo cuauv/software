@@ -76,7 +76,9 @@ dockerRun() {
         -v "/tmp/.X11-unix:/tmp/.X11-unix" \
         -v /usr/share/icons:/usr/share/icons:ro \
         --device "/dev/dri:/dev/dri" \
+        --network=host \
         --ipc=host \
+        --privileged \
         lezed1/cuauv \
         /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \
     | tee $CUAUV_DOCKER_TMP_FILE

@@ -6,5 +6,5 @@ includes = [
 	"powerDistribution.toml",
   	"sensor.toml",
 	# "actuator.toml",
-	# "merge.toml",
+	"merge.toml",
 ]

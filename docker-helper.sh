@@ -46,7 +46,8 @@ scriptHelp() {
 }
 
 dockerBuild() {
-    docker build . -t lezed1/cuauv
+    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    docker build $DIR -t lezed1/cuauv
 }
 
 promptToBuild() {

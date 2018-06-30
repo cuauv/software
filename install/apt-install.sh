@@ -29,12 +29,6 @@ packages=(
     usbutils
     wget
 
-    # mission
-
-    # control
-    python-numpy
-    python-scipy
-
     # serial
     libgtest-dev
     libgtkmm-3.0-dev
@@ -97,4 +91,3 @@ update-alternatives --install /usr/bin/vim vim /usr/bin/nvim 60
 update-alternatives --config vim
 update-alternatives --install /usr/bin/editor editor /usr/bin/nvim 60
 update-alternatives --config editor
-

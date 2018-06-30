@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 SCRIPT_NAME=$(basename "$0")
 
 CUAUV_DOCKER_TMP_FILE="/tmp/cuauv-docker.config"

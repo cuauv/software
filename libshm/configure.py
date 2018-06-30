@@ -6,6 +6,8 @@ from build import ninja_common
 
 build = ninja_common.Build('libshm')
 
+BUILD_OCAML = False
+
 scmfiles = [
             'shm.scm',
            ]
@@ -46,7 +48,7 @@ scmintermed = ['scm/%s' % f for f in scmfiles]
 build.generate(intermediates + ocamlintermed + scmintermed, 'libshm/generate.py', templates + ['vars.conf'])
 build.generate(['c/checksum.h'], 'libshm/checksum.sh', intermediates)
 
-if subprocess.getstatusoutput('which opam')[0] == 0:
+if BUILD_OCAML and subprocess.getstatusoutput('which opam')[0] == 0:
     build.generate(['ocaml/install.fake'], 'libshm/ocaml/generate.sh',
             ocamlintermed +
             ['templates/%s' % f for f in ocamlfiles] +
@@ -94,4 +96,3 @@ build.build_cmd('auv-diagnose-shm',
 build.chicken_lib("cuauv-shm", [
         "scm/shm.scm"
     ], where="libshm/scm", auv_deps=["shm"])
-

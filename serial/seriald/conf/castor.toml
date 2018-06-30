@@ -4,7 +4,7 @@ includes = [
 	"castorThruster2.toml",
 	"brendhim.toml",
 	"powerDistribution.toml",
-  	"sensor.toml",
-	# "actuator.toml",
+	"sensor.toml",
+	"actuator.toml",
 	"merge.toml",
 ]

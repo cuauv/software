@@ -15,12 +15,12 @@ class GX4(Test):
         return is_changing(shm.gx4.roll.get)
 
 @vehicle(CASTOR)
-class GX1(Test):
+class GX5(Test):
     def online():
-        return is_changing(shm.threedmg.clk_ticks.get)
+        return is_changing(shm.gx4.packets_received.get)
 
     def updating():
-        return is_changing(shm.threedmg.roll.get)
+        return is_changing(shm.gx4.roll.get)
 
 @vehicle(CASTOR)
 class DVL(Test):
@@ -39,7 +39,6 @@ class Vision(Test):
 
     def poster_getting_downward():
         return is_changing(shm.poster_status.downward_counter.get)
-
 
     def modules_processing():
         # TODO do other modules besides recovery?
@@ -87,7 +86,7 @@ class System(Test):
         return float(shell('mpstat | tail -n 1 | sed "s/\s\s*/ /g" | cut -d" " -f4').stdout) < 600.0
 
     def disk_space_available():
-        return shutil.disk_usage(os.environ["CUAUV_LOG"]).free > 50000000000 #50GB
+        return shutil.disk_usage(os.environ["CUAUV_LOG"]).free > 10 * 1000 ** 3 # 10GB
 
     def services_up():
         # Please forgive me for this.

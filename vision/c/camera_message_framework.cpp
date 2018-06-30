@@ -279,6 +279,8 @@ message_framework_p access_message_framework(std::string direction) {
   message_framework_internal *framework = (message_framework_internal*) mmap(NULL, desired_size, PROT_READ | PROT_WRITE, MAP_SHARED, framework_file, 0);
   close(framework_file);
 
+  std::cout << "Initializing" << std::endl;
+
   message_framework_p final_fwmk = initialize_message_framework(framework);
   final_fwmk->filename = file_address_s;
   return final_fwmk;

@@ -31,10 +31,14 @@ int main(int argc, char* argv[]) {
 
   bool size_given = false;
   params.rotate180 = false;
+  params.rotate90 = false;
   for (int i = 4; i < argc; i++) {
     std::string arg(argv[i]);
     if (arg == "--rotate180") {
       params.rotate180 = true;
+    }
+    else if (arg == "--rotate90") {
+      params.rotate90 = true;
     }
     else if (arg.substr(0, 5) == "size=") {
       std::istringstream ss(arg.substr(5));

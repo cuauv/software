@@ -52,114 +52,114 @@ dockerBuild() {
 
 promptToBuild() {
     # check with the user if they want to build the docker container now
-     echo -n "Do you wish to build docker now? [Yn]"
-     read -r yn
-     case $yn in
-         [Yy]* ) dockerBuild;;
-         ""    ) dockerBuild;;
-         [Nn]* ) echo "skipping" ;;
-         *     ) echo "assuming no, skipping";;
-     esac
+    echo -n "Do you wish to build docker now? [Yn]"
+    read -r yn
+    case $yn in
+        [Yy]* ) dockerBuild;;
+        ""    ) dockerBuild;;
+        [Nn]* ) echo "skipping" ;;
+*     ) echo "assuming no, skipping";;
+esac
+}
+
+ dockerRun() {
+     if [ "$(uname)" == "Darwin" ]; then
+         dockerMacRun
+         return
+     fi
+
+     CUAUV_DIR=$(dirname "$(realpath "$0")")
+
+     docker run \
+            -it \
+            -e 'DISPLAY=${DISPLAY}' \
+            -v "$CUAUV_DIR:/home/software/cuauv/software" \
+            -v "/tmp/.X11-unix:/tmp/.X11-unix" \
+            -v /usr/share/icons:/usr/share/icons:ro \
+            --device "/dev/dri:/dev/dri" \
+            --network=host \
+            --ipc=host \
+            --privileged \
+            lezed1/cuauv \
+            /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \
+         | tee $CUAUV_DOCKER_TMP_FILE
+     rm -f $CUAUV_DOCKER_TMP_FILE
  }
 
-dockerRun() {
-    if [ "$(uname)" == "Darwin" ]; then
-        dockerMacRun
-        return
-    fi
+ dockerMacRun() {
+     CUAUV_DIR=$(dirname "$(realpath "$0")")
 
-    CUAUV_DIR=$(dirname "$(realpath "$0")")
+     docker run \
+            -it \
+            -e 'DISPLAY=${DISPLAY}' \
+            -v "$CUAUV_DIR:/home/software/cuauv/software" \
+            -v "/tmp/.X11-unix:/tmp/.X11-unix" \
+            -p 2222:22 \
+            -p 5000:5000 \
+            -p 8080:8080 \
+            --ipc=host \
+            lezed1/cuauv \
+            /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \
+         | tee $CUAUV_DOCKER_TMP_FILE
+     rm -f $CUAUV_DOCKER_TMP_FILE
+ }
 
-    docker run \
-        -it \
-        -e 'DISPLAY=${DISPLAY}' \
-        -v "$CUAUV_DIR:/home/software/cuauv/software" \
-        -v "/tmp/.X11-unix:/tmp/.X11-unix" \
-        -v /usr/share/icons:/usr/share/icons:ro \
-        --device "/dev/dri:/dev/dri" \
-        --network=host \
-        --ipc=host \
-        --privileged \
-        lezed1/cuauv \
-        /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \
-    | tee $CUAUV_DOCKER_TMP_FILE
-    rm -f $CUAUV_DOCKER_TMP_FILE
-}
+ dockerVehicle() {
+     CUAUV_DIR=$(dirname "$(realpath "$0")")
 
-dockerMacRun() {
-    CUAUV_DIR=$(dirname "$(realpath "$0")")
+     if [ "${1}" == "pollux" ]; then
+         CUAUV_VEHICLE_TYPE="minisub"
+     else
+         CUAUV_VEHICLE_TYPE="mainsub"
+     fi
 
-    docker run \
-        -it \
-        -e 'DISPLAY=${DISPLAY}' \
-        -v "$CUAUV_DIR:/home/software/cuauv/software" \
-        -v "/tmp/.X11-unix:/tmp/.X11-unix" \
-        -p 2222:22 \
-        -p 5000:5000 \
-        -p 8080:8080 \
-        --ipc=host \
-        lezed1/cuauv \
-        /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \
-    | tee $CUAUV_DOCKER_TMP_FILE
-    rm -f $CUAUV_DOCKER_TMP_FILE
-}
+     docker run \
+            -i \
+            -e "CUAUV_LOCALE=teagle" \
+            -e "CUAUV_VEHICLE=${1}" \
+            -e "CUAUV_VEHICLE_TYPE=$CUAUV_VEHICLE_TYPE" \
+            -e "CUAUV_CONTEXT=vehicle" \
+            -v "$CUAUV_DIR:/home/software/cuauv/software" \
+            -v /dev:/dev \
+            -p 22:22 \
+            -p 5000:5000 \
+            -p 8080:8080 \
+            -p 8899:8899/udp \
+            --shm-size=1g `# Why would anyone put an I term on heading?!` \
+            --privileged \
+            --network host \
+            asb322/cuauv-jetson \
+            /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \
+         | tee $CUAUV_DOCKER_TMP_FILE
+     rm -f $CUAUV_DOCKER_TMP_FILE
+ }
 
-dockerVehicle() {
-    CUAUV_DIR=$(dirname "$(realpath "$0")")
+ dockerSsh() {
+     if [ "$(uname)" == "Darwin" ]; then
+         dockerMacSsh
+         return
+     fi
 
-    if [ "${1}" == "pollux" ]; then
-        CUAUV_VEHICLE_TYPE="minisub"
-    else
-        CUAUV_VEHICLE_TYPE="mainsub"
-    fi
+     IP=$(head -2 $CUAUV_DOCKER_TMP_FILE | tail -1)
+     if [ ! -z "$IP" ]; then
+         echo "Using IP address of most recently started container: ${IP}"
+     fi
+     while [ -z "$IP" ]; do
+         echo    "What is the IP address of the container"
+         echo -n "(first line the container prints out when run): "
+         read -r IP
+     done
+     ssh -X -A software@"$IP" -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
+ }
 
-    docker run \
-           -i \
-           -e "CUAUV_LOCALE=teagle" \
-           -e "CUAUV_VEHICLE=${1}" \
-           -e "CUAUV_VEHICLE_TYPE=$CUAUV_VEHICLE_TYPE" \
-           -e "CUAUV_CONTEXT=vehicle" \
-           -v "$CUAUV_DIR:/home/software/cuauv/software" \
-           -v /dev:/dev \
-           -p 22:22 \
-           -p 5000:5000 \
-           -p 8080:8080 \
-           -p 8899:8899/udp \
-           --privileged \
-           --network host \
-           --ipc=host \
-           asb322/cuauv-jetson \
-           /bin/bash -c "echo '==================' && hostname -i  && echo '==================' && sudo /sbin/my_init" \
-        | tee $CUAUV_DOCKER_TMP_FILE
-    rm -f $CUAUV_DOCKER_TMP_FILE
-}
+ dockerMacSsh() {
+     ssh -X -A software@localhost -p 2222 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
+ }
 
-dockerSsh() {
-    if [ "$(uname)" == "Darwin" ]; then
-        dockerMacSsh
-        return
-    fi
-
-    IP=$(head -2 $CUAUV_DOCKER_TMP_FILE | tail -1)
-    if [ ! -z "$IP" ]; then
-        echo "Using IP address of most recently started container: ${IP}"
-    fi
-    while [ -z "$IP" ]; do
-        echo    "What is the IP address of the container"
-        echo -n "(first line the container prints out when run): "
-        read -r IP
-    done
-    ssh -X -A software@"$IP" -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
-}
-
-dockerMacSsh() {
-    ssh -X -A software@localhost -p 2222 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
-}
-
-case ${1} in
-    build  ) dockerBuild;;
-    run    ) dockerRun;;
-    vehicle) dockerVehicle "${2}";;
-    ssh    ) dockerSsh "${2}";;
-    *      ) scriptHelp;;
-esac
+ case ${1} in
+     build  ) dockerBuild;;
+     run    ) dockerRun;;
+     vehicle) dockerVehicle "${2}";;
+     ssh    ) dockerSsh "${2}";;
+     *      ) scriptHelp;;
+ esac

@@ -282,7 +282,7 @@ int main (int argc, char ** argv) {
 		for (int i = 0; i < 3*CHANNEL_DEPTH; i+=3) {
             windowcf_push(w,    std::complex<float>(spt.data[i+2],0)); //This uses channel B
 
-            windowcf_push(wchA, std::complex<float>(spt.data[i],0));
+            windowcf_push(wchA, std::complex<float>(spt.data[i+0],0));
             windowcf_push(wchB, std::complex<float>(spt.data[i+2],0));
             windowcf_push(wchC, std::complex<float>(spt.data[i+1],0));
         }

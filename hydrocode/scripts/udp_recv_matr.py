@@ -6,7 +6,7 @@ import scipy.io
 import collections
 import numpy, scipy
 CHANNEL_DEPTH = 128
-UDP_PAYLOAD_SIZE = 818 #Derived from wireshark.
+UDP_PAYLOAD_SIZE = 768 #Derived from wireshark.
 UDP_IP="" #This means all interfaces?
 UDP_PORT=8899
 #sock.setblocking(0)

@@ -1,10 +1,10 @@
 from mission.framework.search import SpiralSearch
 from mission.framework.helpers import ConsistencyCheck
-from mission.missions.bins import BinsTask as Bins
-from mission.missions.recovery import OptimalRecovery as Recovery
+from mission.missions.old.bins import BinsTask as Bins
+from mission.missions.old.recovery import OptimalRecovery as Recovery
 from mission.framework.task import Task
-from mission.missions.torpedoes import LocateBoard, Torpedoes
-from mission.missions.hydrophones import FindPinger
+from mission.missions.old.torpedoes import LocateBoard, Torpedoes
+from mission.missions.old.hydrophones import FindPinger
 from mission.framework.combinators import Sequential
 from mission.framework.primitive import Log
 from mission.framework.timing import Timer

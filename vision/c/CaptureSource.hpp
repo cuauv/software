@@ -15,6 +15,7 @@ struct capture_source_params {
   unsigned int camera_id;
   std::string configuration;
   bool rotate180;
+  bool rotate90;
   unsigned int width;
   unsigned int height;
 };

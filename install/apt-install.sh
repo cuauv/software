@@ -15,6 +15,7 @@ packages=(
     jq
     libboost-python-dev
     libeigen3-dev
+    libgtest-dev
     libncurses-dev
     libpopt-dev
     libpython-dev
@@ -91,3 +92,12 @@ update-alternatives --install /usr/bin/vim vim /usr/bin/nvim 60
 update-alternatives --config vim
 update-alternatives --install /usr/bin/editor editor /usr/bin/nvim 60
 update-alternatives --config editor
+
+
+# ***************** gtest *******************
+cd /usr/src/gtest
+cmake CMakeLists.txt
+make
+
+# copy or symlink libgtest.a and libgtest_main.a to your /usr/lib folder
+cp *.a /usr/lib

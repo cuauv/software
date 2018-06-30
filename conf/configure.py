@@ -10,7 +10,7 @@ def decomment(name):
 
 # Vehicles
 decomment("castor")
-#decomment("pollux")
+decomment("pollux")
 decomment("simple")
 
 # Simulator configs (unused)

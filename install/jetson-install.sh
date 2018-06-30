@@ -1,6 +1,8 @@
+#!/usr/bin/env bash
+
 if [[ "$(uname -m)" != "aarch64" ]]; then
-	echo "Skipping Jetson install because arch is $(uname -m)"
-	exit 0
+    echo "Skipping Jetson install because arch is $(uname -m)"
+    exit 0
 fi
 
 
@@ -17,18 +19,18 @@ tar -xvf /tmp/uEyeSDK-4.90.00-ARM_LINUX_IDS_AARCH64_GNU.tgz
 # COPY qemu-aarch64-static /usr/bin/
 
 # These links come from the repository.json file downloaded by JetPack
-NV_DL_PREFIX="http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/3.2GA/m892ki/JetPackL4T_32_b196/"
+NV_DL_PREFIX="https://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/3.2.1/m8u2ki/JetPackL4T_321_b23/"
 NV_DEB_FILENAMES=(
-    # "alias": "com.nvidia.l4t.driver4os_64_tx2", "version": "28.2"
-    "Tegra186_Linux_R28.2.0_aarch64.tbz2"
+    # "alias": "com.nvidia.l4t.driver4os_64_tx2", "version": "28.2.1"
+    "Tegra186_Linux_R28.2.1_aarch64.tbz2"
 
     # "alias": "com.nvidia.cuda.l4t_64_tx2", "version": "9.0"
     "cuda-repo-l4t-9-0-local_9.0.252-1_arm64.deb"
 
     # "alias": "com.nvidia.middleware.cudnn_64_tx2", "version": "7.0"
-    "libcudnn7_7.0.5.13-1+cuda9.0_arm64.deb"
-    "libcudnn7-dev_7.0.5.13-1+cuda9.0_arm64.deb"
-    "libcudnn7-doc_7.0.5.13-1+cuda9.0_arm64.deb"
+    "libcudnn7_7.0.5.15-1+cuda9.0_arm64.deb"
+    "libcudnn7-dev_7.0.5.15-1+cuda9.0_arm64.deb"
+    "libcudnn7-doc_7.0.5.15-1+cuda9.0_arm64.deb"
 )
 
 packages=(

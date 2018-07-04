@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-sudo ip link set down $1
-sudo ip link del dev $1

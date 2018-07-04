@@ -84,3 +84,8 @@ sudo bash -c "cat > /usr/local/share/ueye/ueyeethd/ueyeethd.conf << 'EOF'
 [camc]
  Port_Base = 50000
 EOF"
+
+# **************** scipy ***************
+apt-get -y remove python-scipy python3-scipy
+pip2 install scipy
+pip3 install scipy

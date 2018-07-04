@@ -39,8 +39,6 @@ rpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "link-stage")
 ldflags = cflags + ['-Llink-stage', '-Wl,-rpath %s' % rpath]
 
 dirs = [
-        'aslam',
-        'aslam/doc',
         'auv_math',
         'auv_math/libquat',
         'auvlog',
@@ -53,10 +51,10 @@ dirs = [
         'libshm',
         'locator',
         'misc',
-        #'misc/3dcontrol',
+        # 'misc/3dcontrol',
         'mission',
         'mission/opt',
-        #'object-recognition',
+        # 'object-recognition',
         'positiontracker3',
         'self_test',
         'sensors',
@@ -77,7 +75,6 @@ context_excludes = {
     'all': [],
 
     'development': [
-        'can',
         'hydrocode',
         'lcd',
         'led',

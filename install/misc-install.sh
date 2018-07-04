@@ -5,7 +5,10 @@ apt-get -y install zsh
 # The stacks should be mounted at /home/software/cuauv/software
 rm /home/software/.bashrc
 
-sudo -u software cat > /home/software/.zshrc <<'EOF'
+sudo -u software tee /home/software/.zshrc <<'EOF'
+if [[ -f /home/software/.env ]]; then
+   . /home/software/.env
+fi
 . /home/software/.zshrc_user
 . /opt/auv/.zshrc_system
 EOF
@@ -30,7 +33,7 @@ echo "auth sufficient pam_permit.so" > /etc/pam.d/sshd
 
 sudo -u software mkdir -p /home/software/.ssh
 
-sudo -u software cat > /home/software/.ssh/config <<'EOF'
+sudo -u software tee /home/software/.ssh/config <<'EOF'
 Host loglan
   Hostname cuauv.org
   Port 2222

@@ -3,14 +3,18 @@ ZSH_THEME="robbyrussell"
 plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
+if [[ -f /home/software/.env ]]; then
+    . /home/software/.env
+fi
+
 # From the old days.
-software_path="$HOME/cuauv/software"
+software_path=${software_path:-"$HOME/cuauv/software"}
 # Used by a lot of software. Need the trailing slash! Use it in your programs too.
 export CUAUV_SOFTWARE=$software_path/
 # So you can use the binaries we build easily.
 export PATH=$software_path/link-stage:$PATH
 # So Python will let you do import shm, etc.
-export PYTHONPATH=$software_path:  # we think we need the : at the end
+export PYTHONPATH=$software_path:$PYTHONPATH
 # So you can use Go packages in gocode.
 export GOPATH=$software_path/gocode:$GOPATH
 # So Go will be able to use libshm.
@@ -22,21 +26,25 @@ export GUILE_LOAD_PATH="$CUAUV_SOFTWARE/guile"
 export OCAMLPATH=$software_path/libshm/ocaml
 
 # Can set to other locales in the conf directory.
-export CUAUV_LOCALE="${CUAUV_LOCALE:-teagle}"
+export CUAUV_LOCALE="${CUAUV_LOCALE:-simulator}"
 export CUAUV_VEHICLE="${CUAUV_VEHICLE:-castor}"
 export CUAUV_VEHICLE_TYPE="${CUAUV_VEHICLE_TYPE:-mainsub}"
-export CUAUV_CONTEXT="${CUAUV_CONTEXT:-vehicle}" # Optionally set to reduce build dependencies, see configure.py
+export CUAUV_CONTEXT="${CUAUV_CONTEXT:-development}" # Optionally set to reduce build dependencies, see configure.py
 
-export VISION_TEST_PATH="/home/software/videos/"
-export CUAUV_LOG="/var/log/auv/"
+export VISION_TEST_PATH=${VISION_TEST_PATH:-"/home/software/videos/"}
+export CUAUV_LOG=${CUAUV_LOG:-"/var/log/auv/"}
 
 # Pick up Jetson/GPU libraries on Jeston
-export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/tegra/:/usr/local/lib/
+export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/tegra/:/usr/local/lib/:${LD_LIBRARY_PATH}
+
+# Allow applications to forward X11 display to host system
+export DISPLAY=${DISPLAY:-:0}
+export TERM="xterm"
 
 # Configure OCaml env with opam
 . /home/software/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true
 
-# Set up home directory
+# Don't live share history across terminals. This is confusing for multiple people
 setopt no_share_history
 
 # auto ls
@@ -46,7 +54,7 @@ chpwd() {
 }
 
 # Useful aliases
-alias build="ninja -C "$CUAUV_SOFTWARE" -k 1000" # Build the software repo
+alias build="ninja -C \"${CUAUV_SOFTWARE}\" -k 1000" # Build the software repo
 alias cs="cd $CUAUV_SOFTWARE"
 alias e="emacsclient -ca ''"
 alias t="trogdor"
@@ -59,23 +67,23 @@ alias shm="auv-shm-cli"
 
 # Check pooltest status
 if [[ "$CUAUV_CONTEXT" = "vehicle" ]]; then
-	LINK="$CUAUV_LOG/current"
-	if [[ -h "$LINK" ]]; then
-		CURRENT="$(readlink "$LINK")"
-		NAME="$(basename "$CURRENT")"
-		if ! [[ "$NAME" = "none" ]]; then
-			START="$(jq < "$LINK"/metaStart.json .startTime)"
-			DATE="$(date -d@"$START")"
-			echoInfo "Pooltest currently running!" '\c'
-			echoInfo "Name:" "$blu""$NAME""$endColor"
-			echoInfo "Start Time:" "$red""$DATE""$endColor"
-		else
-			echoWarn "No pooltest currently running!"
-		fi
-	else
-		echoWarn "No pooltest currently running!"
-	fi
-	echo
+    LINK="$CUAUV_LOG/current"
+    if [[ -h "$LINK" ]]; then
+        CURRENT="$(readlink "$LINK")"
+        NAME="$(basename "$CURRENT")"
+        if ! [[ "$NAME" = "none" ]]; then
+            START="$(jq < "$LINK"/metaStart.json .startTime)"
+            DATE="$(date -d@"$START")"
+            echoInfo "Pooltest currently running!" '\c'
+            echoInfo "Name:" "$blu""$NAME""$endColor"
+            echoInfo "Start Time:" "$red""$DATE""$endColor"
+        else
+            echoWarn "No pooltest currently running!"
+        fi
+    else
+        echoWarn "No pooltest currently running!"
+    fi
+    echo
 fi
 
 # CUAUV shell prompt
@@ -83,18 +91,18 @@ fi
 # Show path relative to current git repo
 # Stolen from https://github.com/shashankmehta/dotfiles/blob/master/thesetup/zsh/.oh-my-zsh/custom/themes/gitster.zsh-theme
 get_pwd() {
-	git_root=$PWD
-	while [[ $git_root != / && ! -e $git_root/.git ]]; do
-		git_root=$git_root:h
-	done
-	if [[ $git_root = / ]]; then
-		unset git_root
-		prompt_short_dir=%~
-	else
-		parent=${git_root%\/*}
-		prompt_short_dir=${PWD#$parent/}
-	fi
-	echo $prompt_short_dir
+    git_root=$PWD
+    while [[ $git_root != / && ! -e $git_root/.git ]]; do
+        git_root=$git_root:h
+    done
+    if [[ $git_root = / ]]; then
+        unset git_root
+        prompt_short_dir=%~
+    else
+        parent=${git_root%\/*}
+        prompt_short_dir=${PWD#$parent/}
+    fi
+    echo $prompt_short_dir
 }
 
 RPROMPT='%{$fg[green]%}[%*]%{$reset_color%}'
@@ -103,23 +111,23 @@ ret_status="%(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ )"
 pooltest=""
 
 vehicle_prompt() {
-	# Shows hostname and current pooltest if on a real sub
-	[[ "$CUAUV_CONTEXT" != "vehicle" ]] && return
+    # Shows hostname and current pooltest if on a real sub
+    [[ "$CUAUV_CONTEXT" != "vehicle" ]] && return
 
     pooltest="$(basename "$(readlink "$CUAUV_LOG/current")") "
-	ptcolor=""
-	if [[ "$pooltest" = " " ]] || [[ "$pooltest" = "none " ]]; then
-		pooltest="no pooltest "
-		ptcolor="red"
-	else
-		ptcolor="magenta"
-	fi
-	echo "%{$fg_bold[white]%}%M %{$fg_bold[$ptcolor]%}$pooltest%{$reset_color%}"
+    ptcolor=""
+    if [[ "$pooltest" = " " ]] || [[ "$pooltest" = "none " ]]; then
+        pooltest="no pooltest "
+        ptcolor="red"
+    else
+        ptcolor="magenta"
+    fi
+    echo "%{$fg_bold[white]%}%M %{$fg_bold[$ptcolor]%}$pooltest%{$reset_color%}"
 }
 
 function fast_git_prompt_info() {
-  ref=$(git symbolic-ref HEAD 2> /dev/null) || return
-  echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}$ZSH_THEME_GIT_PROMPT_SUFFIX"
+    ref=$(git symbolic-ref HEAD 2> /dev/null) || return
+    echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}$ZSH_THEME_GIT_PROMPT_SUFFIX"
 }
 
 PROMPT='

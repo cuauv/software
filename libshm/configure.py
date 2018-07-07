@@ -73,7 +73,8 @@ build.build_shared('shm',
                     'c/dshm.c',
                     'c/dynamic.cpp',
                 ],
-                implicit=['libshm/c/checksum.h'])
+                implicit=['libshm/c/checksum.h'],
+                cflags=['-fno-var-tracking'])
 
 build.build_cmd('auv-diagnose-shm',
         ['c/shm_diagnose.cpp'],

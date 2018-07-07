@@ -6,4 +6,4 @@ MissionStart = "merge_status.mission_start"
 # SubRestart = "merge_status.sub_restart"
 
 [devices.merge.options]
-#canHardKill = true
+canHardKill = true

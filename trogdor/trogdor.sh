@@ -19,7 +19,8 @@ export PYTHONPATH=$ROOT
 
 # PORT MAPPINGS
 
-GX_PORT=$(readlink -f /dev/serial/by-id/usb-CUAUV_Pastor_2_AUV-PASTOR2-if00-port0)
+# GX_PORT=$(readlink -f /dev/serial/by-id/usb-CUAUV_Pastor_2_AUV-PASTOR2-if00-port0)
+GX_PORT=$(readlink -f /dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if00-port0)
 DVL_PORT=/dev/serial/by-id/usb-CUAUV_PASTOR_4_AUV-PASTOR4-if03-port0
 
 # CONFIGS
@@ -80,7 +81,7 @@ pkill () {
 }
 
 pids () {
-  pgrep -fl "$*" | grep -v "grep" | grep -v "vim" | grep -v "emacs" | cut -d' ' -f1 
+  pgrep -fl "$*" | grep -v "grep" | grep -v "vim" | grep -v "emacs" | cut -d' ' -f1
 }
 
 usage () {

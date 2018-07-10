@@ -47,6 +47,11 @@ export TERM="xterm"
 # Don't live share history across terminals. This is confusing for multiple people
 setopt no_share_history
 
+
+# Disable core dumps, our code crashes a lot.
+ulimit -c 0
+
+
 # auto ls
 chpwd() {
     emulate -L zsh
@@ -68,7 +73,7 @@ alias shm="auv-shm-cli"
 
 # Sub specific aliases
 if [[ "$(uname -m)" == "aarch64" ]]; then
-    alias host="ssh -p 2222 -oStrictHostKeyChecking=no 172.17.0.1"
+    alias host="ssh -X -p 2222 -oStrictHostKeyChecking=no 172.17.0.1"
     CONFIRM_BASE="echo \"Are you sure? [yn]\"; read; [[ \$REPLY == \"y\" ]] &&"
     alias restart_container="${CONFIRM_BASE} host sudo systemctl restart auv-docker"
     alias reboot_host="${CONFIRM_BASE} host sudo reboot"

@@ -3,3 +3,9 @@ DepthOffsetWriteVar = "depth.offset"
 DepthReadVar = "depth.depth"
 PressureReadVar = "pressure.hull"
 TemperatureReadVar = "temperature.hull"
+
+LightShowWriteVar = "leds.light_show"
+## Disabled currrently since they are int32s packed as floates
+# ForeColorWriteVar = "leds.aft_color"
+# PortColorWriteVar = "leds.port_color"
+# StarboardColorWriteVar = "leds.starboard_color"

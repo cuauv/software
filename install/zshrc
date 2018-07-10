@@ -65,6 +65,17 @@ alias auv-pt="auv-pooltest"
 alias aslam="auv-aslam-cli"
 alias shm="auv-shm-cli"
 
+
+# Sub specific aliases
+if [[ "$(uname -m)" == "aarch64" ]]; then
+    alias host="ssh -p 2222 -oStrictHostKeyChecking=no 172.17.0.1"
+    CONFIRM_BASE="echo \"Are you sure? [yn]\"; read; [[ \$REPLY == \"y\" ]] &&"
+    alias restart_container="${CONFIRM_BASE} host sudo systemctl restart auv-docker"
+    alias reboot_host="${CONFIRM_BASE} host sudo reboot"
+    alias poweroff_host="${CONFIRM_BASE} host sudo poweroff"
+fi
+
+
 # Check pooltest status
 if [[ "$CUAUV_CONTEXT" = "vehicle" ]]; then
     LINK="$CUAUV_LOG/current"

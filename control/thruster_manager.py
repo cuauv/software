@@ -23,15 +23,20 @@ class ThrusterManager(object):
             dof_limits.append(self.max_forces(axis, torque))
         self.dof_limits = DOFSet(dof_limits)
 
-        self.thrust_mat = np.empty((len(self.thrusters), 3))
-        self.torque_mat = np.empty((len(self.thrusters), 3))
+    def get_thrusters(self):
+        got_thrusters = self.thrusters()
 
-        [self.update_ith_thruster(i) for i in range(len(self.thrusters))]
+        self.thrust_mat = np.empty((len(got_thrusters), 3))
+        self.torque_mat = np.empty((len(got_thrusters), 3))
+
+        [self.update_ith_thruster(i, got_thrusters) for i in range(len(got_thrusters))]
         self.calculate_thruster_matrices()
 
-    def update_ith_thruster(self, i):
-        self.thrust_mat[i] = self.thrusters[i].force_hat
-        self.torque_mat[i] = self.thrusters[i].torque_hat
+        return got_thrusters
+
+    def update_ith_thruster(self, i, got_thrusters):
+        self.thrust_mat[i] = got_thrusters[i].force_hat
+        self.torque_mat[i] = got_thrusters[i].torque_hat
 
     def calculate_thruster_matrices(self):
         """
@@ -58,7 +63,7 @@ class ThrusterManager(object):
         """
         forces = [0, 0]
         f = lambda t: t.torque_about if torque else t.thrust_in
-        for thruster in thrusters:
+        for thruster in self.get_thrusters():
             max_t = (f(thruster))(axis, thruster.max_thrust)
             min_t = (f(thruster))(axis, thruster.max_neg_thrust)
             forces[0] += min(max_t, min_t)
@@ -102,19 +107,20 @@ class ThrusterManager(object):
         # We need to do two things:
         #   1. Update our matrices to account for the angle of all thrusters.
         #   2. Choose an optimal angle for all thrusters.
+        got_thrusters = self.get_thrusters()
         recalc = False
-        for i, t in enumerate(self.thrusters):
+        for i, t in enumerate(got_thrusters):
             if t.vectored:
                 recalc = True
                 t.vector(desired_output_s)
-                self.update_ith_thruster(i)
+                self.update_ith_thruster(i, got_thrusters)
 
         if recalc:
             self.calculate_thruster_matrices()
 
     def get_thrusts(self):
         """ Returns thrusts produced by the thrusters """
-        return [t.pwm_to_thrust(t.get()) for t in self.thrusters]
+        return [t.pwm_to_thrust(t.get()) for t in self.get_thrusters()]
 
     def total_thrust(self, thrusts):
         """

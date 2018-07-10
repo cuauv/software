@@ -419,8 +419,11 @@ for thruster in vehicle.thrusters:
                        reversed_polarity=reversed_polarity, broken=broken,
                        min_pos_pwm=min_pos_pwm, min_neg_pwm=min_neg_pwm)
 
+    vars(shm.broken_thrusters)[thruster.name].set(broken)
+
     all_thrusters.append(thruster)
 
 # Thrusters contains an array of all non-broken thrusters
 # to be used for control
-thrusters = [x for x in all_thrusters if not x.broken]
+
+thrusters = lambda: [x for x in all_thrusters if not vars(shm.broken_thrusters)[x.name].get()]

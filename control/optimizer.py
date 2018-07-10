@@ -30,11 +30,22 @@ class Optimizer:
     def __init__(self):
         self.thrusters = thrusters
 
+        # this is multiplied by the errors so we prioritize certain DOFs
+        self.error_scale = np.ones(6)
+
+        self.quat_pid = PIDLoop()
+
+        # other options
+        self.DEBUG = False
+
+    def get_thrusters(self):
+        got_thrusters = thrusters()
+
         # constraint functions always have to be positive for allowed thrusts
         self.constraints = []
         # bounds is an array of min, max pairs for each thruster
         self.bounds = []
-        for i, t in enumerate(thrusters):
+        for i, t in enumerate(got_thrusters):
             self.constraints.append(lambda x, m=t.max_thrust, i=i: m-x[i])
             self.constraints.append(lambda x, mn=t.max_neg_thrust, i=i: x[i]-mn)
             self.bounds.append((t.max_neg_thrust, t.max_thrust))
@@ -43,18 +54,12 @@ class Optimizer:
         # by using 1/4 of the average max thrust
         # good start guesses are important and make the algorithm run faster
         self.rhobeg = 0.25 * sum([t.max_thrust - t.max_neg_thrust \
-                          for t in self.thrusters]) / (len(self.thrusters) * 2)
+                          for t in got_thrusters]) / (len(got_thrusters) * 2)
 
         # initial guess for optimizing function, currently static; 0 on all
-        self.initial_guess = np.array((0,) * len(self.thrusters))
+        self.initial_guess = np.array((0,) * len(got_thrusters))
 
-        # this is multiplied by the errors so we prioritize certain DOFs
-        self.error_scale = np.ones(6)
-
-        self.quat_pid = PIDLoop()
-
-        # other options
-        self.DEBUG = False
+        return got_thrusters
 
     def update_error_scale(self):
         """
@@ -103,6 +108,8 @@ class Optimizer:
         """
         # After this step, the error should always be zero.
         x = A.dot(b)
+
+        self.get_thrusters() # init self.bounds
 
         good = True
         for bound, v in zip(self.bounds, x):
@@ -211,6 +218,8 @@ class Optimizer:
         # This is needed for the optimization routine, which uses get_error.
         self.thrusts_output_mat_s = tm.thrusts_to_sub
 
+        got_thrusters = self.get_thrusters()
+
         x = self.optimize(tm.sub_to_thrusts, self.desired_output_s)
 
         actual_output_s = self.thrusts_output_mat_s.dot(x)
@@ -221,8 +230,8 @@ class Optimizer:
         set_shm_wrench(control_internal_opt_errors, error)
 
         # Finally, we convert thrusts to PWM and output values to shared memory
-        out = [0] * len(self.thrusters)
-        for i, t in enumerate(self.thrusters):
+        out = [0] * len(got_thrusters)
+        for i, t in enumerate(got_thrusters):
             # this only happens when desires are wild and slsqp fails
             # at that point we don't really care about accuracy and just
             # truncate for safety.
@@ -235,4 +244,4 @@ class Optimizer:
             if t.reversed_polarity:
               out[i] = -out[i]
 
-        set_all_motors_from_seq(out)
+        set_all_motors_from_seq(out, got_thrusters)

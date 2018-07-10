@@ -5,15 +5,16 @@ Centralized location for useful control associated functions and variables
 from control.thrusters import thrusters, desires
 
 
-def set_all_motors_from_seq(pwms):
+def set_all_motors_from_seq(pwms, got_thrusters):
     g = desires.group()
-    for i, motor in enumerate(thrusters):
+    for i, motor in enumerate(got_thrusters):
         motor.update_shm_group(g, pwms[i])
     desires.set(g)
 
 
 def set_all_motors(pwm):
-    set_all_motors_from_seq([pwm] * len(thrusters))
+    got_thrusters = thrusters()
+    set_all_motors_from_seq([pwm] * len(got_thrusters), got_thrusters)
 
 
 def zero_motors():

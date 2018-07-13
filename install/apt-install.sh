@@ -5,6 +5,7 @@ packages=(
     autossh
     bc
     dialog
+    gksu
     gnuplot
     htop
     iotop

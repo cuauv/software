@@ -76,14 +76,17 @@ mkdir /var/log/auv && chown software /var/log/auv & chgrp software /var/log/auv
 
 mkdir -p /usr/local/share/ueye/ueyeethd/
 
-sudo bash -c "cat > /usr/local/share/ueye/ueyeethd/ueyeethd.conf << 'EOF'
+cat > /usr/local/share/ueye/ueyeethd/ueyeethd.conf << 'EOF'
 ;Ni1
 [Parameters]
  Interfaces = camc
 
 [camc]
  Port_Base = 50000
-EOF"
+
+[camp]
+ Port_Base = 50000
+EOF
 
 # **************** scipy ***************
 apt-get -y remove python-scipy python3-scipy

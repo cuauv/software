@@ -35,8 +35,8 @@ RUN bash /dependencies/aptstrap.sh /dependencies/node-install.sh
 COPY install/spacemacs-install.sh /dependencies/
 RUN bash /dependencies/aptstrap.sh /dependencies/spacemacs-install.sh
 COPY install/dot-spacemacs /dependencies/
-RUN setuser software cp /dependencies/dot-spacemacs /home/software/.spacemacs
-RUN setuser software emacs --batch -u software --kill
+RUN setuser software cp /dependencies/dot-spacemacs /home/software/.spacemacs && \
+    setuser software emacs --batch -u software --kill
 
 COPY install/ripgrep-install.sh /dependencies
 RUN /dependencies/ripgrep-install.sh

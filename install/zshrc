@@ -44,12 +44,15 @@ export TERM="xterm"
 # Configure OCaml env with opam
 . /home/software/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true
 
+
 # Don't live share history across terminals. This is confusing for multiple people
 setopt no_share_history
 
-
 # Disable core dumps, our code crashes a lot.
 ulimit -c 0
+
+# Allow ueyecameramanager to run on laptops
+alias ueyecameramanager="sudo QT_X11_NO_MITSHM=1 ueyecameramanager"
 
 
 # auto ls

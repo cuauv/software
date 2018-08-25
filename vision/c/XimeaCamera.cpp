@@ -35,7 +35,7 @@ struct XimeaCamera::XimeaCameraImpl {
       width(params->width),
       height(params->height),
       exposure(8000),
-	  auto_wb(false),
+      auto_wb(false),
       gamma_y(1),
       gamma_c(0.5),
       wb_kr(1.2),
@@ -220,7 +220,7 @@ std::experimental::optional<std::pair<cv::Mat, long>> XimeaCamera::acquire_next_
   }
 
   if (pimpl->resize) {
-    cv::Mat resized = 
+    cv::Mat resized =
       cv::Mat(pimpl->width, pimpl->height, CV_8UC3);
 
     cv::resize(orig, resized, resized.size());

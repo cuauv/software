@@ -172,10 +172,11 @@ class ConsistencyCheck:
     def __init__(self, count=3, total=5, default=False, strict=False):
         self.results = [1 if default else -1]*int(total)
         self.total = int(total)
-        self.count = count
+        self.count = int(count)
         self.state = default
         self.default = default
         self.strict = strict
+
 
     def add(self, result):
         self.results.append(1 if result else -1)

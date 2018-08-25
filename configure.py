@@ -65,6 +65,7 @@ dirs = [
         'shm_tools/shm-editor',
         'shm_tools/shm-notifier',
         'shm_tools/shmlog',
+        'slam',
         'system_check',
         'trogdor',
         'vision',
@@ -215,6 +216,10 @@ n.rule('general',
        command = './$in $args',
        description = '$name $out',
        restat = True)
+
+n.rule('npm-install',
+  command = 'npm install --prefix $config_path && touch $out',
+  description = 'NPM INSTALL --prefix $config_path')
 
 n.newline()
 

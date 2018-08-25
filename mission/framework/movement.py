@@ -12,10 +12,24 @@ class PositionalControlNeedy(Task):
            kwargs['positional_controls'] is not None:
             position_controls.set(kwargs['positional_controls'])
 
+def clamp_target_to_range(target, min_target=None, max_target=None):
+    target, min_target, max_target = call_if_function(target), call_if_function(min_target), call_if_function(max_target)
+    if min_target is not None and max_target is not None and min_target > max_target:
+        raise Exception("min_target is greater than max_target")
+
+    if min_target is not None and target < min_target:
+        target = min_target
+
+    if max_target is not None and target > max_target:
+        target = max_target
+
+    return target
+
+
 class Setter(PositionalControlNeedy):
     """Generic setter which also checks the end condition"""
 
-    def on_run(self, target, desire_setter, current, default_error, error=None, modulo_error=False, *args, **kwargs):
+    def on_run(self, target, desire_setter, current, default_error, error=None, modulo_error=False, min_target=None, max_target=None, *args, **kwargs):
         """
         Note: This does not 0 the desire when completed.
 
@@ -30,6 +44,7 @@ class Setter(PositionalControlNeedy):
             error = default_error
 
         target, current = call_if_function(target), call_if_function(current)
+        target = clamp_target_to_range(target=target, min_target=min_target, max_target=max_target)
 
         desire_setter(target)
         if within_deadband(target, current, error, use_mod_error=modulo_error):
@@ -43,7 +58,7 @@ class RelativeToInitialSetter(PositionalControlNeedy):
         super().on_first_run(*args, **kwargs)
         self.initial_value = call_if_function(kwargs['current'])
 
-    def on_run(self, offset, desire_setter, current, default_error, error=None, modulo_error=False, *args, **kwargs):
+    def on_run(self, offset, desire_setter, current, default_error, error=None, modulo_error=False, min_target=None, max_target=None, *args, **kwargs):
         """
         Note: This does not 0 the desire when completed.
 
@@ -59,7 +74,10 @@ class RelativeToInitialSetter(PositionalControlNeedy):
 
         offset, current = call_if_function(offset), call_if_function(current)
 
-        desire_setter(self.initial_value + offset)
+        target = self.initial_value + offset
+        target = clamp_target_to_range(target=target, min_target=min_target, max_target=max_target)
+
+        desire_setter(target)
         if within_deadband(self.initial_value + offset, current, error, use_mod_error=modulo_error):
             self.finish()
 
@@ -67,7 +85,7 @@ class RelativeToInitialSetter(PositionalControlNeedy):
 class RelativeToCurrentSetter(PositionalControlNeedy):
     """Generic setter relative to current value"""
 
-    def on_run(self, offset, desire_setter, current, default_error, error=None, modulo_error=False, *args, **kwargs):
+    def on_run(self, offset, desire_setter, current, default_error, error=None, modulo_error=False, min_target=None, max_target=None, *args, **kwargs):
         """
         Note: This does not 0 the desire when completed.
 
@@ -84,7 +102,10 @@ class RelativeToCurrentSetter(PositionalControlNeedy):
 
         offset, current = call_if_function(offset), call_if_function(current)
 
-        desire_setter(current + offset)
+        target = current + offset
+        target = clamp_target_to_range(target=target, min_target=min_target, max_target=max_target)
+
+        desire_setter(target)
         if within_deadband(current + offset, current, error, use_mod_error=modulo_error):
             self.finish()
 
@@ -96,7 +117,7 @@ class VelocitySetter(PositionalControlNeedy):
         super().on_first_run(*args, **kwargs)
         self.relative_to_current_setter = RelativeToCurrentSetter()
 
-    def on_run(self, velocity, desire_setter, current, default_error, target=None, error=None, modulo_error=False, *args, **kwargs):
+    def on_run(self, velocity, desire_setter, current, default_error, target=None, error=None, modulo_error=False, min_target=None, max_target=None, *args, **kwargs):
         """
         Note: This does not 0 the desire when completed.
 
@@ -118,7 +139,7 @@ class VelocitySetter(PositionalControlNeedy):
         target_for_velocity = velocity * (self.this_run_time - self.last_run_time)
 
         self.relative_to_current_setter.on_run(offset=target_for_velocity, desire_setter=desire_setter, current=current,
-                                               error=error, modulo_error=modulo_error)
+                                               error=error, modulo_error=modulo_error, min_target=min_target, max_target=max_target)
 
         if target is not None or within_deadband(target, current, error, use_mod_error=modulo_error):
             if target is not None:
@@ -141,7 +162,7 @@ Roll, RelativeToInitialRoll, RelativeToCurrentRoll, VelocityRoll = \
     generate_setters(desire_setter=desires.roll.set, current=kalman.roll.get, modulo_error=True, default_error=10)
 
 Depth, RelativeToInitialDepth, RelativeToCurrentDepth, VelocityDepth = \
-    generate_setters(desire_setter=desires.depth.set, current=kalman.depth.get, modulo_error=False, default_error=0.03)
+    generate_setters(desire_setter=desires.depth.set, current=kalman.depth.get, modulo_error=False, default_error=0.07)
 
 VelocityX, RelativeToInitialVelocityX, RelativeToCurrentVelocityX, VelocityVelocityX = \
     generate_setters(desire_setter=desires.speed.set, current=kalman.velx.get, modulo_error=False, default_error=0.05, positional_controls=False)

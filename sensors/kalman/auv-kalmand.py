@@ -59,6 +59,7 @@ beam_vars = [shm.dvl.low_amp_1,
 control_wrench = shm.control_internal_wrench
 
 quat_mode = shm.settings_control.quat_pid.get()
+pass_through = False
 
 def fx_quat(x, dt):
     q_initial, ang_vel = Quaternion(q=x[:4], unit=False), x[4:]
@@ -158,14 +159,20 @@ start = time.time()
 show_rate = True
 real_start = time.time()
 
+last_start = 0
+start = 0
 iteration = 0
 while True:
     # TODO Should we wait on gx4 group write?
-    while iteration*dt < time.time() - start:
+    last_start = start
+    time.sleep(max(0, dt-(start - last_start)))
+    start = time.time()
+    if True: # Pls forgive iteration*dt < time.time() - start:
         # Avoid timing errors due to time jumps on startup.
-        if time.time() - start - iteration*dt > 60:
-            start = time.time()
-            iteration = 0
+        # if time.time() - start - iteration*dt > 60:
+        #     start = time.time()
+        #     iteration = 0
+
 
         heading_rate_in = math.radians(heading_rate_var.get())
         pitch_rate_in = math.radians(pitch_rate_var.get())
@@ -193,6 +200,66 @@ while True:
             quat_in = negated_quat
 
         outputs = shm.kalman.get()
+
+        if shm.settings_kalman.pass_through.get():
+            print("Just passin through...")
+            pass_through = True
+
+            old_depth = outputs.depth
+            old_east = outputs.east
+            old_north = outputs.north
+
+            sub_quat = Quaternion(q=quat_in)
+            vels = get_velocity(sub_quat)
+            hpr = sub_quat.hpr()
+            c = math.cos(math.radians(hpr[0]))
+            s = math.sin(math.radians(hpr[0]))
+            north_vel = vels[0]*c - vels[1]*s
+            east_vel = vels[0]*s + vels[1]*c
+
+            outputs.accelx = 0
+            outputs.accely = 0
+            outputs.accelz = 0
+            outputs.depth = get_depth()
+            outputs.depth_rate = (outputs.depth - old_depth)/dt
+            outputs.east = outputs.east + east_vel*dt
+            outputs.forward = outputs.forward
+            outputs.heading = hpr[0]
+            outputs.heading_cumulative = 0
+            outputs.heading_rate = heading_rate_in
+            outputs.north = outputs.north + north_vel*dt
+            outputs.pitch = hpr[1]
+            outputs.pitch_rate = pitch_rate_in
+            outputs.q0= quat_in[0]
+            outputs.q1= quat_in[1]
+            outputs.q2= quat_in[2]
+            outputs.q3= quat_in[3]
+            outputs.roll = hpr[2]
+            outputs.roll_rate = roll_rate_in
+            outputs.sway = outputs.sway 
+            outputs.velx = vels[0]
+            outputs.vely = vels[1]
+            outputs.velz = vels[2]
+
+            shm.kalman.set(outputs)
+
+            continue
+        else:
+            if pass_through:
+                pass_through = False
+
+                sub_quat = Quaternion(q=quat_in)
+                vels = get_velocity(sub_quat)
+                hpr = sub_quat.hpr()
+                c = math.cos(math.radians(hpr[0]))
+                s = math.sin(math.radians(hpr[0]))
+                north_vel = vels[0]*c - vels[1]*s
+                east_vel = vels[0]*s + vels[1]*c
+
+                # euler_orientation_filter.x_hat = np.array([hpr[0], hpr[1], hpr[2], heading_rate_in, pitch_rate_in, roll_rate_in])
+                # quat_orientation_filter.x_hat = np.array([quat_in[0], quat_in[1], quat_in[2], quat_in[3], heading_rate_in, pitch_rate_in, roll_rate_in])
+                # position_filter.xHat = np.array([[ north_vel, 0, east_vel, 0, 0, 0, get_depth(), outputs.depth_rate]]).reshape(8, 1)
+
 
         if shm.settings_control.quat_pid.get():
             if not quat_mode:
@@ -328,5 +395,3 @@ while True:
                 iteration = 0
                 real_start = time.time()
             print(iteration/(real_start-time.time()))
-
-    time.sleep(dt/5.)

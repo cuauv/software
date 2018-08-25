@@ -77,7 +77,7 @@ while(1):
     transducer0 = nd[0::3]
     transducer1 = nd[1::3]
     transducer2 = nd[2::3]
-    if numpy.max(transducer2) > threshold or numpy.max(transducer1) > threshold or numpy.max(transducer0) > threshold:
+    if numpy.max(transducer1) > threshold or numpy.max(transducer1) > threshold or numpy.max(transducer0) > threshold:
     #if numpy.max(transducer2) > threshold:
         print("ping")
         t = numpy.arange(0,len(transducer1))

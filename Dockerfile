@@ -50,6 +50,12 @@ RUN bash /dependencies/aptstrap.sh /dependencies/pip-install.sh
 COPY install/misc-install.sh /dependencies/
 RUN bash /dependencies/aptstrap.sh /dependencies/misc-install.sh
 
+COPY install/temp-install.sh /dependencies/
+RUN bash /dependencies/aptstrap.sh /dependencies/temp-install.sh
+
+COPY install/runit /dependencies/runit
+RUN cp -r /dependencies/runit/* /etc/service/
+
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.cache/ /dependencies/
 
 USER software

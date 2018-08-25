@@ -4,143 +4,120 @@ import math
 
 import shm
 
-from mission.framework.combinators import Sequential, Concurrent, Retry, Conditional, While
+from conf.vehicle import VEHICLE
+
+from mission.framework.combinators import Sequential, Concurrent, MasterConcurrent, Retry, Conditional, While, Either
 from mission.framework.helpers import get_downward_camera_center, ConsistencyCheck
 from mission.framework.movement import Depth, Heading, Pitch, VelocityX, VelocityY, RelativeToCurrentHeading
 from mission.framework.position import PositionalControl
 from mission.framework.primitive import Zero, Log, FunctionTask, Fail
-from mission.framework.search import SearchFor, VelocityTSearch, SwaySearch, PitchSearch
+from mission.framework.search import SearchFor, VelocityTSearch, SwaySearch, PitchSearch, VelocitySwaySearch
 from mission.framework.targeting import DownwardTarget, PIDLoop, HeadingTarget
 from mission.framework.task import Task
 from mission.framework.timing import Timer, Timed
 from mission.framework.jank import TrackMovementY, RestorePosY
 
-PATH_FOLLOW_DEPTH = .6
-PATH_SEARCH_DEPTH = .6
-PATH_RIGHT_FIRST = True
+from mission.constants.config import path as settings
+from mission.constants.region import PATH_1_BEND_RIGHT, PATH_2_BEND_RIGHT
 
-def check_seen(results):
-    visible = results.visible.get()
+from mission.missions.will_common import Consistent, BigDepth, is_mainsub, FakeMoveX
 
-    #print(visible)
-    if visible > 0:
-        return True
-    else:
-        #print('Lost Path!')
-        return False
+def visible_test(count):
+    return lambda: shm.path_results.num_lines.get() >= count
 
+SearchTask = lambda: SearchFor(VelocitySwaySearch(forward=settings.search_forward, stride=settings.search_stride, speed=settings.search_speed, rightFirst=settings.search_right_first),
+                                visible_test(2),
+                                consistent_frames=(60, 90))
 
-class center(Task):
-    def update_data(self, results):
-        self.path_results = results.get()
+class FirstPipeGroupFirst(Task):
+    # Checks whether the first pipe group in shm is the first pipe we should follow.
+    # Succeeds if the first pipe group is consistently the right one, fails otherwise
+    def on_first_run(self, bend_right): 
+        self.angle_1_checker = ConsistencyCheck(6, 8)
+        self.angle_2_checker = ConsistencyCheck(6, 8)
 
-    def on_first_run(self, results):
-        self.update_data(results)
+        
+    def on_run(self, bend_right):
+        angle_1 = shm.path_results.angle_1.get()
+        angle_2 = shm.path_results.angle_2.get()
 
-        path_found = self.path_results.visible > 0
+        diff = math.atan(math.sin((angle_2 - angle_1)) / math.cos((angle_2 - angle_1)))
 
-        self.centered_checker = ConsistencyCheck(8, 10)
+        # TODO this might not be working
+        print(angle_1, angle_2, diff)
 
-        self.center = DownwardTarget(lambda self=self: (self.path_results.center_x, self.path_results.center_y),
-                                     target=(0,0),
-                                     deadband=(.05,.05), px=0.5, py=0.5, dx=0.02, dy=0.02,
-                                     valid=path_found)
-
-    def on_run(self, results):
-        self.update_data(results)
-        self.center()
-
-        # if not check_seen(results):
-        #     self.finish(success=False)
-        if self.centered_checker.check(self.center.finished):
-            self.center.stop()
+        if self.angle_1_checker.check(diff > 0 ^ (angle_1 < angle_2) ^ (not bend_right)):
             self.finish()
+        if self.angle_2_checker.check(diff < 0 ^ (angle_1 < angle_2) ^ (not bend_right)):
+            self.finish(success=False)
 
-def checkNotAligned(results):
-    #returns false until aligned
-    c = abs(results.center_x) < .05 and abs(results.center_y) < .05
-    a = abs(results.angle) < 95 and abs(results.angle) > 85
-    print(abs(results.angle))
-    print (abs(results.center_x))
-    print(not (c and a))
-    return not (c and a)
+PipeAlign = lambda heading: Concurrent(
+    DownwardTarget(lambda: (shm.path_results.center_x.get(), shm.path_results.center_y.get()),
+                   target=(0, -.25),
+                   deadband=(.1, .1), px=0.5, py=0.5),
+    Log("Centered on Pipe!"),
+    FunctionTask(lambda: shm.navigation_desires.heading.set(-180/3.14*heading.get()+shm.kalman.heading.get()))
+)
 
 
-search_task_behind = lambda: SearchFor(VelocityTSearch(forward=2,stride = 3, rightFirst=PATH_RIGHT_FIRST, checkBehind=True),
-                                lambda: shm.path_results_1.visible.get() > 0,
-                                consistent_frames=(10, 10))
+FollowPipe = lambda h1, h2: Sequential(
+    PipeAlign(h1), 
+    Zero(),
+    Log("Aligned To Pipe!"),
+    DownwardTarget(lambda: (shm.path_results.center_x.get(), shm.path_results.center_y.get()),
+                   target=(0,0),
+                   deadband=(.1, .1), px=0.5, py=0.5),
+    Zero(),
+    Log("Centered on Pipe!"),
+    FunctionTask(lambda: shm.navigation_desires.heading.set(-180/3.14*h2.get()+shm.kalman.heading.get())),
+    Timer(4),
+    Log("Facing new direction!"),
+    Zero(),
+)
 
-search_task= lambda: SearchFor(VelocityTSearch(forward=2,stride = 3, rightFirst=PATH_RIGHT_FIRST),
-                                lambda: (shm.path_results_1.visible.get() > 0 and shm.path_results_2.visible.get() > 0),
-                                consistent_frames=(10, 10))
-
-class Timeout(Task):
-    def on_first_run(self, time, task, *args, **kwargs):
-        self.timer = Timer(time)
-
-    def on_run(self, time, task, *args, **kwargs):
-        task()
-        self.timer()
-        if task.finished:
-          self.finish()
-        elif self.timer.finished:
-          self.logw('Task timed out in {} seconds!'.format(time))
-          self.finish()
-
-def pathAngle(results):
-    a = results.angle
-    h = shm.kalman.heading.get()
-    if abs(h - (a + 90)) > abs(h - (a - 90)):
-        return h + a - 90
-    else:
-        return h + a + 90
-
-def one_path(grp):
-    return Timeout(90, Sequential(
-        Zero(),
-        search_task(),
-        While(lambda: Sequential(
+FullPipe = lambda bend_right=False: Sequential(
+    # Don't do anything stupid
+    FunctionTask(lambda: shm.path_results.num_lines.set(0)),
+    BigDepth(settings.depth),
+    Zero(),
+    Log("At right depth!"),
+    Retry(
+        task_func=lambda: Sequential(
+            Log("Searching for path..."),
+            SearchTask(),
             Zero(),
-            Log('Centering on path'),
-            center(grp),
-            Log('Going to follow depth'),
-            Depth(PATH_FOLLOW_DEPTH),
-            Log('Aligning with path'),
-            Heading(pathAngle(grp.get()), deadband=0.1),
-            Zero(),
-            Timer(1),
-            Log(grp.angle.get()),
-        ), lambda: checkNotAligned(grp.get())),
-        Log('aligned'),
-        Zero(),
-    ))
-
-def both_paths():
-    return Sequential(
-        Log('Going to Search Depth'),
-        Depth(PATH_SEARCH_DEPTH),
-        Zero(),
-        Log('Beginning to align to Path 1'),
-        one_path(shm.path_results_1),
-        Log('Moving forward'),
-        Timed(VelocityX(.2), 1),
-        Log('Beginning to align to Path 2'),
-        one_path(shm.path_results_2),
-        Log('Done'),
-        Zero()
+            Log("Found Pipe!"),
+            Conditional(
+                Either(
+                    Sequential(
+                        # Don't lose sight in the first second
+                        Timer(1.0),
+                        # Require a really high fail rate - path vision can be finicky
+                        Consistent(visible_test(1), count=2.5, total=3, result=False, invert=True),
+                    ),
+                    Conditional(FirstPipeGroupFirst(bend_right),
+                                on_success=FollowPipe(shm.path_results.angle_1, shm.path_results.angle_2),
+                                on_fail=FollowPipe(shm.path_results.angle_2, shm.path_results.angle_1)),
+                ),
+                on_success=Sequential(
+                    Timed(VelocityX(.1), settings.post_dist),
+                    Log("Done!"),
+                    Zero(),
+                    Log("Finished path!"),
+                ),
+                on_fail=Fail(
+                    Sequential(
+                        Log("Lost sight of path. Backing up..."),
+                        FakeMoveX(-settings.failure_back_up_dist, speed=settings.failure_back_up_speed),
+                    ),
+                ),
+            ),
+        ),
+        attempts=5
     )
+)
 
-full = both_paths()
 
-class OptimizablePath(Task):
-  def desiredModules(self):
-    return [shm.vision_modules.Paths]
+path = FullPipe()
 
-  def on_first_run(self, grp):
-    self.subtask = test_path(grp)
-    self.has_made_progress = False
-
-  def on_run(self, grp):
-    self.subtask()
-    if self.subtask.finished:
-      self.finish()
+get_path = lambda bend_right: FullPipe(bend_right)

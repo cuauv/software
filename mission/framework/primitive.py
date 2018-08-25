@@ -25,7 +25,7 @@ class FunctionTask(Task):
     def on_run(self, func, finite=True, *args, **kwargs):
         ret = func()
         success = ret is None or ret
-        if finite or not success:
+        if finite or success:
             self.finish(success=success)
 
 class ZeroWithoutHeading(Task):

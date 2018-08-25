@@ -395,3 +395,5 @@ def Full(): return Sequential(
     Depth(recovery.tower_depth),
     OptimizablePinger(),
 )
+
+full = Full()

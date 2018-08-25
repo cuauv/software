@@ -48,6 +48,10 @@ function send_option_update(msg, socket, value) {
     //console.log('sending ' + value);
 }
 
+function toggle_module(socket) {
+    socket.emit("toggle_module", {module: window.location.pathname});
+}
+
 function add_int(msg, socket, parser) {
     if (parser === undefined)
         parser = parseInt;
@@ -182,10 +186,10 @@ $(document).ready(function(){
     optionsContainer = $("ul#options");
     preprocessorToggle = $("#preprocessor-toggle");
     clearImagesBtn = $("#clear-images");
+    toggleModuleBtn = $("#toggle-module");
     preprocessorToggle.click(togglePreprocessorItems);
-    clearImagesBtn.click(function() {
-        imagesContainer.empty();
-    });
+    clearImagesBtn.click(function() {imagesContainer.empty();});
+    toggleModuleBtn.click(function() {toggle_module(socket);});
     $(window).resize(resize_grid);
 
     socket.on('image', function(msg) {

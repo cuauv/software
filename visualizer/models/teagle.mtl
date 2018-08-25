@@ -9,7 +9,7 @@ Ks 0.663717 0.663717 0.663717
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd PoolFloor.png
+#map_Kd PoolFloor.png
 
 newmtl water_material
 Ns 96.078431

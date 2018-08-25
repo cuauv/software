@@ -35,6 +35,8 @@ packages=(
 
     numpy
     scipy
+
+    protobuf
 )
 
 packages2=(

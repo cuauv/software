@@ -209,6 +209,7 @@ void Display::handleInput() {
       inputMessage("KILLED");
       break;
     case KEY_F(5):
+    case '\\':
       if (first_default) {
         shm_set(switches, soft_kill, 0);
         inputMessage("UNKILLED");
@@ -216,6 +217,7 @@ void Display::handleInput() {
       }
       break;
     case KEY_F(12):
+    case '|':
       if (first_default) {
         shm_set_settings_control_enabled(
                                          !shm_get_settings_control_enabled());

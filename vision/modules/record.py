@@ -8,6 +8,7 @@ import shm
 from datetime import datetime
 
 auv_log_dir = os.path.join(os.environ['CUAUV_LOG'], "current")
+print(auv_log_dir)
 
 class Record(ModuleBase):
     def __init__(self, *args, **kwargs):

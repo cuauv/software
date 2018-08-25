@@ -41,13 +41,9 @@ class Vision(Test):
         return is_changing(shm.poster_status.downward_counter.get)
 
     def modules_processing():
-        # TODO do other modules besides recovery?
-        enabled_var = shm.vision_modules.Recovery
-        enabled = enabled_var.get()
-        enabled_var.set(True)
-        changing = is_changing(shm.recovery_vision.clock.get)
-        enabled_var.set(enabled)
-        return changing
+        changing_forward = is_changing(shm.poster_status.forward_counter.get)
+        changing_downward = is_changing(shm.poster_status.downward_counter.get)
+        return changing_forward and changing_downward
 
 class Depth(Test):
     def updating():
@@ -91,9 +87,8 @@ class System(Test):
     def services_up():
         # Please forgive me for this.
         service_down_color = '[1;31m'
-        return str(shell('trogdor')).find(service_down_color) != -1
+        return service_down_color not in str(shell('trogdor').stdout)
 
-@vehicle(CASTOR)
 class Hydrophones(Test):
     def board_talking():
         return is_changing(shm.hydrophones_status.packet_count.get)
@@ -133,6 +128,6 @@ class Controller(Test):
 # Other
 class Merge(Test):
     def total_voltage_ok():
-        return 16.8 > shm.merge_status.total_voltage.get() > 14.0
+        return 17 > shm.merge_status.total_voltage.get() > 14.0
 
 import syscheck_selftest

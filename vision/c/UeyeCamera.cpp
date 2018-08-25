@@ -1,6 +1,8 @@
 
 #include "UeyeCamera.hpp"
 
+#include "camera_filters.hpp"
+
 #include "misc/utils.h"
 
 #include <opencv2/core/core.hpp>
@@ -29,17 +31,24 @@ struct UeyeCamera::UeyeCameraImpl {
   char* last_buffer_loc;
   HIDS m_camera;
   ueye_image images[CAMERA_IMAGE_BUFFER_LEN];
+  std::unique_ptr<optimal_camera_matrix> undistort_matrix;
 
   UeyeCameraImpl(struct capture_source_params *params)
     : params(params),
       result(cv::Mat(params->width, params->height, CV_8UC3)),
-      last_buffer_loc(NULL) {}
+      last_buffer_loc(NULL),
+      undistort_matrix(std::make_unique<optimal_camera_matrix>())
+  {}
 };
 
 
 UeyeCamera::UeyeCamera(struct capture_source_params *params)
   : CaptureSource(10, params->direction),
-    pimpl(new UeyeCameraImpl(params)) {}
+    pimpl(new UeyeCameraImpl(params)),
+    in(new cv::UMat()),
+    out(new cv::UMat()) {
+  initUndistortMap(pimpl->undistort_matrix.get(), std::to_string(params->camera_id), params->width, params->height);
+}
 
 void UeyeCamera::destroy_capture_source() {
   std::cout << "Deconstructing UEye camera" << std::endl;
@@ -62,7 +71,8 @@ bool UeyeCamera::setup_capture_source() {
 
   // initialize camera list struct to the correct size
   size_t camera_list_size = sizeof(DWORD) + num_cameras * sizeof(UEYE_CAMERA_INFO);
-  UEYE_CAMERA_LIST *camera_list = (UEYE_CAMERA_LIST*) new char[camera_list_size];
+  UEYE_CAMERA_LIST *camera_list =
+(UEYE_CAMERA_LIST*) new char[camera_list_size];
   camera_list->dwCount = num_cameras;
 
   if (is_GetCameraList(camera_list) != IS_SUCCESS) {
@@ -272,11 +282,21 @@ std::experimental::optional<std::pair<cv::Mat, long>> UeyeCamera::acquire_next_i
 
   pimpl->last_buffer_loc = buffer;
   pimpl->result.data = (unsigned char*) buffer;
+
+  if (pimpl->params->camera_id == 2) {
+    pimpl->result.copyTo(*this->in);
+
+    cv::remap(*this->in, *this->out, pimpl->undistort_matrix->map1, pimpl->undistort_matrix->map2, cv::INTER_LINEAR);
+    pimpl->result = this->out->getMat(cv::ACCESS_RW);
+  }
+
+
   if (pimpl->params->rotate180) {
     cv::flip(pimpl->result, pimpl->result, -1);
   }
   if (pimpl->params->rotate90) {
     cv::rotate(pimpl->result, pimpl->result, cv::ROTATE_90_CLOCKWISE);
   }
+
   return std::make_pair(pimpl->result, get_time());
 }

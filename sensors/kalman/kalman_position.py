@@ -148,8 +148,8 @@ class PositionFilter(generic_kalman.KalmanFilter):
             # Force*dt/mass = delta_v
             u[0] = 0
             u[2] = 0
-            #u[0] = north_force * self.dt / (vehicle_weight/9.8)
-            #u[2] = east_force * self.dt / (vehicle_weight/9.8)
+            # u[0] = north_force * self.dt / (vehicle_weight/9.8)
+            # u[2] = east_force * self.dt / (vehicle_weight/9.8)
 
         #H m-by-n relates the state to the measurement
         # Okay this takes some explaining

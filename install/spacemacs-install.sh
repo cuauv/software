@@ -15,7 +15,7 @@ setuser software git clone https://github.com/syl20bnr/spacemacs /home/software/
 
 mkdir -p /etc/service/emacs-server
 cat > /etc/service/emacs-server/run << 'EOF'
-   #!/bin/sh
+#!/bin/sh
 setuser software /usr/bin/emacs-25.3 --batch -u software -f server-start &&
 while :; do
       sleep 60

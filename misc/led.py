@@ -1,157 +1,334 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
-"""
-LED routines.
-Run with "auv-led <routine>"
-"""
-
+import colorsys
+import itertools
+import multiprocessing
 import sys
-from time import sleep
-from shm import led as s_led
-from shm import watchers, switches
+import time
 
-LEDS = {'port': {
-            'red': s_led.port_red,
-            'green': s_led.port_green,
-            'blue': s_led.port_blue
-                },
-        'starboard': {
-            'red': s_led.starboard_red,
-            'green': s_led.starboard_green,
-            'blue': s_led.starboard_blue
-                },
-        }
+import numpy as np
+import shm
 
-def set_all(value):
-    for side in LEDS.values():
-        for led in side.values():
-            led.set(value)
+from utils import register_exit_signals, watch_thread_wrapper
 
-def set_group(pins, val):
-    [pin.set(val) for pin in pins]
+########  Constants  ########
 
-def fade_group(pins, start, to, duration):
-    delta = to - start
-    timestep = duration / abs(delta)
-    step = delta / abs(delta)
 
-    cur_val = start
-    set_group(pins, start)
-    for i in range(abs(delta)):
-        sleep(timestep)
-        cur_val += step
-        set_group(pins, cur_val)
-    set_group(pins, to)
+LEDS = {
+    'port': {
+        'red': shm.leds_internal.port_color_red,
+        'green': shm.leds_internal.port_color_green,
+        'blue': shm.leds_internal.port_color_blue,
+    },
+    'starboard': {
+        'red': shm.leds_internal.starboard_color_red,
+        'green': shm.leds_internal.starboard_color_green,
+        'blue': shm.leds_internal.starboard_color_blue,
+    },
+}
 
-int1 = 0.03
-int3 = 0.07
-def blink(pins, c, val=255):
-    for i in range(c):
-        [pin.set(val) for pin in pins]
-        sleep(int3)
-        [pin.set(0) for pin in pins]
-        sleep(int1)
 
-def fade():
-    while 1:
-        fade_group(LEDS['port'].values(), 0, 255, 2)
-        fade_group(LEDS['port'].values(), 255, 0, 2)
-        fade_group(LEDS['starboard'].values(), 0, 255, 2)
-        fade_group(LEDS['starboard'].values(), 255, 0, 2)
+COLORS = {
+    "WHITE": (255, 255, 255),
+    "RED": (255, 0, 0),
+    "BLUE": (0, 0, 255),
+    "GREEN": (0, 255, 0),
+    "ORANGE": (255, 165, 0),
+    "CYAN": (0, 255, 255),
+    "MAGENTA": (255, 0, 255),
+    "YELLOW": (255, 255, 0),
+    "BLACK": (0, 0, 0),
+}
 
-def flash():
-    while 1:
-        blink(LEDS['port'].values(), 2)
-        sleep(int1)
-        blink(LEDS['starboard'].values(), 2)
-        sleep(int1)
 
-def beacon():
-    DEPTH_THRESH = 2.0
-    while 1:
-        for led in LEDS.values():
-            blink([led], 3)
-            blink([led], 4)
-            blink([led], 5)
+#######  Helpers  ######
 
-        if shared_vars["depth"].get() < DEPTH_THRESH:
-            sleep(0.6)
-        else:
-            sleep(8) #Nobody can see the sub anyway
 
-def police():
-    int3 = 0.07
-    LED1 = LEDS['port']['red']
-    LED2 = LEDS['starboard']['blue']
-    LEDS_USED = [LED1, LED2]
-    def quint():
-        blink(LEDS_USED, 5)
+def hsv_to_rgb(h, s, v):
+    return tuple(map(lambda c: int(255 * c), colorsys.hsv_to_rgb(h, s, v)))
 
-    while 1:
-        for j in range(5):
-            for i in range(2):
-                blink([LED1],4)
-                blink([LED2],4)
-            for i in range(8):
-                blink([LED1],1)
-                blink([LED2],1)
-        for j in range(3):
-            blink(LEDS_USED, 5)
-            sleep(int3 * 4)
 
-def strobe():
-    # == LED STROBE ==
-    # TO BE USED IN EXTREME EMERGENCY CONDITONS ONLY
-    # FOR MAXIMUM VISIBILITY (i.e. deadman breaching)
-    int1 = 0.05
-    int2 = 0.05
-    while 1:
+def interp_color(v, xs, ys, left=(None, None, None), right=(None, None, None)):
+    """
+    v - Value to interpolate
+    xs - X values to interpolate between
+    ys - Color outputs that correspond to xs
+    left - Optional clipping value when too low
+    right - Optional clipping value when too high
+    """
+
+    return tuple(map(lambda args: int(np.interp(*args)), zip((v, v, v), (xs, xs, xs), zip(*ys), left, right)))
+
+
+def set_side_rgb(side, r, g, b):
+    side["red"].set(r)
+    side["green"].set(g)
+    side["blue"].set(b)
+
+
+def set_side_hsv(side, h, s, v):
+    set_side_rgb(side, *hsv_to_rgb(h, s, v))
+
+
+def set_side(side, v):
+    set_side_rgb(side, v, v, v)
+
+
+def set_all_rgb(r, g, b):
+    set_side_rgb(LEDS["port"], r, g, b)
+    set_side_rgb(LEDS["starboard"], r, g, b)
+
+
+def set_all_hsv(h, s, v):
+    set_all_rgb(*hsv_to_rgb(h, s, v))
+
+
+def set_all(v):
+    set_all_rgb(v, v, v)
+
+
+#######  Modes  #######
+
+
+def passthrough():
+    leds = shm.leds.get()
+    leds_internal = shm.leds_internal.get()
+
+    leds_internal.port_color_red = leds.port_color_red % 256
+    leds_internal.port_color_green = leds.port_color_green % 256
+    leds_internal.port_color_blue = leds.port_color_blue % 256
+    leds_internal.starboard_color_red = leds.starboard_color_red % 256
+    leds_internal.starboard_color_green = leds.starboard_color_green % 256
+    leds_internal.starboard_color_blue = leds.starboard_color_blue % 256
+
+    shm.leds_internal.set(leds_internal)
+
+
+def blink():
+    while True:
         set_all(255)
-        sleep(int1)
+        time.sleep(0.1)
         set_all(0)
-        sleep(int2)
+        time.sleep(0.1)
 
-def daemon():
-    watcher = watchers.watcher()
-    watcher.watch(switches)
 
-    last_sk = switches.soft_kill.get()
-    while 1:
+def rainbow():
+    period = 5
+
+    hue_port = (time.time() / period) % 1
+    hue_star = (time.time() / period + period / 2) % 1
+
+    for side, hue in zip(LEDS.values(), (hue_port, hue_star)):
+        set_side_hsv(side, hue, 1, 1)
+
+
+def pressure():
+    set_all_rgb(
+        *interp_color(
+            shm.pressure.hull.get(),
+            [0.7, 0.735, .9],
+            [COLORS["GREEN"], COLORS["GREEN"], COLORS["ORANGE"]],
+            left=COLORS["RED"],
+            right=COLORS["RED"],
+        )
+    )
+
+last_time = time.time()
+
+def trim():
+    bad_angle = 7
+    mid_angle = 3
+    good_angle = 1
+
+    set_side_rgb(
+        LEDS["port"],
+        *interp_color(
+            shm.gx4.roll.get(),
+            [-bad_angle, -mid_angle, -good_angle, good_angle, mid_angle, bad_angle],
+            [COLORS["RED"], COLORS["ORANGE"], COLORS["GREEN"], COLORS["GREEN"], COLORS["ORANGE"], COLORS["RED"]],
+            left=COLORS["RED"],
+            right=COLORS["RED"],
+        )
+    )
+
+    set_side_rgb(
+        LEDS["starboard"],
+        *interp_color(
+            shm.gx4.pitch.get(),
+            [-bad_angle, -mid_angle, -good_angle, good_angle, mid_angle, bad_angle],
+            [COLORS["RED"], COLORS["ORANGE"], COLORS["GREEN"], COLORS["GREEN"], COLORS["ORANGE"], COLORS["RED"]],
+            left=COLORS["RED"],
+            right=COLORS["RED"],
+        )
+    )
+
+
+def feedback():
+    leds = shm.leds.get()
+    leds_internal = shm.leds_internal.get()
+
+    leds_internal.port_color_red = leds.port_color_red % 256
+    leds_internal.port_color_green = leds.port_color_green % 256
+    leds_internal.port_color_blue = leds.port_color_blue % 256
+    leds_internal.starboard_color_red = leds.port_color_red % 256
+    leds_internal.starboard_color_green = leds.port_color_green % 256
+    leds_internal.starboard_color_blue = leds.port_color_blue % 256
+
+    shm.leds_internal.set(leds_internal)
+
+
+def feedback_pulse():
+    for i in itertools.cycle(range(15)):
+        leds = shm.leds.get()
+        leds_internal = shm.leds_internal.get()
+
+
+        if 0 <= i < 12:
+            leds_internal.port_color_red = leds.port_color_red % 256
+            leds_internal.port_color_green = leds.port_color_green % 256
+            leds_internal.port_color_blue = leds.port_color_blue % 256
+            leds_internal.starboard_color_red = leds.port_color_red % 256
+            leds_internal.starboard_color_green = leds.port_color_green % 256
+            leds_internal.starboard_color_blue = leds.port_color_blue % 256
+        else:
+            leds_internal.port_color_red = leds.starboard_color_red % 256
+            leds_internal.port_color_green = leds.starboard_color_green % 256
+            leds_internal.port_color_blue = leds.starboard_color_blue % 256
+            leds_internal.starboard_color_red = leds.starboard_color_red % 256
+            leds_internal.starboard_color_green = leds.starboard_color_green % 256
+            leds_internal.starboard_color_blue = leds.starboard_color_blue % 256
+
+        shm.leds_internal.set(leds_internal)
+
+        time.sleep(0.1)
+
+
+def feedback_pulse2():
+    for i in itertools.cycle(range(21)):
+        leds = shm.leds.get()
+        leds_internal = shm.leds_internal.get()
+
+
+        if 0 <= i < 12 or 15 <= i < 18:
+            leds_internal.port_color_red = leds.port_color_red % 256
+            leds_internal.port_color_green = leds.port_color_green % 256
+            leds_internal.port_color_blue = leds.port_color_blue % 256
+            leds_internal.starboard_color_red = leds.port_color_red % 256
+            leds_internal.starboard_color_green = leds.port_color_green % 256
+            leds_internal.starboard_color_blue = leds.port_color_blue % 256
+        else:
+            leds_internal.port_color_red = leds.starboard_color_red % 256
+            leds_internal.port_color_green = leds.starboard_color_green % 256
+            leds_internal.port_color_blue = leds.starboard_color_blue % 256
+            leds_internal.starboard_color_red = leds.starboard_color_red % 256
+            leds_internal.starboard_color_green = leds.starboard_color_green % 256
+            leds_internal.starboard_color_blue = leds.starboard_color_blue % 256
+
+        shm.leds_internal.set(leds_internal)
+
+        time.sleep(0.1)
+
+
+def morse():
+    TIMES = {
+        ".": 0.1,
+        "-": 0.2,
+        " ": 0.2,
+        "": 0.1,
+        "/": 0.5,
+    }
+
+    full_stop = 0.5
+
+    MORSE_CODE_DICT = {
+        'A':'.-', 'B':'-...',
+        'C':'-.-.', 'D':'-..', 'E':'.',
+        'F':'..-.', 'G':'--.', 'H':'....',
+        'I':'..', 'J':'.---', 'K':'-.-',
+        'L':'.-..', 'M':'--', 'N':'-.',
+        'O':'---', 'P':'.--.', 'Q':'--.-',
+        'R':'.-.', 'S':'...', 'T':'-',
+        'U':'..-', 'V':'...-', 'W':'.--',
+        'X':'-..-', 'Y':'-.--', 'Z':'--..',
+        '1':'.----', '2':'..---', '3':'...--',
+        '4':'....-', '5':'.....', '6':'-....',
+        '7':'--...', '8':'---..', '9':'----.',
+        '0':'-----', ', ':'--..--', '.':'.-.-.-',
+        '?':'..--..', '/':'-..-.', '-':'-....-',
+        '(':'-.--.', ')':'-.--.-', ' ': ' ',
+    }
+
+    while True:
+        message = shm.lcd.message.get()
+
+        for c in message:
+            print(c)
+
+            code = MORSE_CODE_DICT[c.upper()]
+            for sym in code:
+                set_all(255)
+                time.sleep(TIMES[sym])
+                set_all(0)
+                time.sleep(TIMES[""])
+
+        time.sleep(TIMES["/"])
+
+
+def on():
+    set_all(255)
+
+
+def off():
+    set_all(0)
+
+
+modes = {
+    "blink": blink,
+    "passthrough": passthrough,
+    "off": off,
+    "on": on,
+    "rainbow": rainbow,
+    "pressure": pressure,
+    "trim": trim,
+    "feedback": feedback,
+    "feedback_pulse": feedback_pulse,
+    "feedback_pulse2": feedback_pulse2,
+    "morse": morse,
+}
+
+
+#######  LED Runner internal  ########
+
+
+def noop(_, __):
+    sys.exit(0)
+
+
+def run_loop(func):
+    register_exit_signals(noop)
+    while True:
+        func()
+        time.sleep(0.1)
+
+
+def control_loop(watcher, quit_event):
+    watcher.watch(shm.leds)
+
+    last_mode = "--"
+    led_process = None
+
+    while not quit_event.is_set():
+        modename = shm.leds.mode.get()
+
+        if modename != last_mode:
+            last_mode = modename
+            if led_process is not None:
+                led_process.terminate()
+            led_controller_func = modes.get(modename, passthrough)
+            led_process = multiprocessing.Process(target=run_loop, args=(led_controller_func,), daemon=True)
+            led_process.start()
+
         watcher.wait(new_update=False)
-        set_all(0)
-        sk = switches.soft_kill.get()
-        if sk and not last_sk:
-            blink([LEDS["port"]["red"]], 3)
-        if switches.hard_kill.get():
-            while switches.hard_kill.get():
-                LEDS["port"]["red"].set(255)
-                sleep(0.5)
-                LEDS["port"]["red"].set(0)
-                set_group(LEDS["starboard"].values(), 255)
-                sleep(0.5)
-                set_group(LEDS["starboard"].values(), 0)
-            blink([LEDS["port"]["green"], LEDS["starboard"]["green"]], 3)
-        if not sk and last_sk:
-            blink([LEDS["port"]["blue"], LEDS["starboard"]["blue"]], 3)
-        last_sk = sk
 
-options = { "beacon" : beacon, \
-            "flash" : flash, \
-            "off" : lambda: set_all(0), \
-            "on" : lambda: set_all(255), \
-            "police" : police, \
-            "strobe" : strobe, \
-            "daemon" : daemon, \
-            "fade": fade }
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2 or not options.has_key(sys.argv[1]):
-        print "Please supply one argument:"
-        print "\n".join(options.keys())
-        sys.exit(1)
-
-    try:
-        options[sys.argv[1]]()
-    except KeyboardInterrupt:
-        print "done."
-        set_all(0)
+watch_thread_wrapper(control_loop)

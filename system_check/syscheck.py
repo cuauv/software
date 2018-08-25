@@ -59,8 +59,13 @@ else:
     raise ValueError("CUAUV_VEHICLE must be set to one of {castor, pollux}!")
 
 environment_id = 2
-if(not  args.environment):
-    if shm.kalman.depth.get() > .01:
+if(not args.environment):
+    LAND_DEPTHS = {
+        test.CASTOR: 0.01,
+        test.POLLUX: 0.35,
+    }
+
+    if shm.kalman.depth.get() > LAND_DEPTHS[vehicle_id]:
         environment_id = test.WATER
     else:
         environment_id = test.LAND

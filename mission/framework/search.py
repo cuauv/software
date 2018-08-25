@@ -8,13 +8,16 @@ from auv_math.quat import quat_from_axis_angle
 from auv_python_helpers.angles import abs_heading_sub_degrees
 from mission.framework.combinators import Sequential, While
 from mission.framework.helpers import call_if_function, ConsistencyCheck
-from mission.framework.movement import Heading, Pitch, Roll, \
-                                       RelativeToInitialHeading, VelocityX, \
-                                       RelativeToCurrentHeading, VelocityY
+from mission.framework.movement import (
+    Heading, Pitch, Roll,
+    RelativeToInitialHeading, VelocityX,
+    RelativeToCurrentHeading, VelocityY
+)
 from mission.framework.position import MoveXRough, MoveYRough, GoToPosition
 from mission.framework.task import Task
 from mission.framework.timing import Timer, Timed
 from mission.framework.primitive import Zero
+from mission.missions.ozer_common import ConsistentTask
 from auv_python_helpers.angles import heading_sub_degrees
 
 def _sub_position():
@@ -25,47 +28,47 @@ def _sub_position():
     ])
 
 class VelocitySwaySearch(Task):
-    def make_repeat(self, forward, stride, rightFirst, checkBehind):
+    def make_repeat(self, forward, stride, speed, rightFirst, checkBehind):
         dir = 1 if rightFirst else -1
         if checkBehind:
             self.repeat = Sequential(
-                                Timed(VelocityX(-.3), forward),
-                                Timed(VelocityX(.3), forward),
+                                Timed(VelocityX(-speed), forward),
+                                Timed(VelocityX(speed), forward),
                                 VelocityX(0),
-                                Timed(VelocityY(.3 * dir), stride),
+                                Timed(VelocityY(speed * dir), stride),
                                 VelocityY(0.0),
-                                Timed(VelocityX(.3), forward),
+                                Timed(VelocityX(speed), forward),
                                 VelocityX(0.0),
-                                Timed(VelocityY(-.3 * dir), stride),
+                                Timed(VelocityY(-speed * dir), stride),
                                 VelocityY(0.0),
-                                Timed(VelocityY(-.3 * dir),stride),
+                                Timed(VelocityY(-speed * dir),stride),
                                 VelocityY(0.0),
-                                Timed(VelocityX(.3 ), forward),
+                                Timed(VelocityX(speed), forward),
                                 VelocityX(0.0),
-                                Timed(VelocityY(.3 * dir), stride),
+                                Timed(VelocityY(speed * dir), stride),
                                 VelocityY(0.0))
         else:
             self.repeat = Sequential(
-                                Timed(VelocityY(.3 * dir), stride),
+                                Timed(VelocityY(speed * dir), stride),
                                 VelocityY(0.0),
-                                Timed(VelocityX(.3), forward),
+                                Timed(VelocityX(speed), forward),
                                 VelocityX(0.0),
-                                Timed(VelocityY(-.3 * dir), stride),
+                                Timed(VelocityY(-speed * dir), stride),
                                 VelocityY(0.0),
-                                Timed(VelocityY(-.3 * dir),stride),
+                                Timed(VelocityY(-speed * dir),stride),
                                 VelocityY(0.0),
-                                Timed(VelocityX(.3 ), forward),
+                                Timed(VelocityX(speed), forward),
                                 VelocityX(0.0),
-                                Timed(VelocityY(.3 * dir), stride),
+                                Timed(VelocityY(speed * dir), stride),
                                 VelocityY(0.0))
 
-    def on_first_run(self, forward = 1, stride=1, rightFirst=True, checkBehind=False):
-        self.make_repeat(forward, stride, rightFirst, checkBehind)
+    def on_first_run(self, forward = 1, stride=1, speed=0.3, rightFirst=True, checkBehind=False):
+        self.make_repeat(forward, stride, speed, rightFirst, checkBehind)
 
-    def on_run(self, forward = 1, stride=1, rightFirst=True, checkBehind=False):
+    def on_run(self, forward = 1, stride=1, speed=0.3, rightFirst=True, checkBehind=False):
         self.repeat()
         if self.repeat.finished:
-            self.make_repeat(forward, stride, rightFirst, checkBehind)
+            self.make_repeat(forward, stride, speed, rightFirst, checkBehind)
 
 class VelocityTSearch(Task):
     def make_repeat(self, forward, stride, rightFirst, checkBehind):
@@ -211,14 +214,14 @@ class SpiralSearch(Task):
     self.start_position = _sub_position()
     self.started_heading = False
 
-  def on_run(self, meters_per_revolution = 1.3, deadband = 0.2, spin_ratio = 5, relative_depth_range = 0.0, heading_change_scale = None, optimize_heading = False, min_spin_radius=None):
+  def on_run(self, meters_per_revolution = 1.3, deadband = 0.2, spin_ratio = 1, relative_depth_range = 0.0, heading_change_scale = None, optimize_heading = False, min_spin_radius=None):
     radius = self.calc_radius(self.theta, meters_per_revolution)
     target = self.calc_position(self.theta, meters_per_revolution, relative_depth_range)
     delta  = target - _sub_position()
     # fake_target = target + (delta * 10)
     fake_target = target
     GoToPosition(fake_target[0], fake_target[1], depth = fake_target[2])()
-    desired_heading = (spin_ratio * self.theta)
+    desired_heading = (spin_ratio * self.theta) + 90
     if heading_change_scale is not None:
       desired_heading *= min(1.0, radius) * heading_change_scale
     if optimize_heading:
@@ -315,3 +318,51 @@ class VelocityHeadingSearch(Task):
             HeadingSearch.Scan(initial_heading - heading_amplitude),
             Heading(initial_heading),
         ), True))
+
+
+def cons(task, total=1*60, success=1*60*0.85, debug=False):
+    return ConsistentTask(task, total=total, success=success, debug=debug)
+
+
+class SaneHeadingSearch(Task):
+    def make_turn(self):
+        h = self.base_heading + (self.side * 90)
+        h %= 360
+        print("Turning to {}".format(h))
+        return cons(Heading(h))
+
+
+    def make_move(self):
+        t = (self.loop + (self.side == 3)) * 6
+        print("Moving for {}".format(t))
+        return Timed(VelocityX(0.3), t)
+
+
+    def on_first_run(self, *args, **kwargs):
+        self.base_heading = shm.kalman.heading.get()
+        self.side = 0
+        self.loop = 1
+        self.heading_task = self.make_turn()
+        self.heading_task()
+        self.movement_task = None
+        self.stop_task = VelocityX(0)
+        self.state = "h"
+
+
+    def on_run(self, *args, **kwargs):
+        if self.state == "h":
+            self.heading_task()
+            if self.heading_task.finished:
+                self.state = "x"
+                self.movement_task = self.make_move()
+                self.logw("Turned")
+        elif self.state == "x":
+            self.movement_task()
+            if self.movement_task.finished:
+                self.stop_task()
+                self.side = (self.side + 1) % 4
+                if self.side == 0:
+                    self.loop += 1
+                self.heading_task = self.make_turn()
+                self.state = "h"
+                self.logw("Moved")

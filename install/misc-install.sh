@@ -79,7 +79,7 @@ mkdir -p /usr/local/share/ueye/ueyeethd/
 cat > /usr/local/share/ueye/ueyeethd/ueyeethd.conf << 'EOF'
 ;Ni1
 [Parameters]
- Interfaces = camc
+ Interfaces = camc camp
 
 [camc]
  Port_Base = 50000

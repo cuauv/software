@@ -8,6 +8,9 @@
 
 #include "misc/utils.h"
 
+
+#include <iostream>
+
 int initUndistortMap(optimal_camera_matrix *dst, std::string name, int width, int height) {
   std::string dir = getBinDir() + "../c/configs/" + name + "_camera_matrix_params.yaml";
   cv::FileStorage fs;

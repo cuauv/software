@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package slam;
+
+message SlamMsg {
+    required string id = 1;
+    required bool request = 2;
+
+
+    optional double m_x = 3;
+    optional double m_y = 4;
+    optional double m_z = 5;
+
+    optional double u_x = 6;
+    optional double u_y = 7;
+    optional double u_z = 8;
+}

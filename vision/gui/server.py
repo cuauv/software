@@ -145,6 +145,18 @@ def on_option_update(data):
     value_list[0] = new_value
     module_frameworks[module].write_option(option_name, value_list)
 
+@socketio.on('toggle_module')
+def toggle_module(data):
+    module = data['module'].strip('/').split("_")[0]
+    print(module)
+
+    if app.debug:
+        print("Toggling module {}".format(module))
+
+    module_var = shm._eval("vision_modules.{}".format(module))
+    module_var.set(not module_var.get())
+
+
 def send_image(module_name, image_name, image):
     try:
         if module_name not in module_frameworks:
@@ -216,6 +228,7 @@ def module(module_name):
     return render_template('module.html', module_name=module_name, modules=get_active_modules())
 
 if __name__ == '__main__':
+    print('WARNING: auv-vision-gui is DEPRECATED. Please use auv-webserver instead.')
     # Turn off the default Python ^C handler that raises a KeyboardInterrupt.
     # Now SIGINT should behave identically to SIGTERM: kill the program.
     import signal

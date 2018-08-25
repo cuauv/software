@@ -19,11 +19,11 @@ log () {
 
 pids=""
 startm() {
-  CMD="${CUAUV_SOFTWARE}/${MDIR}/$1.py $2"
+    CMD="/home/software/cuauv/workspaces/worktrees/master/misc/startm.sh $1 $2"
   LGN="$1""@""$2""-module"
   log "Forking \"$CMD &> $LOGS/$LGN.log\"."
   echo "Starting $CMD at `date -u +"%Y/%m/%d %H:%M:%S UTC"`" >> $LOGS/$LGN.log
-  stdbuf -oL -eL $CMD &>> $LOGS/$LGN.log &
+  $CMD&
   pids="$pids $!"
 }
 

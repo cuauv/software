@@ -240,3 +240,19 @@ class Defer(Task):
         self.task()
         if self.task.finished:
             self.finish(success=deferred.success and main_task.success)
+
+class Either(Task):
+    '''
+    Execute two tasks concurrently and finish if either subtask finishes.
+    Uses the success state of the task that finishes first. If both tasks
+    finish in the same tick, then the success state of the first is used.
+    '''
+
+    def on_run(self, *tasks, **kwargs):
+        for task in tasks:
+            task()
+
+        for task in tasks:
+            if task.finished:
+                self.finish(success=task.success)
+                break

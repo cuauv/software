@@ -33,8 +33,8 @@ ports = [
         "/dev/serial/by-id/usb-CUAUV_Pastor_4_AUV-PASTOR4-if02-port0",
         # "/dev/serial/by-id/usb-CUAUV_PASTOR_4_AUV-PASTOR4-if03-port0",
 
-        # "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if00-port0",
-        # "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if01-port0",
-        # "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if02-port0",
-        # "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if03-port0",
+	# "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if00-port0",
+        "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if01-port0",
+        "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if02-port0",
+        "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if03-port0",
 ]

@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "ssh://git@bitbucket.cuauv.org:7999/sof/software.git"
+    "url": "ssh://git@bitbucket.cuauv.org:7999/sof/subcode.git"
   },
   "license": "ISC",
   "devDependencies": {

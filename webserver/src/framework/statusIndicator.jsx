@@ -17,7 +17,6 @@ export class StatusIndicator extends React.Component {
 
     handleStatusUpdate(message) {
         let data = JSON.parse(message.data);
-        console.log(data);
         if (data.hard_kill === 1) {
             this.setState({color: "red"});
         }

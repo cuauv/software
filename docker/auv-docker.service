@@ -7,7 +7,7 @@ User=software
 Type=forking
 RemainAfterExit=true
 ExecStartPre=/bin/sleep 5
-ExecStart=/home/software/cuauv/subcode/auv-docker.py vehicle
+ExecStart=/home/software/cuauv/workspaces/worktrees/master/docker/auv-docker.py vehicle
 ExecStop=/usr/bin/docker kill cuauv_vehicle
 
 [Install]

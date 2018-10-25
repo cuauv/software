@@ -43,6 +43,10 @@ Host loglan
   ForwardX11Trusted yes
 EOF
 
+# **************** vim ****************
+sudo -u software mkdir -p /home/software/.config
+sudo -u software ln -s /home/software/cuauv/software/install/nvim /home/software/.config/
+
 # **************** sloth ****************
 
 mkdir -p /build_tmp_sloth

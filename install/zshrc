@@ -24,6 +24,8 @@ export PROMPT_COLOR=red
 export GUILE_LOAD_PATH="$CUAUV_SOFTWARE/guile"
 # For ocaml libshm
 export OCAMLPATH=$software_path/libshm/ocaml
+# Fix locale to stop duplicating characters when tab-completing
+export LC_CTYPE=en_US.UTF-8
 
 # Can set to other locales in the conf directory.
 export CUAUV_LOCALE="${CUAUV_LOCALE:-simulator}"

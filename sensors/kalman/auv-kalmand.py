@@ -156,7 +156,7 @@ position_filter = PositionFilter(kalman_xHat)
 
 start = time.time()
 
-show_rate = True
+show_rate = False
 real_start = time.time()
 
 last_start = 0

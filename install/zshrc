@@ -43,6 +43,9 @@ export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/tegra/:/usr/local/lib/:${LD_LI
 export DISPLAY=${DISPLAY:-:0}
 export TERM="xterm"
 
+# Fix Java GUIs in tiling wms
+export _JAVA_AWT_WM_NONREPARENTING=1
+
 # Configure OCaml env with opam
 . /home/software/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true
 

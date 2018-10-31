@@ -11,7 +11,6 @@ class UeyeCamera : public CaptureSource {
 private:
   struct UeyeCameraImpl;
   std::unique_ptr<UeyeCameraImpl> pimpl;
-  cv::UMat *in;
   cv::UMat *out;
 
 public:

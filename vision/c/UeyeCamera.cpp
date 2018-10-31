@@ -45,7 +45,6 @@ struct UeyeCamera::UeyeCameraImpl {
 UeyeCamera::UeyeCamera(struct capture_source_params *params)
   : CaptureSource(10, params->direction),
     pimpl(new UeyeCameraImpl(params)),
-    in(new cv::UMat()),
     out(new cv::UMat()) {
   initUndistortMap(pimpl->undistort_matrix.get(), std::to_string(params->camera_id), params->width, params->height);
 }
@@ -284,9 +283,7 @@ std::experimental::optional<std::pair<cv::Mat, long>> UeyeCamera::acquire_next_i
   pimpl->result.data = (unsigned char*) buffer;
 
   if (pimpl->params->camera_id == 2) {
-    pimpl->result.copyTo(*this->in);
-
-    cv::remap(*this->in, *this->out, pimpl->undistort_matrix->map1, pimpl->undistort_matrix->map2, cv::INTER_LINEAR);
+    cv::remap(pimpl->result, *this->out, pimpl->undistort_matrix->map1, pimpl->undistort_matrix->map2, cv::INTER_LINEAR);
     pimpl->result = this->out->getMat(cv::ACCESS_RW);
   }
 

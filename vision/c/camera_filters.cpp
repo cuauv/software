@@ -45,7 +45,9 @@ int initUndistortMap(optimal_camera_matrix *dst, std::string name, int width, in
   P1.at<double>(1,2) = P1.at<double>(1,2) / scale; // Y offset
   P1.at<double>(2,2) = 1.0;
 
-  initUndistortRectifyMap(M, D, cv::Mat(), P1, cv::Size(width, height), CV_32FC1, dst->map1, dst->map2);
+  cv::Mat map1, map2;
+  initUndistortRectifyMap(M, D, cv::Mat(), P1, cv::Size(width, height), CV_32FC1, map1, map2);
+  cv::convertMaps(map1, map2, dst->map1, dst->map2, CV_16SC2);
 
   return 1;
 }

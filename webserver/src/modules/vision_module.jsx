@@ -45,12 +45,27 @@ function togglePreprocessorItems() {
     }
 }
 
+function rgbToColor(r, g, b) {
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+function setCoordinate(x, y) {
+    $("#coordinate").text(`X: ${x}, Y: ${y}`);
+}
+
+function setColorPicker(r, g, b) {
+    $("#color-picker").text(`R: ${r}, G: ${g}, B: ${b}`);
+    $("#color-indicator").css('background-color', rgbToColor(r, g, b));
+}
+
 class ImageContainer extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             image: this.props.image,
             data: this.props.image.image,
+            lastFrameTime: 0,
+            fps: 0,
         };
         this.imageName = this.props.image.image_name;
         this.imageId = formatId(this.imageName);
@@ -66,15 +81,36 @@ class ImageContainer extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({data: nextProps.image.image});
+        if (this.props.image !== nextProps.image) {
+            const currTime = Date.now();
+            this.setState({
+                data: nextProps.image.image,
+                lastFrameTime: currTime,
+                fps: Math.trunc(1000 / Math.max(100, currTime - this.state.lastFrameTime)),
+            });
+        }
+    }
+
+    showPixel(e) {
+        const rect = e.target.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const canvas = document.createElement('canvas');
+        canvas.width = e.target.width;
+        canvas.height = e.target.height;
+        const canvasContext = canvas.getContext('2d');
+        canvasContext.drawImage(e.target, 0, 0, canvas.width, canvas.height);
+        const color = canvasContext.getImageData(x, y, 1, 1).data;
+        setCoordinate(x, y);
+        setColorPicker(color[0], color[1], color[2]);
     }
 
     render() {
         return (
             <li className="image-container list-group-item col-xs-6">
-                <img id={this.imageId} src={'data:image/jpeg;base64,' + this.state.data} className="posted"/>
+                <img id={this.imageId} src={'data:image/jpeg;base64,' + this.state.data} className="posted" onClick={this.showPixel}/>
                 <br/>
-                {this.imageName}
+                <span class="image-name">{this.imageName}</span> <span class="fps">{this.state.fps} FPS</span>
             </li>
         );
     }
@@ -264,10 +300,14 @@ export class VisionModule extends React.Component {
                 <input
                     type="checkbox"
                     id="preprocessor-toggle"
+                    class="margin-left-right"
                     onChange={togglePreprocessorItems}
                 />
                 <label for="preprocessor-toggle">Toggle Preprocessor Options</label>
-                <button id="clear-images" onClick={this.clearImages}>Clear Images</button>
+                <button id="clear-images" class="margin-left-right" onClick={this.clearImages}>Clear Images</button>
+                <span id="coordinate" class="margin-left-right"></span>
+                <span id="color-picker" class="margin-left-right"></span>
+                <div id="color-indicator" class="margin-left-right"></div>
                 <div class="row">
                     <div class="col-xs-10">
                     <ul class="list-group row" id="images">

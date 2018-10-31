@@ -1,6 +1,7 @@
 img.posted {
     max-width: 100%;
     max-height: 100%;
+    cursor: crosshair;
 }
 
 .slider_value {
@@ -21,4 +22,28 @@ img.posted {
     top: 50px;
     bottom: 0;
     margin-right: 0px;
+}
+
+.margin-left-right {
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+#coordinate, #color-picker {
+    font-family: monospace;
+}
+
+#color-indicator {
+    display: inline-block;
+    height: 1em;
+    width: 1em;
+}
+
+.image-name {
+    font-family: monospace;
+}
+
+.fps {
+    font-family: monospace;
+    float: right;
 }

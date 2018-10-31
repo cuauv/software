@@ -7,6 +7,7 @@ class Preprocessor:
         self.module = module
         self.options = [
             options.BoolOption('PPX_grayscale', False),
+            options.BoolOption('PPX_lab', False),
             options.BoolOption('PPX_rgb_split', False),
             options.BoolOption('PPX_lab_split', False),
             options.BoolOption('PPX_hsv_split', False),
@@ -79,6 +80,9 @@ class Preprocessor:
             if self.options_dict['PPX_grayscale'].value:
                 grayscale = cv2.cvtColor(mat, cv2.COLOR_BGR2GRAY)
                 self.module.post("PPX_grayscale", grayscale)
+            if self.options_dict['PPX_lab'].value:
+                lab = cv2.cvtColor(mat, cv2.COLOR_BGR2LAB)
+                self.module.post('PPX_lab', lab)
             if self.options_dict['PPX_color_correction'].value:
                 mat = balance(mat)
             if self.options_dict['PPX_r_bias'].value != 0:

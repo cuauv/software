@@ -93,7 +93,7 @@ def test_hsi_conversion(r, g, b):
                                             numpy.array([b], dtype=numpy.float64)))
 def balance(mat, equalize_rgb=True, rgb_contrast_correct=False,
             hsv_contrast_correct=True, hsi_contrast_correct=False,
-            rgb_extrema_clipping=True, adaptive_cast_correction=True,
+            rgb_extrema_clipping=True, adaptive_cast_correction=False,
             horizontal_blocks=1, vertical_blocks=1):
     rows = mat.shape[0]
     cols = mat.shape[1]

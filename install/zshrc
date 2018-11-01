@@ -3,6 +3,9 @@ ZSH_THEME="robbyrussell"
 plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
+# Set per-user auv environment
+source "$CUAUV_SOFTWARE/vehicle-scripts/auv-env/auv-env-set.sh"
+
 if [[ -f /home/software/.env ]]; then
     . /home/software/.env
 fi
@@ -95,17 +98,17 @@ if [[ "$CUAUV_CONTEXT" = "vehicle" ]]; then
     if [[ -h "$LINK" ]]; then
         CURRENT="$(readlink "$LINK")"
         NAME="$(basename "$CURRENT")"
-        if ! [[ "$NAME" = "none" ]]; then
+        if ! [[ "$NAME" = "none" ]] && [[ -f "$LINK/metaStart.json" ]]; then
             START="$(jq < "$LINK"/metaStart.json .startTime)"
             DATE="$(date -d@"$START")"
-            echoInfo "Pooltest currently running!" '\c'
-            echoInfo "Name:" "$blu""$NAME""$endColor"
-            echoInfo "Start Time:" "$red""$DATE""$endColor"
+            log $blue INFO "Pooltest currently running!" '\c'
+            log $blue INFO "Name:" "$NAME"
+            log $blue INFO "Start Time:" "$DATE"
         else
-            echoWarn "No pooltest currently running!"
+            log $yellow WARN "No pooltest currently running!"
         fi
     else
-        echoWarn "No pooltest currently running!"
+        log $yellow WARN "No pooltest currently running!"
     fi
     echo
 fi

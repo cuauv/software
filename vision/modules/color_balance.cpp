@@ -577,7 +577,7 @@ int process_frame(unsigned char *arr, size_t height, size_t width, size_t depth,
                     mid_channel_max = b_max;
                     min_channel = g_channel;
                     min_channel_min = g_min;
-                    max_channel_max = g_max;
+                    min_channel_max = g_max;
                 }
             }
             else {
@@ -589,7 +589,7 @@ int process_frame(unsigned char *arr, size_t height, size_t width, size_t depth,
                 mid_channel_max = r_max;
                 min_channel = g_channel;
                 min_channel_min = g_min;
-                max_channel_max = g_max;
+                min_channel_max = g_max;
             }
         }
         else { // r_avg <= g_avg
@@ -603,7 +603,7 @@ int process_frame(unsigned char *arr, size_t height, size_t width, size_t depth,
                     mid_channel_max = r_max;
                     min_channel = b_channel;
                     min_channel_min = b_min;
-                    max_channel_max = b_max;
+                    min_channel_max = b_max;
                 }
                 else {
                     mid_channel = b_channel;
@@ -611,7 +611,7 @@ int process_frame(unsigned char *arr, size_t height, size_t width, size_t depth,
                     mid_channel_max = b_max;
                     min_channel = r_channel;
                     min_channel_min = r_min;
-                    max_channel_max = r_max;
+                    min_channel_max = r_max;
                 }
             }
             else {
@@ -623,21 +623,21 @@ int process_frame(unsigned char *arr, size_t height, size_t width, size_t depth,
                 mid_channel_max = g_max;
                 min_channel = r_channel;
                 min_channel_min = r_min;
-                max_channel_max = r_max;
+                min_channel_max = r_max;
             }
         }
 
-        int desired_max = ((int)min_channel_max + (int)mid_channel_max + (int)max_channel_max) / 3;
+        double desired_max = (min_channel_max + mid_channel_max + max_channel_max) / 3;
+        double min_channel_ratio = (desired_max - min_channel_min) / (min_channel_max - min_channel_min);
+        double mid_channel_ratio = (desired_max - 0.0) / (mid_channel_max - mid_channel_min);
+        double max_channel_ratio = (max_channel_max - 0.0) / (max_channel_max - max_channel_min);
         for (size_t i = 0; i < channel_size; ++i) {
             // Contrast correct towards upper side
-            min_channel[i] = (unsigned char)(((int)min_channel[i] - min_channel_min) * (desired_max - min_channel_min) /
-                                  (min_channel_max - min_channel_min));
+            min_channel[i] = (unsigned char)((min_channel[i] - min_channel_min) * min_channel_ratio);
             // Contrast correct towards both sides
-            mid_channel[i] = (unsigned char)(((int)mid_channel[i] - mid_channel_min) * (desired_max - -1) /
-                                  (mid_channel_max - mid_channel_min));
+            mid_channel[i] = (unsigned char)((mid_channel[i] - mid_channel_min) * mid_channel_ratio);
             // Contrast correct towards lower side
-            max_channel[i] = (unsigned char)(((int)max_channel[i] - max_channel_min) * (max_channel_max - 0) /
-                                  (max_channel_max - max_channel_min));
+            max_channel[i] = (unsigned char)((max_channel[i] - max_channel_min) * max_channel_ratio);
         }
         clip_channel(r_channel, channel_size, 0, 255);
         clip_channel(g_channel, channel_size, 0, 255);

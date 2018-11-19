@@ -206,28 +206,19 @@ def init(*, on_vehicle=False):
     )
 
 
-def start(*, branch:"b"=BRANCH, gpu=True, env=None, vehicle=False):
+def create_worktree(branch=BRANCH, print_help=True):
     """
-    Starts a Docker container with the proper configuration. This does not
-    currently recreate a container if different configurations options are
-    passed.
+    Sets up a worktree directory for a branch.
 
     branch: Branch workspace to use.
 
-    gpu: If True, the GPU device will be mounted into the container and
-    all windows will be rendered directly to the host X server (bypassing SSH X
-    forwarding)
-
-    env: Extra environment variables to inject into the container.
-
-    vehicle: Indicates the container should be configured to run
-    directly on a vehicle.
+    print_help: defaults to True. If false, will not print help afterwards.
     """
+    # If using master branch, then simply symlink to the existing clone
 
     branch_directory = WORKTREES_DIRECTORY / branch
 
-    def create_worktree():
-        # If using master branch, then simply symlink to the existing clone
+    def _create_worktree():
         if branch == "master":
             def symlink_master():
                 branch_directory.symlink_to("../repo", target_is_directory=True)
@@ -259,9 +250,40 @@ def start(*, branch:"b"=BRANCH, gpu=True, env=None, vehicle=False):
 
     guarded_call(
         get_worktree_guard(branch),
-        create_worktree,
+        _create_worktree,
         "Creating workspace for branch {}".format(branch)
     )
+
+    if print_help:
+        print('\nYou can now run this command to move to the worktree:\n\n' +
+              'cd {}\n\n'.format(branch_directory) +
+              'Add this line to your .bashrc or .zshrc for a shortcut:\n\n' +
+              'ccd() {\n' +
+              '    $HOME/cuauv/workspaces/repo/docker/auv-docker.py create-worktree $1 False\n' +
+              '    cd $HOME/cuauv/workspaces/worktrees/$1\n' +
+              '}\n'
+        )
+
+
+def start(*, branch:"b"=BRANCH, gpu=True, env=None, vehicle=False):
+    """
+    Starts a Docker container with the proper configuration. This does not
+    currently recreate a container if different configurations options are
+    passed.
+
+    branch: Branch workspace to use.
+
+    gpu: If True, the GPU device will be mounted into the container and
+    all windows will be rendered directly to the host X server (bypassing SSH X
+    forwarding)
+
+    env: Extra environment variables to inject into the container.
+
+    vehicle: Indicates the container should be configured to run
+    directly on a vehicle.
+    """
+
+    create_worktree(branch, print_help=False)
 
     docker_name = get_docker_name(branch, vehicle)
     running = get_containers(docker_name)
@@ -450,4 +472,4 @@ def build():
     print("Building container for branch {}".format(branch))
 
 
-clize.run(init, start, cdw, stop, destroy, vehicle)
+clize.run(init, start, create_worktree, cdw, stop, destroy, vehicle)

@@ -9,7 +9,7 @@ build.install('auv-vision-gui', f='vision/gui/server.py')
 build.install('auv-poster', f='vision/modules/poster.py')
 
 build.build_shared('auv-camera-message-framework', ['c/camera_message_framework.cpp'], deps=['pthread'], auv_deps=['utils'])
-build.build_shared('auv-color-balance', ['modules/color_balance.cpp'], cflags=[], pkg_confs=['opencv'], auv_deps=['utils'])
+build.build_shared('auv-color-balance', ['framework/color_correction/color_balance.cpp'], cflags=[], pkg_confs=['opencv'], auv_deps=['utils'])
 build.build_shared('auv-camera-filters', ['c/camera_filters.cpp'], pkg_confs=['opencv'], auv_deps=['utils'])
 
 build.build_cmd('auv-firewire-daemon', ['c/firewire_camera.cpp'], deps=['dc1394'], auv_deps=['auv-camera-message-framework'], pkg_confs=['opencv'])

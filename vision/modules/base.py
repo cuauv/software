@@ -5,6 +5,7 @@ import time
 import traceback
 from collections import OrderedDict
 
+import cv2
 import numpy as np
 
 import auv_python_helpers.misc as aph
@@ -15,6 +16,7 @@ from misc.utils import register_exit_signals
 from vision import camera_message_framework
 
 from vision.modules.preprocessor import Preprocessor
+from vision.framework.helpers import from_umat
 
 logger = auvlog.vision
 
@@ -86,7 +88,10 @@ class ModuleBase:
         shm_group.camera = bytes(self.directions[0], encoding='utf-8')
 
     def post(self, tag, orig_image):
-        image = np.array(orig_image, None, copy=True, order='C', ndmin=1)
+        if type(orig_image) is cv2.UMat:
+            image = from_umat(orig_image)
+        else:
+            image = np.array(orig_image, None, copy=True, order='C', ndmin=1)
 
         if self.order_post_by_time:
             self.posted_images.append((tag, image))

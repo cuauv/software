@@ -1,3 +1,4 @@
+import hashlib
 import os
 import sys
 from collections import defaultdict
@@ -8,46 +9,54 @@ import numpy as np
 import cv2
 import sklearn
 import sklearn.cluster
-import cPickle as pickle
+import pickle
 
-from evolution import evolution
-from shape_context import shape_context
-from llc import llc_coding_approx
+from vision.framework.bcf.evolution import evolution
+from vision.framework.bcf.shape_context import shape_context
+from vision.framework.bcf.llc import llc_coding_approx
 
-class BCF():
-    def __init__(self):
-        self.DATA_DIR = "data/cuauv"
-        self.PERC_TRAINING_PER_CLASS = 0.5
-        self.CODEBOOK_FILE = "codebook.data"
-        self.CLASSIFIER_FILE = "classifier"
+
+class BCF:
+    def __init__(self, data_dir='data/cuauv/', codebook_file='codebook.data', classifier_file='classifier'):
+        self.DATA_DIR = data_dir
+        self.CODEBOOK_FILE = codebook_file
+        self.CLASSIFIER_FILE = classifier_file
         self.classes = defaultdict(list)
         self.data = defaultdict(dict)
         self.counter = defaultdict(int)
+        self.label_to_cls = {}
+        self._load_labels()
 
-    def load_classes(self):
-        for dir_name, subdir_list, file_list in os.walk(self.DATA_DIR):
+    def _load_files(self, data_dir):
+        for dir_name, subdir_list, file_list in os.walk(data_dir):
             if subdir_list:
                 continue
             for f in sorted(file_list, key=hash):
                 self.classes[dir_name.split('/')[-1]].append(os.path.join(dir_name, f))
 
-    def load_training(self):
+    def _load_labels(self):
+        for dir_name, subdir_list, file_list in os.walk(self.DATA_DIR):
+            if subdir_list:
+                continue
+            cls = dir_name.split('/')[-1]
+            self.label_to_cls[self.hash_cls(cls)] = cls
+
+    def _read_images(self):
         for cls in self.classes:
             images = self.classes[cls]
-            for image in images[:int(len(images) * self.PERC_TRAINING_PER_CLASS)]:
+            for image in images:
                 image_id = self.get_image_identifier(cls)
                 self.data[image_id]['image'] = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
                 if self.data[image_id]['image'] is None:
                     print("Failed to load " + image)
 
-    def load_testing(self):
-        for cls in self.classes:
-            images = self.classes[cls]
-            for image in images[int(len(images) * self.PERC_TRAINING_PER_CLASS):]:
-                image_id = self.get_image_identifier(cls)
-                self.data[image_id]['image'] = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
-                if self.data[image_id]['image'] is None:
-                    print("Failed to load " + image)
+    def load_training_set(self):
+        self._load_files(self.DATA_DIR)
+        self._read_images()
+
+    def load_testing_set(self, testing_data):
+        self._load_files(testing_data)
+        self._read_images()
 
     def normalize_shapes(self):
         for (cls, idx) in self.data.keys():
@@ -66,7 +75,7 @@ class BCF():
     def extract_cf(self):
         for (cls, idx) in self.data.keys():
             image = self.data[(cls, idx)]['normalized_image']
-            contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            _, contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contour = sorted(contours, key=len)[-1]
             mat = np.zeros(image.shape, np.int8)
             cv2.drawContours(mat, [contour], -1, (255, 255, 255))
@@ -170,7 +179,7 @@ class BCF():
         labels = []
         for (cls, idx) in self.data.keys():
             training_data.append(self.data[(cls, idx)]['spp_descriptor'])
-            labels.append(hash(cls))
+            labels.append(self.hash_cls(cls))
         print("Training SVM...")
         clf = clf.fit(training_data, labels)
         print("Saving classifier...")
@@ -178,23 +187,26 @@ class BCF():
             pickle.dump(clf, out_file, -1)
         return clf
 
-    def svm_classify_test(self):
+    def svm_classify(self):
         with open(self.CLASSIFIER_FILE, 'rb') as in_file:
             clf = pickle.load(in_file)
         testing_data = []
-        labels = []
-        label_to_cls = {}
         for (cls, idx) in self.data.keys():
             testing_data.append(self.data[(cls, idx)]['spp_descriptor'])
-            labels.append(hash(cls))
-            label_to_cls[hash(cls)] = cls
         predictions = clf.predict(testing_data)
+        return [self.label_to_cls[pred] for pred in predictions]
+
+    def svm_classify_test(self):
+        predictions = self.svm_classify()
+        labels = []
+        for (cls, idx) in self.data.keys():
+            labels.append(cls)
         correct = 0
         for i in range(len(labels)):
             if predictions[i] == labels[i]:
                 correct += 1
             else:
-                print("Mistook %s for %s" % (label_to_cls[labels[i]], label_to_cls[predictions[i]]))
+                print("Mistook %s for %s" % (labels[i], predictions[i]))
         print("Correct: %s out of %s (Accuracy: %.2f%%)" % (correct, len(predictions), 100. * correct / len(predictions)))
 
     def show(self, image):
@@ -248,128 +260,46 @@ class BCF():
     def get_image_identifier(self, cls):
         return (cls, self.next_count(cls))
 
+    def train(self):
+        self.load_training_set()
+        self.normalize_shapes()
+        self.extract_cf()
+        self.learn_codebook()
+        self.encode_cf()
+        self.spp()
+        self.svm_train()
+
+    def test(self):
+        self.load_testing_set('data/cuauv/')
+        self.normalize_shapes()
+        self.extract_cf()
+        self.encode_cf()
+        self.spp()
+        self.svm_classify_test()
+
+    def classify_once(self, img):
+        self.data.clear()
+        image_id = self.get_image_identifier('unknown')
+        self.data[image_id]['image'] = img
+        self.normalize_shapes()
+        self.extract_cf()
+        self.encode_cf()
+        self.spp()
+        return self.svm_classify()[0]
+
+    def hash_cls(self, cls):
+        return sum([ord(c) for c in cls])
+
+
 if __name__ == "__main__":
     bcf = BCF()
-    bcf.load_classes()
     train = False
     if len(sys.argv) > 1:
         train = sys.argv[1] == "train"
     if train:
         print("Training mode")
-        bcf.load_training()
-        bcf.normalize_shapes()
-        bcf.extract_cf()
-        bcf.learn_codebook()
-        bcf.encode_cf()
-        bcf.spp()
-        #for (cls, idx) in bcf.data.keys():
-        #    image = bcf.data[(cls, idx)]
-        #    print (cls, idx)
-        #    print (np.sum(image['spp_descriptor']))
-        bcf.svm_train()
+        bcf.train()
     else:
         print("Testing mode")
-        bcf.load_testing()
-        bcf.normalize_shapes()
-        bcf.extract_cf()
-        bcf.encode_cf()
-        bcf.spp()
-        bcf.svm_classify_test()
-
-   # C = np.array([
-   # [6.0000,    5.8000],
-   # [8.4189,    5.8000],
-   #[10.8378,    5.8000],
-   #[12.8425,    6.8000],
-   #[15.2614,    6.8000],
-   #[17.6803,    6.8000],
-   #[19.7773,    7.5773],
-   #[22.1039,    7.8000],
-   #[24.1086,    6.8000],
-   #[26.5275,    6.8000],
-   #[28.9464,    6.8000],
-   #[30.9511,    7.8000],
-   #[33.2616,    8.0616],
-   #[35.3747,    8.8000],
-   #[37.3794,    9.8000],
-   #[39.7983,    9.8000],
-   #[42.1536,    9.6464],
-   #[43.8640,    7.9360],
-   #[46.1602,    7.9602],
-   #[48.2313,    8.8000],
-   #[50.4597,    9.2597],
-   #[52.6548,    9.8000],
-   #[54.6595,   10.8000],
-   #[57.0555,   10.8555],
-   #[59.0831,   11.8000],
-   #[61.0878,   12.8000],
-   #[63.3583,   13.1583],
-   #[65.3616,   13.4384],
-   #[67.1019,   11.8000],
-   #[69.5208,   11.8000],
-   #[71.9397,   11.8000],
-   #[73.9444,   12.8000],
-   #[75.9640,   13.7640],
-   #[78.3680,   13.8000],
-   #[80.3727,   14.8000],
-   #[82.5597,   15.3597],
-   #[84.7963,   15.8000],
-   #[86.8593,   16.6593],
-   #[89.1555,   16.9555],
-   #[91.1588,   17.9588],
-   #[92.2000,   19.9464],
-   #[93.2000,   21.9511],
-   #[93.2000,   24.3700],
-   #[94.2000,   26.3747],
-   #[94.7611,   28.5611],
-   #[95.2000,   30.7983],
-   #[94.0657,   32.2000],
-   #[91.6468,   32.2000],
-   #[89.2279,   32.2000],
-   #[86.8090,   32.2000],
-   #[84.8616,   31.0616],
-   #[82.7996,   30.2000],
-   #[80.5621,   29.7621],
-   #[78.5587,   28.7587],
-   #[76.3713,   28.2000],
-   #[74.3666,   27.2000],
-   #[73.2000,   28.9209],
-   #[70.9430,   29.2000],
-   #[68.6635,   28.8635],
-   #[66.6602,   27.8602],
-   #[64.5147,   27.2000],
-   #[62.5100,   26.2000],
-   #[60.5053,   25.2000],
-   #[58.3540,   24.5540],
-   #[56.4960,   23.2000],
-   #[54.3474,   22.5474],
-   #[52.0724,   22.2000],
-   #[50.0479,   21.2479],
-   #[48.0445,   20.2445],
-   #[46.2000,   21.2245],
-   #[45.6394,   23.2000],
-   #[43.2205,   23.2000],
-   #[41.2158,   22.2000],
-   #[39.2111,   21.2000],
-   #[37.1460,   20.3460],
-   #[35.1426,   19.3426],
-   #[33.1393,   18.3393],
-   #[30.8431,   18.0431],
-   #[28.7734,   17.2000],
-   #[26.7687,   18.2000],
-   #[24.5403,   17.7403],
-   #[22.5370,   16.7370],
-   #[20.7547,   15.2000],
-   #[18.7500,   14.2000],
-   #[16.7453,   13.2000],
-   #[14.7406,   12.2000],
-   #[12.7359,   11.2000],
-   #[10.8099,   10.0099],
-   # [8.7265,    9.2000],
-   # [6.8033,    8.0033]
-   # ])
-   # max_curvature = 1.5
-   # n_contsamp = 50
-   # n_pntsamp = 10
-   # print bcf.extr_raw_points(C, max_curvature, n_contsamp, n_pntsamp)
+        bcf.test()
 

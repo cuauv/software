@@ -123,17 +123,27 @@ class VisionSocketHandler(tornado.websocket.WebSocketHandler):
         if module not in module_frameworks:
             return
 
-        option_name = data['option']
-        new_value = data['value']
-        #print("Received option update: " + str((option_name, new_value)))
-        value_list = list(module_frameworks[module].get_option_values()[option_name][1])
-        value_list[0] = new_value
-        module_frameworks[module].write_option(option_name, value_list)
+        # Handle option updates
+        if 'option' in data:
+            option_name = data['option']
+            new_value = data['value']
+            #print("Received option update: " + str((option_name, new_value)))
+            value_list = list(module_frameworks[module].get_option_values()[option_name][1])
+            value_list[0] = new_value
+            module_frameworks[module].write_option(option_name, value_list)
+        elif 'toggle' in data:
+            self.toggle_module(module)
 
     def on_close(self):
         print("Connection to vision gui closed")
         remove_websocket_listener(self.module_name, self)
         module_listeners[self.module_name] -= 1
+
+    def toggle_module(self, module_name):
+        module = module_name.split("_")[0]
+        print("Toggling module {}".format(module))
+        module_var = shm._eval("vision_modules.{}".format(module))
+        module_var.set(not module_var.get())
 
 
 class VisionIndexHandler(BaseHandler):
@@ -226,3 +236,4 @@ class VisionModuleHandler(BaseHandler):
 class VisionActiveModulesHandler(BaseHandler):
     def get(self):
         return self.write(json.dumps(get_active_modules()))
+

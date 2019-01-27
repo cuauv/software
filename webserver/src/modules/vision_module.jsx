@@ -69,6 +69,9 @@ class ImageContainer extends React.Component {
         };
         this.imageName = this.props.image.image_name;
         this.imageId = formatId(this.imageName);
+        // Reset FPS if a frame is not received for 1 second
+        this.resetFps = this.resetFps.bind(this);
+        this.fpsTimeout = setTimeout(this.resetFps, 1000);
     }
 
     componentDidMount() {
@@ -77,12 +80,15 @@ class ImageContainer extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return this.state.data !== nextState.data;
+        return this.state.data !== nextState.data
+            || this.state.fps !== nextState.fps;
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.image !== nextProps.image) {
             const currTime = Date.now();
+            clearTimeout(this.fpsTimeout);
+            this.fpsTimeout = setTimeout(this.resetFps, 1000);
             this.setState({
                 data: nextProps.image.image,
                 lastFrameTime: currTime,
@@ -103,6 +109,12 @@ class ImageContainer extends React.Component {
         const color = canvasContext.getImageData(x, y, 1, 1).data;
         setCoordinate(x, y);
         setColorPicker(color[0], color[1], color[2]);
+    }
+
+    resetFps() {
+        this.setState({
+            fps: 0,
+        });
     }
 
     render() {
@@ -232,6 +244,7 @@ export class VisionModule extends React.Component {
         this.socket = null;
         this.handleOptionUpdate = this.handleOptionUpdate.bind(this);
         this.clearImages = this.clearImages.bind(this);
+        this.toggleModule = this.toggleModule.bind(this);
     }
 
     getOrderedImages() {
@@ -261,6 +274,13 @@ export class VisionModule extends React.Component {
             module: window.MODULE_NAME,
             option: option.option_name,
             value: value
+        }));
+    }
+
+    toggleModule() {
+        this.socket.send(JSON.stringify({
+            module: window.MODULE_NAME,
+            toggle: true,
         }));
     }
 
@@ -304,6 +324,7 @@ export class VisionModule extends React.Component {
                     onChange={togglePreprocessorItems}
                 />
                 <label for="preprocessor-toggle">Toggle Preprocessor Options</label>
+                <button id="toggle-module" class="margin-left-right" onClick={this.toggleModule}>Toggle Module</button>
                 <button id="clear-images" class="margin-left-right" onClick={this.clearImages}>Clear Images</button>
                 <span id="coordinate" class="margin-left-right"></span>
                 <span id="color-picker" class="margin-left-right"></span>

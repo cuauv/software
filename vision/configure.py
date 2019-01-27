@@ -4,8 +4,6 @@ import os
 
 build = ninja_common.Build('vision')
 
-build.install('auv-vision-gui', f='vision/gui/server.py')
-
 build.install('auv-poster', f='vision/modules/poster.py')
 
 build.build_shared('auv-camera-message-framework', ['c/camera_message_framework.cpp'], deps=['pthread'], auv_deps=['utils'])

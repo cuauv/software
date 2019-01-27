@@ -12,7 +12,9 @@ import bisect #python so cool
 MAX_FRAME_DIFF = 20
 
 camera_map = {"Forward": "camera.frame_num_forward",
-              "Downward": "camera.frame_num_downward"
+              "Downward": "camera.frame_num_downward",
+              "ForwardRight": "camera.frame_num_forward_right",
+              "ForwardLeft": "camera.frame_num_forward_left",
              }
 
 FPS = 30 #Fps limit for log frame processing

@@ -4,7 +4,7 @@ IFS=$'\n\t'
 shopt -s dotglob nullglob
 
 # start config
-repoPath="$HOME/opensource/software"
+repoPath="$HOME/opensource/subcode"
 githubURL="git@github.com:cuauv/software.git"
 dateFormat="%D"
 # end config

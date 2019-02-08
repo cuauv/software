@@ -37,7 +37,7 @@ def hash_video(filename):
         if success:
             hasher.update(frame)
         else:
-            print "Unable to hash full video, video incomplete?"
+            print("Unable to hash full video, video incomplete?")
             break
 
     return hasher.hexdigest()

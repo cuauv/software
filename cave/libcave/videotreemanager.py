@@ -2,9 +2,9 @@
 from gi.repository import Gtk, Gdk, GLib
 from misc.log import with_logging
 
-from libcave.video import Video
-from videofinder import VideoFinder
-from libcave.tag import Tag
+from cave.libcave.video import Video
+from cave.libcave.videofinder import VideoFinder
+from cave.libcave.tag import Tag
 
 @with_logging
 class VideoTreeManager:

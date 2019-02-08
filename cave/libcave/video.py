@@ -1,10 +1,10 @@
 
-from sql import SqlClass
+from cave.libcave.sql import SqlClass
 from misc.log import with_logging
 
 import os
 
-from tag import Tag
+from cave.libcave.tag import Tag
 
 @with_logging
 class Video(SqlClass):

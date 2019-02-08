@@ -4,8 +4,8 @@ import os
 
 from gi.repository import Gtk, Gdk
 from misc.log import with_logging
-from libcave.cameralink import camera_map
-from meta import MetaParser
+from cave.libcave.cameralink import camera_map
+from cave.meta import MetaParser
 
 __location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
 

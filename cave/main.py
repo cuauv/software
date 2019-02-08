@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os, signal, sys
 import logging
@@ -11,26 +11,26 @@ from gi.repository import Gtk, Gdk, GLib
 import argparse
 import math
 
-from libcave.tags.registered_tags import load_tag_modules
+from cave.libcave.tags.registered_tags import load_tag_modules
 
-from addvideo import AddVideo
-from editvideo import EditVideo
-from addtag import AddTag
-from testwindow import TestWindow
-from gui.filepicker import FilePicker, FileTypes
-from libcave.database import Database
-from statusbarmanager import StatusBarManager
+from cave.addvideo import AddVideo
+from cave.editvideo import EditVideo
+from cave.addtag import AddTag
+from cave.testwindow import TestWindow
+from cave.gui.filepicker import FilePicker, FileTypes
+from cave.libcave.database import Database
+from cave.statusbarmanager import StatusBarManager
 from misc.log import init_logging, with_logging
-from libcave.videotreemanager import VideoTreeManager
-from libcave.video import Video
-from libcave.tag import Tag
-from timeline import Timeline
-from videobox import VideoBox
-from videoplayer import VideoPlayer
-from logplayer import LogPlayer
-from libcave.cameralink import CameraLink
-from videopreviewmanager import VideoPreviewManager
-from libcave.videoutils import hash_video
+from cave.libcave.videotreemanager import VideoTreeManager
+from cave.libcave.video import Video
+from cave.libcave.tag import Tag
+from cave.timeline import Timeline
+from cave.videobox import VideoBox
+from cave.videoplayer import VideoPlayer
+from cave.logplayer import LogPlayer
+from cave.libcave.cameralink import CameraLink
+from cave.videopreviewmanager import VideoPreviewManager
+from cave.libcave.videoutils import hash_video
 
 from misc.utils import register_exit_signals
 

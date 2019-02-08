@@ -6,14 +6,14 @@ import argparse
 import math
 
 from time import sleep, time
-from tags.registered_tags import load_tag_modules, get_class_from_tagtype
+from cave.libcave.tags.registered_tags import load_tag_modules, get_class_from_tagtype
 load_tag_modules()
-from tag import Tag
-from video import Video
-from database import Database
+from cave.libcave.tag import Tag
+from cave.libcave.video import Video
+from cave.libcave.database import Database
 from misc.log import init_logging, with_logging
-from videoutils import hash_video
-from registered_elements import get_registered_elements
+from cave.libcave.videoutils import hash_video
+from cave.libcave.registered_elements import get_registered_elements
 
 @with_logging
 class Cave:
@@ -23,15 +23,15 @@ class Cave:
     def load_db(self,path):
         self.db = Database(path)
         if self.db is not None and self.db.error:
-            print "Failed to load database %s" % path
+            print("Failed to load database %s" % path)
         if self.db is not None and path is not None:
             path = os.path.abspath(path)
-            print "Opened database %s" % os.path.basename(path)
+            print("Opened database %s" % os.path.basename(path))
     #Print out database table
     def printDB(self):
         if (self.db is not None):
             for item in self.db.fetchall():
-                print item
+                print(item)
     # add new tag to the database
     def addTag(self,name,missionElement,tag_type):
         Tag.tag_new(name=name,missionElement=missionElement,tag_type=tag_type)

@@ -1,6 +1,6 @@
 from misc.log import with_logging
-from executor import Executor
-from tags.registered_tags import get_class_from_tagtype
+from cave.libcave.executor import Executor
+from cave.libcave.tags.registered_tags import get_class_from_tagtype
 
 from time import time
 

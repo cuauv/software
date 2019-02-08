@@ -2,7 +2,7 @@ import os
 import sys
 from gi.repository import Gtk
 from misc.log import with_logging
-from addvideo import AddVideo
+from cave.addvideo import AddVideo
 
 
 __location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))

@@ -4,22 +4,22 @@ from time import time
 from gi.repository import Gtk, Gdk, GLib
 from misc.log import with_logging
 
-from libcave.video import Video
+from cave.libcave.video import Video
 
-from libcave.testexecutor import TestExecutor
-from libcave.trainexecutor import TrainExecutor
-from libcave.splitvideos import SplitVideos
+from cave.libcave.testexecutor import TestExecutor
+from cave.libcave.trainexecutor import TrainExecutor
+from cave.libcave.splitvideos import SplitVideos
 
-from libcave.registered_elements import get_registered_elements, \
-                                get_registered_elements_implementing
-from libcave.util import TimedHysteresis, populate_combo_box
+from cave.libcave.registered_elements import get_registered_elements, \
+                                             get_registered_elements_implementing
+from cave.libcave.util import TimedHysteresis, populate_combo_box
 
 try:
     import pygame
     pygame_present = True
     pygame.init()
 except ImportError:
-    print "Warning: pygame is not installed, there will be no sound!"
+    print("Warning: pygame is not installed, there will be no sound!")
     pygame_present = False
 
 __location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
@@ -111,7 +111,7 @@ class TestWindow:
             if pygame_present:
                 try:
                     pygame.mixer.Sound(os.path.join(__location__,"resources/ding.wav")).play()
-                except pygame.error, e:
+                except pygame.error as e:
                     self.log.warning("Playing the ding failed... " + str(e))
             self.testing = False
             self.info_text.set_text("")
@@ -179,7 +179,7 @@ class TestWindow:
 
         #Populate mission element dropdown
         self.elements = get_registered_elements().keys()
-        self.elements.sort()
+        self.elements = sorted(self.elements)
         populate_combo_box(self.mission_element_combo, self.elements)
 
         #Get the main window

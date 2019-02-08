@@ -1,5 +1,5 @@
 from misc.log import with_logging
-from executor import Executor
+from cave.libcave.executor import Executor
 
 from time import time
 import cv2

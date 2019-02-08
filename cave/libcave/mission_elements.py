@@ -1,4 +1,4 @@
-from registered_elements import register_mission_element
+from cave.libcave.registered_elements import register_mission_element
 
 import shm
 

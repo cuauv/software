@@ -1,7 +1,7 @@
-from sql import SqlClass
+from cave.libcave.sql import SqlClass
 from misc.log import with_logging
 
-from libcave.tags.registered_tags import get_class_from_tagtype, \
+from cave.libcave.tags.registered_tags import get_class_from_tagtype, \
                                               get_tagtype_names
 
 #Maps python types to sqlite keywords
@@ -41,7 +41,7 @@ class Tag(SqlClass):
         self.update()
 
     def get_parent_video(self):
-        from video import Video #need to keep this here to avoid circular import...
+        from cave.libcave.video import Video #need to keep this here to avoid circular import...
         vids = Video.get_all(filter_str="WHERE id=%d" % self.vid)
         if len(vids) != 1:
             self.log.error("ERROR: invalid parent video")

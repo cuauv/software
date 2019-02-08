@@ -3,16 +3,16 @@ import os
 import shutil
 import traceback
 
-from video import Video
-from tag import Tag
-from videoutils import hash_video
+from cave.libcave.video import Video
+from cave.libcave.tag import Tag
+from cave.libcave.videoutils import hash_video
 
 import datetime
 import time
 
 from misc.log import with_logging
 
-from sql import SqlClass
+from cave.libcave.sql import SqlClass
 
 #Increment whenever SQL tables change in a way that will break old files.
 #You should also specify an upgrade function (see below) to provide

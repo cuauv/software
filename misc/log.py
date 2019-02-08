@@ -1,5 +1,6 @@
+#!/usr/bin/env python3
 import logging
-import logger_formatting
+import misc.logger_formatting as logger_formatting
 import sys
 import os
 

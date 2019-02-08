@@ -66,7 +66,7 @@ class SqlClass:
             if k not in args.keys():
                 raise ValueError("SQL requires key %s be provided" % str(k))
         if set(args.keys()) != set(keys):
-            print "akeys %s, keys %s" % (str(set(args.keys())), str(set(keys)))
+            print("akeys %s, keys %s" % (str(set(args.keys())), str(set(keys))))
             raise ValueError("Too many parameters")
         cls.c.execute("INSERT INTO %s(%s) values (%s)" % 
             (cls.table_name, ','.join(args.keys()), ','.join(['?' for k in args.keys()])), args.values())

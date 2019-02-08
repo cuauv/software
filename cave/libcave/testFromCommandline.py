@@ -3,16 +3,16 @@ import os, sys
 from time import time
 
 from misc.log import with_logging
-from database import Database
-from video import Video
-import tags.notvisible, tags.centerpointvisible, tags.centerpointvisibledirection
-from testexecutor import TestExecutor
-from trainexecutor import TrainExecutor
-from splitvideos import SplitVideos
+from cave.libcave.database import Database
+from cave.libcave.video import Video
+import cave.libcave.tags.notvisible, cave.libcave.tags.centerpointvisible, cave.libcave.tags.centerpointvisibledirection
+from cave.libcave.testexecutor import TestExecutor
+from cave.libcave.trainexecutor import TrainExecutor
+from cave.libcave.splitvideos import SplitVideos
 
-from registered_elements import get_registered_elements, \
+from cave.libcave.registered_elements import get_registered_elements, \
                                 get_registered_elements_implementing
-from util import TimedHysteresis, populate_combo_box
+from cave.libcave.util import TimedHysteresis, populate_combo_box
 
 __location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0]))) 
 

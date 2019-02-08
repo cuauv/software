@@ -1,6 +1,6 @@
 import os
 from threading import Thread, Event
-from videoutils import hash_video
+from cave.libcave.videoutils import hash_video
 from misc.log import with_logging
 
 @with_logging

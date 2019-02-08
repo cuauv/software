@@ -5,9 +5,9 @@ import os
 from gi.repository import Gtk, Gdk
 from misc.log import with_logging
 
-from registered_elements import get_registered_elements, get_registered_elements_implementing
-from tags.registered_tags import get_tagtype_names, get_required_functions_of_tag
-from util import populate_combo_box
+from cave.libcave.registered_elements import get_registered_elements, get_registered_elements_implementing
+from cave.libcave.tags.registered_tags import get_tagtype_names, get_required_functions_of_tag
+from cave.libcave.util import populate_combo_box
 
 __location__ = os.path.dirname(os.path.realpath(os.path.abspath(sys.argv[0])))
 
@@ -78,7 +78,7 @@ class GenericGladeParser:
 
         #Populate dropdowns
         self.elements = get_registered_elements().keys()
-        self.elements.sort()
+        self.elements = sorted(self.elements)
         populate_combo_box(self.mission_element_combo, self.elements)
         self.set_tag_types([])
 

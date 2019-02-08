@@ -9,12 +9,12 @@ from time import sleep, time
 try:
     import cv2
 except:
-    print "python-opencv is required for video access. Please install."
+    print("python-opencv is required for video access. Please install.")
 
-from libcave.video import Video
-from libcave.cameralink import CameraLink
-from libcave.tags.registered_tags import get_class_from_tagtype
-from libcave.videoutils import verify_video
+from cave.libcave.video import Video
+from cave.libcave.cameralink import CameraLink
+from cave.libcave.tags.registered_tags import get_class_from_tagtype
+from cave.libcave.videoutils import verify_video
 
 from misc.log import with_logging, supress_output
 

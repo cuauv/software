@@ -1,6 +1,6 @@
 from cave.libcave.tags.tagtype import TagType
-from registered_tags import register_tag_type, \
-                            require_mission_elements_to_implement
+from cave.libcave.tags.registered_tags import register_tag_type, \
+                                         require_mission_elements_to_implement
 
 from misc.log import with_logging
 

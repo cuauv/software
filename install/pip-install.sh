@@ -52,6 +52,9 @@ packages3=(
 
     pylint
     rope # Refactoring
+
+    pgi
+    pycairo
 )
 
 pip2 install "${packages[@]}" "${packages2[@]}"

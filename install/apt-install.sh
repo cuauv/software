@@ -44,8 +44,7 @@ packages=(
     libdc1394-22-dev
     libswscale-dev
     python3-yaml
-    python-gi-cairo
-    python-cairo
+    python3-gi-cairo
 
     # trogdor
     expect-dev

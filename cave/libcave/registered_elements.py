@@ -11,7 +11,7 @@ def register_mission_element(obj):
     return obj
 
 #Carry out registration by loading this class
-import mission_elements
+import cave.libcave.mission_elements
 import inspect
 
 #returns all mission elements registered with CAVE

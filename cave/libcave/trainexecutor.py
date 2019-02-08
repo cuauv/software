@@ -2,9 +2,9 @@ from time import sleep, time
 from misc.log import with_logging
 import shm
 
-from executor import Executor
+from cave.libcave.executor import Executor
 
-from tags.registered_tags import get_class_from_tagtype
+from cave.libcave.tags.registered_tags import get_class_from_tagtype
 
 @with_logging
 class TrainExecutor(Executor):

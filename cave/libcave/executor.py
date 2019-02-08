@@ -5,11 +5,11 @@ from misc.log import with_logging
 
 from time import sleep
 
-from tag import Tag
-from video import Video
+from cave.libcave.tag import Tag
+from cave.libcave.video import Video
 
-from registered_elements import get_registered_elements
-from tags.registered_tags import get_class_from_tagtype, get_required_functions_of_tag
+from cave.libcave.registered_elements import get_registered_elements
+from cave.libcave.tags.registered_tags import get_class_from_tagtype, get_required_functions_of_tag
 
 @with_logging
 class ExecutorTimeout(Thread):

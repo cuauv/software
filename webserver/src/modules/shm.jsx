@@ -34,7 +34,7 @@ class SHMGroup extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            expanded: false,
+            expanded: true,
         };
         this.toggleExpand = this.toggleExpand.bind(this);
     }
@@ -55,10 +55,13 @@ class SHMGroup extends React.Component {
 
     render() {
         return (
-            <Panel class="shm-group" header={this.props.name} eventKey={this.props.key} bsStyle="info" collapsible expanded={this.state.expanded} onSelect={this.toggleExpand}>
-                <Table striped condensed hover fill>
-                    {this.expandedGroup()}
-                </Table>
+            <Panel class="shm-group" eventKey={this.props.key} bsStyle="info" collapsible expanded={this.state.expanded} onSelect={this.toggleExpand}>
+                <Panel.Heading>{this.props.name}</Panel.Heading>
+                <Panel.Body>
+                    <Table striped condensed hover fill>
+                        {this.expandedGroup()}
+                    </Table>
+                </Panel.Body>
             </Panel>
         );
     }
@@ -78,7 +81,7 @@ class SHMGroupContent extends React.Component {
 
     handleGroupUpdate(message) {
         let data = JSON.parse(message.data);
-        console.log(data.type);
+        //console.log(data.type);
         this.setState(data.data);
     }
 
@@ -118,7 +121,7 @@ export class SHM extends React.Component {
 
     handleGroupListUpdate(message) {
         let data = JSON.parse(message.data);
-        console.log(data.type);
+        //console.log(data.type);
         this.setState({groups: data.data});
     }
 

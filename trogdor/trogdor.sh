@@ -37,11 +37,11 @@ VISION_CONFIG=$ROOT/vision/configs/master.yaml
 
 if [ "$SUBMARINE" = "castor" ]; then
   SERVICES=(seriald gx4d kalmand navigated controld3 shmserver ueye
-  visiongui cameras webgui modules uptime hydromathd
+  cameras webgui modules uptime hydromathd
   dvld leds deadman)
 elif [ "$SUBMARINE" = "pollux" ]; then
   SERVICES=(seriald gx4d kalmand navigated controld3 shmserver ueye
-  visiongui cameras webgui modules uptime hydromathd deadman
+  cameras webgui modules uptime hydromathd deadman
   )
 else
   echo "Unsupported submarine! Must be set to one of { artemis, apollo }!"
@@ -156,7 +156,6 @@ case $COMMAND in
             led) fork "auv-led daemon" "led" ;;
             deadman) fork "auv-deadman" "deadman" ;;
             uptime) fork "auv-uptimed" "uptime" ;;
-            visiongui) fork "auv-vision-gui" "vision-gui" ;;
             webgui) invoke "cd /home/software/cuauv/software/webserver" && fork "auv-webserver" "webserver" ;;
             hydromathd) fork "auv-hydromathd" "hydromathd" ;;
             cameras) fork "auv-start-cameras" "start-cameras" ;;
@@ -183,7 +182,6 @@ case $COMMAND in
             led) pkill "/home/software/misc/led.py" ;;
             deadman) pkill "auv-deadman" ;;
             uptime) pkill "auv-uptimed" ;;
-            visiongui) pkill "auv-vision-gui" ;;
             webgui) pkill "auv-webserver" ;;
             hydromathd) pkill "auv-hydromathd" ;;
             cameras) pkill "auv-start-cameras" ;;
@@ -224,7 +222,6 @@ case $COMMAND in
             led) servicestatus "/home/software/trunk/misc/hydro_reset.py" "led" ;;
             deadman) servicestatus "auv-deadman" "deadman" ;;
             uptime) servicestatus "auv-uptimed" "uptime" ;;
-            visiongui) servicestatus "auv-vision-gui" "visiongui" ;;
             webgui) servicestatus "auv-webserver" "webgui" ;;
             hydromathd) servicestatus "auv-hydromathd" "hydromathd" ;;
             cameras) servicestatus "auv-start-cameras" "cameras" ;;
@@ -250,7 +247,6 @@ case $COMMAND in
             led) assertservice "led" "auv-led daemon" ;;
             deadman) assertservice "deadman" "auv-deadman" ;;
             uptime) assertservice "uptime" "auv-uptimed" ;;
-            visiongui) assertservice "visiongui" "auv-vision-gui" ;;
             webgui) assertservice "webgui" "auv-webserver" ;;
             hydromathd) assertservice "hydromathd" "auv-hydromathd" ;;
             cameras) assertservice "cameras" "auv-start-cameras" ;;

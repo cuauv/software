@@ -19,8 +19,8 @@ log () {
 
 pids=""
 startm() {
-    CMD="/home/software/cuauv/workspaces/worktrees/master/misc/startm.sh $1 $2"
   LGN="$1""@""$2""-module"
+  CMD="/home/software/cuauv/workspaces/worktrees/master/misc/startm.sh $1 $2 $LGN"
   log "Forking \"$CMD &> $LOGS/$LGN.log\"."
   echo "Starting $CMD at `date -u +"%Y/%m/%d %H:%M:%S UTC"`" >> $LOGS/$LGN.log
   $CMD&

@@ -15,12 +15,11 @@ class VideoWriter:
         self.frame_count = 0
         self.direction = direction
 
-        # DayName-Month-DayNumber-Year_Hours-Minutes-Seconds-AM/PM
-        time_str = datetime.today().strftime("%a-%b-%d-%Y_%I-%M-%S-%p")
-
         if filename:
             self.log_path = filename
         else:
+            # DayName-Month-DayNumber-Year_Hours-Minutes-Seconds-AM/PM
+            time_str = datetime.today().strftime("%a-%b-%d-%Y_%I-%M-%S-%p")
             name = '{}_{}.avi'.format(direction, time_str)
             self.log_path = os.path.join(log_base_path, name)
 
@@ -43,3 +42,9 @@ class VideoWriter:
                                                 (mat.shape[1], mat.shape[0]))
 
         self.video_writer.write(mat)
+
+    def close(self):
+        if self.video_writer is not None:
+            self.video_writer.release()
+            self.video_writer = None
+

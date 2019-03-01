@@ -37,6 +37,8 @@ packages=(
     scipy
 
     protobuf
+
+    fire
 )
 
 packages2=(

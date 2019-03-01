@@ -38,10 +38,10 @@ VISION_CONFIG=$ROOT/vision/configs/master.yaml
 if [ "$SUBMARINE" = "castor" ]; then
   SERVICES=(seriald gx4d kalmand navigated controld3 shmserver ueye
   cameras webgui modules uptime hydromathd
-  dvld leds deadman)
+  dvld leds deadman log redis)
 elif [ "$SUBMARINE" = "pollux" ]; then
   SERVICES=(seriald gx4d kalmand navigated controld3 shmserver ueye
-  cameras webgui modules uptime hydromathd deadman
+  cameras webgui modules uptime hydromathd deadman log redis
   )
 else
   echo "Unsupported submarine! Must be set to one of { artemis, apollo }!"
@@ -161,6 +161,7 @@ case $COMMAND in
             cameras) fork "auv-start-cameras" "start-cameras" ;;
             modules) fork "auv-start-modules" "start-modules" ;;
             led|leds) fork "auv-led daemon" "led" ;;
+            redis) fork "redis-server" "redis" ;;
             *) log "Service \"$SERVICE\" not found; aborting." ;;
         esac
     ;;
@@ -187,6 +188,7 @@ case $COMMAND in
             cameras) pkill "auv-start-cameras" ;;
             modules) pkill "auv-start-modules" ;;
             led|leds) pkill "auv-led" ;;
+            redis) pkill "redis-server" ;;
             *) log "Service \"$SERVICE\" not found; aborting." ;;
         esac
     ;;
@@ -227,6 +229,7 @@ case $COMMAND in
             cameras) servicestatus "auv-start-cameras" "cameras" ;;
             modules) servicestatus "auv-start-modules" "modules" ;;
             led|leds) servicestatus "auv-led" "led" ;;
+            redis) servicestatus "redis-server" "redis" ;;
             *) log "Service \"$SERVICE\" not found; aborting." ;;
         esac
     ;;
@@ -260,6 +263,7 @@ case $COMMAND in
                     log "ueye seems to be ""$GREEN""UP""$ENDCOLOR""."
                 fi
             ;;
+            redis) assertservice "redis" "redis-server" ;;
             *) log "Service \"$SERVICE\" not found; aborting." ;;
         esac
     ;;

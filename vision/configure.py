@@ -19,6 +19,8 @@ build.install('auv-start-cameras', f='vision/camera_manager.py')
 build.install('auv-webcam-camera', f='vision/capture_sources/GenericVideoCapture.py')
 build.install('auv-video-camera', f='vision/capture_sources/Video.py')
 build.install('auv-dfk-camera', f='vision/capture_sources/DFK23U445.py')
+build.install('auv-camera-stream-server', f='vision/capture_sources/stream_server.py')
+build.install('auv-camera-stream-client', f='vision/capture_sources/stream_client.py')
 
 camera_apis = { "ueye.h" : ("ueye", "UeyeCamera.cpp", "ueye_api"),
                "m3api/xiApi.h" : ("ximea", "XimeaCamera.cpp", "m3api")

@@ -73,7 +73,12 @@ invoke () {
 fork () {
   log "Forking \"$1 &> $LOGS/$2.log\"."
   echo "Starting $1 at `date -u +"%Y/%m/%d %H:%M:%S UTC"`" >> $LOGS/$2.log
-  stdbuf -oL -eL $1 &>> $LOGS/$2.log &
+  # Handle optional filter command argument
+  if [ $# -ge 3 ]; then
+    stdbuf -oL -eL $1 | $3 &>> $LOGS/$2.log &
+  else
+    stdbuf -oL -eL $1 &>> $LOGS/$2.log &
+  fi
 }
 
 set_priority() {
@@ -144,7 +149,7 @@ case $COMMAND in
             aslam|aslamd) fork "auv-aslamd" "aslamd" ;;
             linearizer|linearizerd) fork "auv-linearizerd" "linearizerd" ;;
             seriald|serial) fork "auv-seriald" "seriald" ;;
-            gx4d|gx4) fork "auv-3dmgx4d $GX_PORT" "gx4d" ;;
+            gx4d|gx4) fork "auv-3dmgx4d $GX_PORT" "gx4d" "grep -v '^[0-9]\+$'" ;;
             gx1d|gx1) fork "auv-3dmgd $GX_PORT" "gx1d" ;;
             dvld|dvl) fork "auv-dvld $DVL_PORT" "dvld" ;;
             kalmand|kalman) fork "auv-kalmand" "kalmand" && sleep 0.5 && set_priority "auv-kalmand" "-19" ;;

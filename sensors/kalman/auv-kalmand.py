@@ -18,6 +18,10 @@ from settings import dt
 from kalman_unscented import UnscentedKalmanFilter
 from kalman_position import PositionFilter
 
+from conf.vehicle import is_mainsub
+
+# Offset for GX4 mounting orientation
+GX_ORIENTATION_OFFSET = Quaternion(hpr=[0, 180, 0])
 rec_get_attr = lambda s: \
                  reduce(lambda acc, e: getattr(acc, e),
                         s.split('.'), shm)
@@ -31,6 +35,7 @@ roll_rate_var = rec_get_attr(sensors["roll_rate"])
 
 depth_var = rec_get_attr(sensors["depth"])
 depth_offset_var = rec_get_attr(sensors["depth_offset"])
+depth_factor = 2.9 if is_mainsub else 1
 
 quat_group = rec_get_attr(sensors["quaternion"])
 
@@ -89,14 +94,17 @@ def fx_euler(x, dt):
 def hx_euler(x):
     return x
 
+def get_orientation_shm(quat_values):
+    return get_orientation([quat_values.q0, quat_values.q1, quat_values.q2, quat_values.q3])
+
 def get_orientation(quat_values):
     q_offset = Quaternion(hpr=(shm.kalman_settings.heading_offset.get(), 0, 0))
-    quat = Quaternion(q=[quat_values.q0, quat_values.q1, quat_values.q2, quat_values.q3])
+    quat = Quaternion(q=quat_values)
     return q_offset * quat
 
 
 quat_values = quat_group.get()
-quat = get_orientation(quat_values).q
+quat = get_orientation_shm(quat_values).q
 quat_orientation_filter = UnscentedKalmanFilter(7, fx_quat, 7, hx_quat, dt, .1)
 quat_orientation_filter.x_hat = np.array([quat[0], quat[1], quat[2], quat[3], 0, 0, 0])
 quat_orientation_filter.P *= .5
@@ -109,7 +117,7 @@ quat_orientation_filter.R = np.array([[90, 0, 0, 0, 0, 0, 0],
                                       [0, 0, 0, 0, 0, 0, 1.5]])
 
 quat_values = quat_group.get()
-hpr = get_orientation(quat_values).hpr()
+hpr = get_orientation_shm(quat_values).hpr()
 euler_orientation_filter = UnscentedKalmanFilter(6, fx_euler, 6, hx_euler, dt, .1)
 euler_orientation_filter.x_hat = np.array([hpr[0], hpr[1], hpr[2], 0, 0, 0])
 euler_orientation_filter.P *= .5
@@ -137,13 +145,15 @@ def get_velocity(sub_quat):
         # Rotate DVL velocities
         # vel[0] *= -1
         # vel[1] *= -1
+        # Swap x and y axes
+        vel[0], vel[1] = vel[1], vel[0]
 
         vel = convert_dvl_velocities(sub_quat, vel)
 
     return vel
 
 def get_depth():
-    return depth_var.get() - depth_offset_var.get()
+    return (depth_var.get() - depth_offset_var.get()) * depth_factor
 
 sub_quat = Quaternion(q=quat_orientation_filter.x_hat[:4])
 
@@ -174,14 +184,16 @@ while True:
         #     iteration = 0
 
 
-        heading_rate_in = math.radians(heading_rate_var.get())
-        pitch_rate_in = math.radians(pitch_rate_var.get())
-        roll_rate_in = math.radians(roll_rate_var.get())
-        
+        hpr_rate_vec = np.array([roll_rate_var.get(), pitch_rate_var.get(), heading_rate_var.get()])
+        hpr_rate_vec = np.eye(3, 3).dot(GX_ORIENTATION_OFFSET.matrix()).dot(hpr_rate_vec)
+        heading_rate_in = math.radians(hpr_rate_vec[2])
+        pitch_rate_in = math.radians(hpr_rate_vec[1])
+        roll_rate_in = math.radians(hpr_rate_vec[0])
 
         # Bugs arise due to quaternion aliasing, so we choose the quaternion
         # closest to the actual state
         quat_values = quat_group.get()
+        quat_values = (Quaternion(q=[quat_values.q0, quat_values.q1, quat_values.q2, quat_values.q3]) * GX_ORIENTATION_OFFSET).q
         actual_quat = get_orientation(quat_values).q
         negated_quat = [-i for i in actual_quat]
         kalman_quat = None

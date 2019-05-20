@@ -1,0 +1,22 @@
+ports = [
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if00-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if01-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if02-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if03-port0"
+
+        "/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if00-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if01-port0" # thruster
+        "/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if02-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if03-port0" # PD
+
+        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if00-port0" # merge
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if01-port0" gx
+        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if02-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if03-port0"
+
+        # these ones aren't connecting properly
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if00-port0"
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if01-port0"
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if02-port0"
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if03-port0"
+]

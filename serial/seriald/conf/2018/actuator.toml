@@ -18,8 +18,3 @@ Act10Trigger = "actuator_desires.trigger_10"
 Act11Trigger = "actuator_desires.trigger_11"
 Act12Trigger = "actuator_desires.trigger_12"
 Act13Trigger = "actuator_desires.trigger_13"
-
-G1DC = "actuator_status.g1dc"
-G2DC = "actuator_status.g2dc"
-G3DC = "actuator_status.g3dc"
-G4DC = "actuator_status.g4dc"

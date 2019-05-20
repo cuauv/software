@@ -1,11 +1,8 @@
 [devices.merge.vars]
-VehicleCurrent = "merge_status.total_current"
-VehicleVoltage = "merge_status.total_voltage"
-MissionLED = "merge.mission_led"
-MissionStart = "merge_status.mission_start"
-SubRestart = "merge.arm_for_shutdown"
-listenKill = "merge.hardkill_switch_present_please_dont_change"
-HardKill = "switches.hard_kill"
-
-[devices.merge.options]
-canHardKill = true
+Vout = "merge_status.total_voltage"
+overrideKill = "merge.override_kill"
+restart = "merge.arm_for_restart"
+useInternADC = "merge.use_internal_adc"
+isRestarting = "merge_status.is_restarting"
+reading = "merge_status.raw_adc"
+isKilled = "switches.hard_kill"

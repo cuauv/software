@@ -11,11 +11,19 @@ if DIR is None:
 
 d = None
 VEHICLE = os.getenv("CUAUV_VEHICLE")
+VEHICLE_TYPE = os.getenv("CUAUV_VEHICLE_TYPE")
 
-if VEHICLE is None or not VEHICLE in ["castor", "pollux"]:
+if VEHICLE is None or not VEHICLE in ["odysseus", "ajax"]:
     sys.stderr.write("vehicle.py: CUAUV_VEHICLE must be set "
-                     "to one of { castor, pollux }.\n")
+                     "to one of { odysseus, ajax }.\n")
     sys.exit(1)
+if VEHICLE_TYPE is None or not VEHICLE_TYPE in ["mainsub", "minisub"]:
+    sys.stderr.write("vehicle.py: CUAUV_VEHICLE_TYPE must be set "
+                     "to one of { mainsub, minisub }.\n")
+    sys.exit(1)
+
+is_mainsub = VEHICLE_TYPE == "mainsub"
+is_minisub = VEHICLE_TYPE == "minisub"
 
 with open(os.path.join(DIR, "conf", "%s.json" % VEHICLE)) as f:
     d = json.load(f)

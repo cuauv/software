@@ -1,32 +1,33 @@
 import os
 
-from test import vehicle, level, Test, CASTOR, POLLUX, WARN, ERR
+from test import vehicle, level, Test, MAINSUB, MINISUB, WARN, ERR
+from conf.vehicle import VEHICLE_TYPE
 
 # Syscheck self-tests, so meta
-@vehicle(POLLUX)
-class IsApollo(Test):
-    def is_pollux():
-        return "pollux" == os.getenv("CUAUV_VEHICLE")
+@vehicle(MINISUB)
+class IsMinisub(Test):
+    def is_minisub():
+        return "minisub" == VEHICLE_TYPE
 
-    class IsApollo(Test):
-        def is_pollux():
-            return "pollux" == os.getenv("CUAUV_VEHICLE")
+    class IsMinisub(Test):
+        def is_minisub():
+            return "minisub" == VEHICLE_TYPE
 
-    @vehicle(CASTOR)
-    class IsArtemis(Test):
-        def is_castor():
-            return "castor" == os.getenv("CUAUV_VEHICLE")
+    @vehicle(MAINSUB)
+    class IsMainsub(Test):
+        def is_mainsub():
+            return "mainsub" == VEHICLE_TYPE
 
-@vehicle(CASTOR)
-class IsArtemis(Test):
-    def is_castor():
-        return "castor" == os.getenv("CUAUV_VEHICLE")
+@vehicle(MAINSUB)
+class IsMainsub(Test):
+    def is_mainsub():
+        return "mainsub" == VEHICLE_TYPE
 
-    class IsArtemis(Test):
-        def is_castor():
-            return "castor" == os.getenv("CUAUV_VEHICLE")
+    class IsMainsub(Test):
+        def is_mainsub():
+            return "mainsub" == VEHICLE_TYPE
 
-    @vehicle(POLLUX)
-    class IsApollo(Test):
-        def is_pollux():
-            return "pollux" == os.getenv("CUAUV_VEHICLE")
+    @vehicle(MINISUB)
+    class IsMinisub(Test):
+        def is_minisub():
+            return "minisub" == VEHICLE_TYPE

@@ -4,6 +4,8 @@ import gevent, termcolor, time, argparse, sys, os, signal
 import test
 from tests import *
 
+from conf.vehicle import VEHICLE_TYPE
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', help='Display verbose output (default: false)', action='store_true')
 parser.add_argument('-c', '--continuous', help='Run in continuous mode (default: false)', action='store_true')
@@ -49,20 +51,18 @@ def run(t, last_result = None):
 
 greenlets = []
 
-cuauv_vehicle = os.environ.get("CUAUV_VEHICLE")
-
-if cuauv_vehicle == 'castor':
-    vehicle_id = test.CASTOR
-elif cuauv_vehicle == 'pollux':
-    vehicle_id = test.POLLUX
+if VEHICLE_TYPE == 'mainsub':
+    vehicle_id = test.MAINSUB
+elif VEHICLE_TYPE == 'minisub':
+    vehicle_id = test.MINISUB
 else:
-    raise ValueError("CUAUV_VEHICLE must be set to one of {castor, pollux}!")
+    raise ValueError("CUAUV_VEHICLE_TYPE must be set to one of {mainsub, minisub}!")
 
 environment_id = 2
 if(not args.environment):
     LAND_DEPTHS = {
-        test.CASTOR: 0.01,
-        test.POLLUX: 0.35,
+        test.MAINSUB: 0.01,
+        test.MINISUB: 0.35,
     }
 
     if shm.kalman.depth.get() > LAND_DEPTHS[vehicle_id]:

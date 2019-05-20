@@ -1,14 +1,2 @@
-[devices.Sensor.vars]
-DepthOffsetWriteVar = "depth.offset"
+[devices.sensor.vars]
 DepthReadVar = "depth.depth"
-PressureReadVar = "pressure.hull"
-TemperatureReadVar = "temperature.hull"
-
-LightShowWriteVar = "leds_internal.light_show"
-# Green and blue are flipped
-PortColorRedWriteVar = "leds_internal.port_color_red"
-PortColorGreenWriteVar = "leds_internal.port_color_blue"
-PortColorBlueWriteVar = "leds_internal.port_color_green"
-StarboardColorRedWriteVar = "leds_internal.starboard_color_red"
-StarboardColorGreenWriteVar = "leds_internal.starboard_color_blue"
-StarboardColorBlueWriteVar = "leds_internal.starboard_color_green"

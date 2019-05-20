@@ -1,29 +1,30 @@
 [devices.PD.vars]
 Enable12V_GX = "power_distribution.enable_12v_gx"
 Enable12V_H2O = "power_distribution.enable_12v_hydrophones"
-Enable12VDCAM = "power_distribution.enable_12v_downcam"
+#Enable12VDCAM = "power_distribution.enable_12v_downcam"
+Enable12V_DownCam = "power_distribution.enable_12v_downcam" # different on ajax?
 Enable12V_X1 = "power_distribution.enable_12v_x1"
 Enable12V_X2 = "power_distribution.enable_12v_x2"
-Enable12V_X3 = "power_distribution.enable_12v_x3"
-Enable12V_DVL = "power_distribution.enable_12v_dvl"
+#Enable12V_X3 = "power_distribution.enable_12v_x3"
+#Enable12V_DVL = "power_distribution.enable_12v_dvl"
 
 Enable5V_HIM = "power_distribution.enable_5v_him"
 Enable5V_Switch = "power_distribution.enable_5v_switch"
-Enable5V_X1 = "power_distribution.enable_5v_x1"
-Enable5V_X2 = "power_distribution.enable_5v_x2"
+#Enable5V_X1 = "power_distribution.enable_5v_x1"
+#Enable5V_X2 = "power_distribution.enable_5v_x2"
 
 Current5V_Serial = "power_distribution_status.current_5v_serial"
 Current5V_Switch = "power_distribution_status.current_5v_switch"
-Current5V_X1 = "power_distribution_status.current_5v_x1"
-Current5V_X2 = "power_distribution_status.current_5v_x2"
+#Current5V_X1 = "power_distribution_status.current_5v_x1"
+#Current5V_X2 = "power_distribution_status.current_5v_x2"
 
 Current12V_GX = "power_distribution_status.current_12v_gx"
 Current12V_H2O = "power_distribution_status.current_12v_hydrophones"
 Current12V_DownCam = "power_distribution_status.current_12v_downcam"
 Current12V_X1 = "power_distribution_status.current_12v_x1"
 Current12V_X2 = "power_distribution_status.current_12v_x2"
-Current12V_X3 = "power_distribution_status.current_12v_x3"
-Current12V_DVL = "power_distribution_status.current_12v_dvl"
+#Current12V_X3 = "power_distribution_status.current_12v_x3"
+#Current12V_DVL = "power_distribution_status.current_12v_dvl"
 
 Enable5V_Sens = "power_distribution.enable_5v_sensor"
 Enable5V_Serial = "power_distribution.enable_12v_serial"
@@ -35,3 +36,8 @@ Current12V_Sens = "power_distribution_status.current_12v_sensor"
 
 NoConnect = "power_distribution_status.no_connect"
 NoConnect2 = "power_distribution_status.no_connect2"
+
+EnableAct0 = "actuator_desires.trigger_00"
+EnableAct1 = "actuator_desires.trigger_01"
+EnableAct2 = "actuator_desires.trigger_02"
+EnableAct3 = "actuator_desires.trigger_03"

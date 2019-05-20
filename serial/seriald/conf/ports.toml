@@ -1,40 +1,60 @@
 ports = [
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_1_AUV-PASTOR1-if00-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_1_AUV-PASTOR1-if01-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_1_AUV-PASTOR1-if02-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_1_AUV-PASTOR1-if03-port0",
-        # "/dev/serial/by-id/usb-CUAUV_PASTOR_2_AUV-PASTOR2-if00-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_2_AUV-PASTOR2-if01-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_2_AUV-PASTOR2-if02-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_2_AUV-PASTOR2-if03-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_3_AUV-PASTOR3-if00-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_3_AUV-PASTOR3-if01-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_3_AUV-PASTOR3-if02-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_3_AUV-PASTOR3-if03-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_4_AUV-PASTOR4-if00-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_4_AUV-PASTOR4-if01-port0",
-        "/dev/serial/by-id/usb-CUAUV_PASTOR_4_AUV-PASTOR4-if02-port0",
-        # "/dev/serial/by-id/usb-CUAUV_PASTOR_4_AUV-PASTOR4-if03-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_1_AUV-ODAX1-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_1_AUV-ODAX1-if01-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_1_AUV-ODAX1-if02-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_1_AUV-ODAX1-if03-port0",
+        # "/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if01-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if02-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if03-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_3_AUV-ODAX3-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_3_AUV-ODAX3-if01-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_3_AUV-ODAX3-if02-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_3_AUV-ODAX3-if03-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_4_AUV-ODAX4-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_4_AUV-ODAX4-if01-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_4_AUV-ODAX4-if02-port0",
+        # "/dev/serial/by-id/usb-CUAUV_ODAX_4_AUV-ODAX4-if03-port0",
 
-        "/dev/serial/by-id/usb-CUAUV_Pastor_1_AUV-PASTOR1-if00-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_1_AUV-PASTOR1-if01-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_1_AUV-PASTOR1-if02-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_1_AUV-PASTOR1-if03-port0",
-        # "/dev/serial/by-id/usb-CUAUV_Pastor_2_AUV-PASTOR2-if00-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_2_AUV-PASTOR2-if01-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_2_AUV-PASTOR2-if02-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_2_AUV-PASTOR2-if03-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_3_AUV-PASTOR3-if00-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_3_AUV-PASTOR3-if01-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_3_AUV-PASTOR3-if02-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_3_AUV-PASTOR3-if03-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_4_AUV-PASTOR4-if00-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_4_AUV-PASTOR4-if01-port0",
-        "/dev/serial/by-id/usb-CUAUV_Pastor_4_AUV-PASTOR4-if02-port0",
-        # "/dev/serial/by-id/usb-CUAUV_PASTOR_4_AUV-PASTOR4-if03-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_1_AUV-ODAX1-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_1_AUV-ODAX1-if01-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_1_AUV-ODAX1-if02-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_1_AUV-ODAX1-if03-port0",
+        # "/dev/serial/by-id/usb-CUAUV_Odax_2_AUV-ODAX2-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_2_AUV-ODAX2-if01-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_2_AUV-ODAX2-if02-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_2_AUV-ODAX2-if03-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_3_AUV-ODAX3-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_3_AUV-ODAX3-if01-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_3_AUV-ODAX3-if02-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_3_AUV-ODAX3-if03-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_4_AUV-ODAX4-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_4_AUV-ODAX4-if01-port0",
+        #"/dev/serial/by-id/usb-CUAUV_Odax_4_AUV-ODAX4-if02-port0",
+        # "/dev/serial/by-id/usb-CUAUV_ODAX_4_AUV-ODAX4-if03-port0",
 
 	# "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if00-port0",
-        "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if01-port0",
-        "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if02-port0",
-        "/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if03-port0",
+        #"/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if01-port0",
+        #"/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if02-port0",
+        #"/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if03-port0",
+        
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if00-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if01-port0" # sensor
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if02-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if03-port0"
+
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if00-port0"
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if01-port0" # DVL
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if02-port0" # causes segfault
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if03-port0" # hydrophones, segfault?
+
+        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if00-port0"
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if01-port0" # GX
+        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if02-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if03-port0"
+
+        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if00-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if01-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if02-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if03-port0"
 ]

@@ -32,7 +32,7 @@ export LC_CTYPE=en_US.UTF-8
 
 # Can set to other locales in the conf directory.
 export CUAUV_LOCALE="${CUAUV_LOCALE:-simulator}"
-export CUAUV_VEHICLE="${CUAUV_VEHICLE:-castor}"
+export CUAUV_VEHICLE="${CUAUV_VEHICLE:-odysseus}"
 export CUAUV_VEHICLE_TYPE="${CUAUV_VEHICLE_TYPE:-mainsub}"
 export CUAUV_CONTEXT="${CUAUV_CONTEXT:-development}" # Optionally set to reduce build dependencies, see configure.py
 

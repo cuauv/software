@@ -9,8 +9,8 @@ def decomment(name):
                  depends=['link-stage/auv-json-decomment'])
 
 # Vehicles
-decomment("castor")
-decomment("pollux")
+decomment("odysseus")
+decomment("ajax")
 decomment("simple")
 
 # Simulator configs (unused)

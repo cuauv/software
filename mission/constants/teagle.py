@@ -9,18 +9,18 @@ NONSURFACE_MIN_DEPTH = 0.6
 gate = Gate(
     depth=2.0,
     gate_width_threshold=0.4,
-    charge_dist=16 if is_mainsub() else 12
+    charge_dist=16 if is_mainsub else 12
 )
 
 path = Path(
     depth=1.0,
-    search_forward=6 if is_mainsub() else 2,
-    search_stride = 10 if is_mainsub() else 8,
+    search_forward=6 if is_mainsub else 2,
+    search_stride = 10 if is_mainsub else 8,
     search_right_first=True,
     search_speed=0.1,
     post_dist=2.5,
-    failure_back_up_dist=0.5 if is_mainsub() else 0.1,
-    failure_back_up_speed=0.2 if is_mainsub() else 0.1,
+    failure_back_up_dist=0.5 if is_mainsub else 0.1,
+    failure_back_up_speed=0.2 if is_mainsub else 0.1,
 )
 
 dice = Dice(
@@ -40,14 +40,14 @@ dice = Dice(
 highway = Highway(
     high_depth=1.0,
     low_depth=1.2,
-    dist=6 if is_mainsub() else 2,
-    speed=0.4 if is_mainsub() else 0.2,
+    dist=6 if is_mainsub else 2,
+    speed=0.4 if is_mainsub else 0.2,
 )
 
 track = Track(
     depth=1.6,
     slow_down_dist=5,
-    max_speed=0.3 if is_mainsub() else 0.2,
+    max_speed=0.3 if is_mainsub else 0.2,
     min_speed=0.1,
     vision_frame_period=0.5,
 )

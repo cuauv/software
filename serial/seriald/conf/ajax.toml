@@ -1,0 +1,8 @@
+includes = [
+    "ports_ajax.toml",
+    "ajaxThruster.toml",
+    "him.toml",
+    "ajaxPdActuator.toml",
+    "sensor.toml",
+    "merge.toml"
+]

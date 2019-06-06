@@ -21,7 +21,7 @@ from kalman_position import PositionFilter
 from conf.vehicle import is_mainsub
 
 # Offset for GX4 mounting orientation
-GX_ORIENTATION_OFFSET = Quaternion(hpr=[0, 180, 0])
+GX_ORIENTATION_OFFSET = Quaternion(hpr=[180, 0, 0])
 rec_get_attr = lambda s: \
                  reduce(lambda acc, e: getattr(acc, e),
                         s.split('.'), shm)

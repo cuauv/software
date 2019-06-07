@@ -146,7 +146,7 @@ def get_velocity(sub_quat):
         # vel[0] *= -1
         # vel[1] *= -1
         # Swap x and y axes
-        vel[0], vel[1] = vel[1], vel[0]
+        vel[0], vel[1] = vel[1], -vel[0]
 
         vel = convert_dvl_velocities(sub_quat, vel)
 

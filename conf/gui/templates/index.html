@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Vehicle Config</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    </head>
+    <body>
+        <script src="{{ url_for('static', filename='js/bundle.js') }}" charset="utf-8"></script>
+        <div id="threejs-container"></div>
+
+        <div id="controls-scrollbox">
+            <div id="controls-container">
+                <label class="controls-section-header">Hull</label>
+                <div id="buoyancy-force-controls"></div>
+                <div id="gravity-force-controls"></div>
+                <label class="controls-section-header" for="drag-plane-controls">Drag Planes</label>
+                <div id="drag-plane-controls"></div>
+                <label class="controls-section-header" for="thruster-controls">Thrusters</label>
+                <div id="thruster-controls"></div>
+                <label class="controls-section-header" for="camera-controls">Cameras</label>
+                <div id="camera-controls"></div>
+                <button id="export-btn">Export configuration</button>
+            </div>
+        </div>
+    </body>
+</html>

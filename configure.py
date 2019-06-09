@@ -44,6 +44,7 @@ dirs = [
         'auvlog',
         'conf',
         'conf/json-decomment',
+        'conf/gui',
         'control',
         'control/controlhelm',
         'deadman',

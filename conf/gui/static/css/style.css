@@ -1,0 +1,97 @@
+#threejs-container {
+    display: inline-block;
+    width: 80%;
+    height: 100%;
+}
+
+#controls-scrollbox {
+    display: inline-block;
+    position: absolute;
+    width: 20%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+#controls-container {
+    box-sizing: border-box;
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+}
+
+#controls-container input {
+    min-width: 2.5em;
+    max-width: 5em;
+}
+
+#export-btn {
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.toggle-btn {
+    padding: 0;
+    border: 0.1em solid;
+    width: 4em;
+}
+
+.drag-plane-control, .thruster-control, .camera-control {
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+}
+
+.controls-section-header {
+    display: block;
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: underline;
+}
+
+.controls-section-header:not(:first-child) {
+    margin-top: 0.7em;
+}
+
+.controls-section-header:not(:last-child) {
+    margin-bottom: 0.7em;
+}
+
+.input-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    transition: background-color 200ms;
+}
+
+.input-container:hover {
+    background-color: #EEEEEE;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.section-header span {
+    font-weight: bold;
+}
+
+.section-body {
+    padding-left: 0.7em;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+label {
+    font-size: 1em;
+}

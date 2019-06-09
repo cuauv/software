@@ -1,0 +1,23 @@
+{
+  "name": "gui",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.1"
+  },
+  "dependencies": {
+    "jquery": "^3.4.0",
+    "lodash": "^4.17.11",
+    "three": "^0.104.0",
+    "three-orbitcontrols": "^2.102.1"
+  }
+}

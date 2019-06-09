@@ -19,6 +19,7 @@ import os
 from random import randint
 import pickle
 import shm
+import traceback
 
 from matplotlib.font_manager import FontProperties
 
@@ -490,7 +491,10 @@ class Main(wx.Panel):
             self.removeVar(var)
 
         for var in newvariables:
-            self.addVar(shm._eval(var), var)
+            try:
+                self.addVar(shm._eval(var), var)
+            except shm.ShmEvalError:
+                traceback.print_exc()
 
         self.plot.SetFocus()    # ready to analyze
 

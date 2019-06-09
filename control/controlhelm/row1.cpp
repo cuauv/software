@@ -218,6 +218,14 @@ void Row1::update() {
 	} else {
 		mvwprintw(switches_win, 2, SWITCHES_X, " SK ");
 	}
+
+	if (dvl.vel_x_invalid || dvl.vel_y_invalid || dvl.vel_z_invalid) {
+		wattron(switches_win, A_STANDOUT);
+		mvwprintw(switches_win, 3, SWITCHES_X, " DV ");
+		wattroff(switches_win, A_STANDOUT);
+	} else {
+		mvwprintw(switches_win, 3, SWITCHES_X, " DV ");
+	}
 	
 	if (navigation_settings.position_controls) {
 		wattron(switches_win, A_STANDOUT);

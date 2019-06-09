@@ -35,6 +35,7 @@ sub_height = d['sub_height']
 I = np.array(d['I'])
 thrusters = d['thrusters']
 sensors = d['sensors']
+gx_hpr = d['gx_hpr']
 measurement_error = d['measurement_error']
 control_settings = d['control_settings']
 quaternion_filtering = d['quaternion_filtering']

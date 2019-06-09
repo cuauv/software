@@ -12,7 +12,7 @@ import shm
 
 from auv_math.quat import Quaternion
 from auv_python_helpers.angles import abs_heading_sub_degrees
-from conf.vehicle import sensors, dvl_present
+from conf.vehicle import sensors, dvl_present, gx_hpr
 from settings import dt
 
 from kalman_unscented import UnscentedKalmanFilter
@@ -21,7 +21,7 @@ from kalman_position import PositionFilter
 from conf.vehicle import is_mainsub
 
 # Offset for GX4 mounting orientation
-GX_ORIENTATION_OFFSET = Quaternion(hpr=[180, 0, 0])
+GX_ORIENTATION_OFFSET = Quaternion(hpr=gx_hpr)
 rec_get_attr = lambda s: \
                  reduce(lambda acc, e: getattr(acc, e),
                         s.split('.'), shm)

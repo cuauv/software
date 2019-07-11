@@ -1,39 +1,53 @@
-/* Note: Sockets, silly. */
+//
+//  udp_receiver.cpp
+//  hydromathd
+//
+//  Code for receiving FPGA packets.
+//
+//  Created by Vlad on 9/10/18.
+//  Copyright © 2018 Vlad. All rights reserved.
+//
 
 #include <cstdio>
-#include <sys/types.h>
+#include <cstdint>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
 #include "udp_receiver.hpp"
 
-int sockfd;
+static bool bound = 0;
+static int receive_socket;
+static struct sockaddr_in receive_serv_addr;
 
-struct sockaddr_in serv_addr;
-
-int bound = 0;
-
-void udp_bind () {
-  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-  serv_addr.sin_family = AF_INET;
-  serv_addr.sin_port = htons(UDP_PORT);
-  serv_addr.sin_addr.s_addr = INADDR_ANY;
-  int r = bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-  if (r == 1) printf("Bind failed!\n");
-  else printf("Bound successfully.\n");
-}
-
-void udp_init(std::string s)
+void udpReceiverInit()
 {
-  udp_bind();
-  bound = 1;
-}
-int loop (superdongle_packet_t * buffer ) {
-  if (!bound)
+    //Initializes the UDP networking for receiving FPGA packets.
+    
+    int r;
+    
+    receive_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    receive_serv_addr.sin_family = AF_INET;
+    receive_serv_addr.sin_port = htons(udp_receive_port);
+    receive_serv_addr.sin_addr.s_addr = INADDR_ANY;
+    
+    r = bind(receive_socket, (struct sockaddr *) &receive_serv_addr, sizeof(receive_serv_addr));
+    
+    if(r == 1)
     {
-      printf("ERR: UDP not bound (call udp_init before loop)");
-      return 1;
+        printf("%s \n", "binding receive socket failed!");
     }
-  recvfrom(sockfd, buffer, sizeof(*buffer), 0, NULL, NULL);
-  return 0;
+    else
+    {
+        bound = 1;
+        printf("%s \n", "bound receive socket successfully");
+    }
+}
+
+bool udpReceive(uint16_t *fpga_packet)
+{
+    //Uses a blocking socket to receive UDP packets.
+    
+    recvfrom(receive_socket, fpga_packet, udp_receive_payload_size, 0, NULL, NULL);
+    
+    return 0;
 }

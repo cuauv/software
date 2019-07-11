@@ -2,6 +2,7 @@ from mission.framework.task import Task
 from mission.framework.movement import Heading, Pitch, Roll, \
                                        Depth, VelocityX, VelocityY, \
                                        PositionN, PositionE
+from mission.framework.helpers import call_if_function
 import shm
 
 class NoOp(Task):
@@ -74,9 +75,15 @@ class HardkillGuarded(Task):
             self.finish()
 
 class Log(Task):
+    #TODO: call_if_function (currently doesn't work on strings because call if function is weird)
     def on_run(self, message, level="info"):
         self.log(message, level=level)
         self.finish()
+        
+class AlwaysLog(Task):
+    """Log until the end of time"""
+    def on_run(self, message, level="info"):
+        self.log(call_if_function(message), level=level)
 
 class Succeed(Task):
     """Succeed a task on finish, no matter what"""

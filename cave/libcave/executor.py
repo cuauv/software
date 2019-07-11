@@ -138,14 +138,14 @@ class Executor(Thread):
                 sleep(0.1)
 
             for tag in filter(lambda t: t.active, tgs):
-                frame_list = tag.get_frame_list()[::self.skip]
+                frame_list = list(tag.get_frame_list())[::self.skip]
                 if len(frame_list) > 0:
                     #Carry out testing on this tag
                     self.log.info("Testing tag #%d (%d frames)" % (tag.id, len(frame_list)))
                     frame_list.sort()
                     tag.clear_test_results()
                     if vision_enable:
-                        if not melements.has_key(tag.mission_element):
+                        if not tag.mission_element in melements:
                             self.log.warning("Skipping tag %s; not a mission element." % tag.mission_element)
                             continue
 

@@ -42,9 +42,6 @@ class MoveXY(Task):
             Concurrent(n_position, e_position, finite=False),
         ))
 
-def MoveXYRough(vector):
-    return MoveXY(vector, 0.04)
-
 class MoveAngle(MoveXY):
     def on_first_run(self, angle, distance, deadband=0.01, *args, **kwargs):
         super().on_first_run(rotate((distance, 0), angle), deadband=deadband)
@@ -54,12 +51,6 @@ def MoveX(distance, deadband=0.01):
 
 def MoveY(distance, deadband=0.01):
     return MoveAngle(90, distance, deadband)
-
-def MoveXRough(distance):
-    return MoveX(distance, 0.04)
-
-def MoveYRough(distance):
-    return MoveY(distance, 0.04)
 
 class GoToPosition(Task):
     def on_first_run(self, north, east, heading=None, depth=None, optimize=False, rough=False, deadband=0.05):
@@ -85,9 +76,6 @@ class GoToPosition(Task):
             ),
             optimize=optimize,
         ))
-
-def GoToPositionRough(*args, **kwargs):
-    return GoToPosition(*args, deadband=0.1, **kwargs)
 
 def NavigationSpeed(task, speed):
     speed_var = shm.navigation_settings.max_speed

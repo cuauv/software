@@ -113,7 +113,8 @@ class Pipes(ModuleBase):
         if False:
             self.post('lab', lab)
 
-        dist_from_orange = np.linalg.norm(lab[:, :, :].astype(int) - [90, 144, 131], axis=2).astype(int)
+        #dist_from_orange = np.linalg.norm(lab[:, :, :].astype(int) - [90, 144, 131], axis=2).astype(int)
+        dist_from_orange = np.linalg.norm(lab[:, :, :].astype(int) - [138, 207, 183], axis=2).astype(int)
         if self.options['debugging']:
             self.post('orange_dist', np.abs(dist_from_orange).astype('uint8'))
 
@@ -168,10 +169,12 @@ class Pipes(ModuleBase):
         # threshes["morphed"] = cv2.inRange(final_threshed, 200, 255)
 
         # hack hack hack for simulator
-        sat = cv2.split(cv2.cvtColor(mat, cv2.COLOR_BGR2HSV))[1]
-        morphed = cv2.inRange(sat, 20, 255)
+        #sat = cv2.split(cv2.cvtColor(mat, cv2.COLOR_BGR2HSV))[1]
+        #morphed = cv2.inRange(sat, 20, 255)
 
-        edges = cv2.Canny(morphed,threshold1=self.options['canny1'],threshold2=self.options['canny2'],apertureSize=3) #self.options['canny_aperture_size'])
+        #edges = cv2.Canny(morphed,threshold1=self.options['canny1'],threshold2=self.options['canny2'],apertureSize=3) #self.options['canny_aperture_size'])
+        edges = cv2.Canny(np.clip(dist_from_orange, 0, 255).astype(np.uint8),threshold1=self.options['canny1'],threshold2=self.options['canny2'],apertureSize=3) #self.options['canny_aperture_size'])
+        edges &= cv2.dilate(orange_threshed, np.ones((5, 5), dtype=np.uint8))
         threshes["edges"] = edges
 
         if self.options['debugging']:

@@ -227,7 +227,7 @@ def create_worktree(branch=BRANCH, print_help=True):
 
         else:
             subprocess.run(
-                ["git", "fetch", "origin", "{}:{}".format(branch, branch)],
+                ["git", "fetch", "origin", "{}:{}".format(branch, branch), "--"],
                 cwd=str(REPO_PATH),
                 check=True,
             )

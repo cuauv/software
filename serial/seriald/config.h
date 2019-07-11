@@ -18,7 +18,7 @@ class Config {
 			bool operator==(const Device& other) const;
 
 			std::unordered_map<std::string, ShmPath> vars;
-			bool canHardKill = true;
+			bool canHardKill = false;
 		};
 
 		std::unordered_map<std::string, Device> devices;

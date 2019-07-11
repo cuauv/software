@@ -83,7 +83,7 @@ class AddTag:
         self.tag_name_entry = self.builder.get_object("tagNameEntry")
 
         #Populate dropdowns
-        self.elements = get_registered_elements().keys()
+        self.elements = list(get_registered_elements().keys()) 
         self.elements.sort()
         populate_combo_box(self.mission_element_combo, self.elements)
         self.set_tag_types([])

@@ -30,7 +30,7 @@ apt-get install -y --no-install-recommends libboost-all-dev
 mkdir -p /build_tmp_opencv
 pushd /build_tmp_opencv
 
-OPENCV_VERSION="3.4.1"
+OPENCV_VERSION="3.4.6"
 
 curl -L https://github.com/opencv/opencv/archive/$OPENCV_VERSION.tar.gz -o opencv.tar.gz
 curl -L https://github.com/opencv/opencv_contrib/archive/$OPENCV_VERSION.tar.gz -o opencv_contrib.tar.gz
@@ -61,6 +61,9 @@ fi
 
 # Ensure FFMPEG
 CMAKE_FLAGS+=(-DWITH_FFMPEG=ON)
+
+# Enable non-free modules
+CMAKE_FLAGS+=(-DOPENCV_ENABLE_NONFREE=ON)
 
 # build with ninja
 CMAKE_FLAGS+=(-GNinja)

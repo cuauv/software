@@ -20,9 +20,10 @@ def get_registered_elements():
 
 #returns registered elements that contain implementations for
 #all function names specified in the function_name_list
+#TODO: this function is currently bugged
 def get_registered_elements_implementing(function_name_list):
     d = dict(registered_elements)
-    for k,v in d.items():
+    for k,v in registered_elements.items():
         members = [a for (a,b) in inspect.getmembers(v)]
         if not all(m in members for m in function_name_list):
             del d[k]

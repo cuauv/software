@@ -69,7 +69,7 @@ class SqlClass:
             print("akeys %s, keys %s" % (str(set(args.keys())), str(set(keys))))
             raise ValueError("Too many parameters")
         cls.c.execute("INSERT INTO %s(%s) values (%s)" % 
-            (cls.table_name, ','.join(args.keys()), ','.join(['?' for k in args.keys()])), args.values())
+            (cls.table_name, ','.join(args.keys()), ','.join(['?' for k in args.keys()])), tuple(args.values())) 
 
         v = cls()
         for k in args.keys():

@@ -131,7 +131,7 @@ class ImageContainer extends React.Component {
 class OptionItem extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {option: this.props.option};
+        this.state = {option: this.props.option, currentValue: this.props.option.value};
         this.onChange = this.props.onChange;
         this.type = this.state.option.type;
         this.valueName = formatId(this.state.option.option_name);
@@ -139,28 +139,28 @@ class OptionItem extends React.Component {
         this.valueId = '#' + this.valueName;
         this.sliderId = '#' + this.sliderName;
         this.handleOptionUpdate = this.handleOptionUpdate.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return this.state.option.value !== nextState.option.value;
+        return this.state.option.value !== nextState.option.value
+            || this.state.currentValue !== nextState.currentValue;
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({option: nextProps.option});
+        // If an external update was made, then update local value
+        if (this.state.option.value !== nextProps.option.value) {
+            this.setState({currentValue: nextProps.option.value});
+        }
     }
 
     propagateUpdate(value) {
         this.props.onChange(this.state.option, value);
     }
 
-    handleOptionUpdate(evt) {
-        if (this.type === 'int' || this.type === 'double') {
-            // Update slider when value is changed
-            if ('min_value' in this.state.option && 'max_value' in this.state.option) {
-                $(this.sliderId).slider('value', evt.target.value);
-            }
-        }
-        let value = evt.target.value;
+    updateOptionValue() {
+        let value = this.state.currentValue;
         if (this.type === 'int') {
             value = parseInt(value);
             if (isNaN(value)) {
@@ -173,11 +173,27 @@ class OptionItem extends React.Component {
                 value = 0;
             }
         }
-        else if (this.type === 'bool') {
-            value = evt.target.checked;
-        }
+        this.setState({currentValue: value});
         // Propagate update event to parent component
         this.propagateUpdate(value);
+    }
+
+    handleOptionUpdate(evt) {
+        if (this.type === 'bool') {
+            // Changes for boolean options can be applied immediately
+            this.setState({currentValue: evt.target.checked}, this.updateOptionValue);
+        }
+        else {
+            this.setState({currentValue: evt.target.value});
+        }
+    }
+
+    handleSubmit(evt) {
+        // Handle updates for non-boolean options when Enter is pressed
+        if (evt.key !== 'Enter') {
+            return false;
+        }
+        this.updateOptionValue();
     }
 
     componentDidMount() {
@@ -187,7 +203,7 @@ class OptionItem extends React.Component {
                 $(this.sliderId).slider({
                     min: this.state.option.min_value,
                     max: this.state.option.max_value,
-                    value: this.state.option.value,
+                    value: this.state.currentValue,
                     slide: function(event, ui) {
                         $(this.valueId).val(ui.value);
                         this.propagateUpdate(ui.value);
@@ -202,12 +218,16 @@ class OptionItem extends React.Component {
     }
 
     render() {
+        // Update slider when value is changed
+        if ('min_value' in this.state.option && 'max_value' in this.state.option) {
+            $(this.sliderId).slider('value', this.state.currentValue);
+        }
         if (this.type === 'int' || this.type === 'double') {
             // Display input box and slider for number option
             return (
                 <li className="list-group-item col-xs-12">
                     {this.state.option.option_name + ': '}
-                    <input type="text" className="slider_value" id={this.valueName} value={this.state.option.value} onChange={this.handleOptionUpdate}/>
+                    <input type="text" className="slider_value" id={this.valueName} value={this.state.currentValue} onChange={this.handleOptionUpdate} onKeyPress={this.handleSubmit}/>
                     <br/>
                     <div id={this.sliderName}></div>
                 </li>
@@ -217,7 +237,7 @@ class OptionItem extends React.Component {
             // Display checkbox for boolean option
             return (
                 <li className="list-group-item col-xs-12">
-                    <input type="checkbox" id={this.valueName} onChange={this.handleOptionUpdate} checked={this.state.option.value}/>
+                    <input type="checkbox" id={this.valueName} onChange={this.handleOptionUpdate} checked={this.state.currentValue}/>
                     {this.state.option.option_name}
                 </li>
             );
@@ -227,7 +247,7 @@ class OptionItem extends React.Component {
             return (
                 <li className="list-group-item col-xs-12">
                     {this.state.option.option_name + ': '}
-                    <input type="text" id={this.valueName} className="text_input" value={this.state.option.value} onChange={this.handleOptionUpdate}/>
+                    <input type="text" id={this.valueName} className="text_input" value={this.state.currentValue} onChange={this.handleOptionUpdate} onKeyPress={this.handleSubmit}/>
                 </li>
             );
         }

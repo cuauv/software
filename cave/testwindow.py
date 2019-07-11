@@ -136,7 +136,7 @@ class TestWindow:
             tgs = vid.get_tags()
             for tag in tgs:
                 if tag.active:
-                    frame_list = tag.get_frame_list()[::self.skip_value]
+                    frame_list = list(tag.get_frame_list())[::self.skip_value]
                     self.total_frames += len(frame_list)
 
         self.info_text.set_text("Frames to process: %d" % self.total_frames)

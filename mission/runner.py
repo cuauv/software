@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import functools
+import glob
 import time
 import os
 import sys
@@ -61,13 +62,11 @@ cuauv_log = os.environ['CUAUV_LOG']
 dirname_base = "{}_{}".format(module_no_dir_name,task_name)
 if not args.no_record:
     try:
-        ls_output = subprocess.check_output("ls -d %s/current/%s*/" %
-                                            (cuauv_log, dirname_base), shell=True)
-        dirs = ls_output.decode('utf-8').split('\n')[:-1]
-        dirnames = [d.split('/')[-2] for d in dirs]
-        get_run_num = lambda x: int(x[len(dirname_base):])
-        highest = max(dirnames, key=get_run_num)
-        highest_run_num = get_run_num(highest)
+        dirs = glob.glob(os.path.join(cuauv_log, 'current', dirname_base) + '[0-9][0-9]*')
+
+        dn = [int(os.path.basename(x)[len(dirname_base):]) for x in dirs] or [1]
+        highest_run_num = max(dn)
+
     except subprocess.CalledProcessError as ls_except:
         if ls_except.returncode == 2:
             highest_run_num = 0
@@ -189,12 +188,22 @@ register_exit_signals(exit_handler)
 
 too_long_initial = True
 
+if initially_killed:
+    logger('Sub is currently hard-killed. Waiting until unkilled.', copy_to_stdout=True)
+
 while True:
     begin_time = time.time()
-    was_ever_unkilled = was_ever_unkilled or (not shm.switches.hard_kill.get())
+    is_unkilled = not shm.switches.hard_kill.get()
+    #print(is_unkilled)
+    if initially_killed and is_unkilled and not was_ever_unkilled:
+        # If un-hard killing for the first time, also un-soft kill to start mission
+        time.sleep(3)
+        shm.switches.soft_kill.set(0)
+    was_ever_unkilled = was_ever_unkilled or is_unkilled
 
     try:
-        task()
+        if is_unkilled:
+            task()
     except Exception as e:
         if not args.ignore_exceptions:
             cleanup()

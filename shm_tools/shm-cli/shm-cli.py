@@ -5,6 +5,7 @@ from os.path import expanduser
 import os
 import sys
 from subprocess import call
+import time
 from misc.utils import watch_thread_wrapper
 
 from tabulate import tabulate
@@ -12,6 +13,8 @@ from tabulate import tabulate
 import shm
 
 __author__ = 'zander'
+
+HISTORY_LENGTH = 10
 
 parser = argparse.ArgumentParser(description='A shared memory command line interface.', prog='auv-shm-cli')
 
@@ -23,6 +26,8 @@ parser.add_argument('value', nargs='?', help='If provided, [group].[variable] wi
 
 parser.add_argument('--watch', '-w', action='store_true', default=False,
                     help='Watch and print out updates as a group or variable changes')
+parser.add_argument('--frequency', '-f', action='store_true', default=False,
+                    help='Print out the frequency of updates to a group')
 parser.add_argument('--reset', '-r', action='store_true', default=False,
                     help='Reset a group or variable to the default value')
 
@@ -36,15 +41,15 @@ args = parser.parse_args()
 all_shm_groups = shm.__all__[1:]  # "watchers" is the first, hardcoded element which is skipped.
 
 
-def print_group(group_name, group=None):
+def print_group(group_name, group=None, clear=False):
     if group == None:
         group = getattr(shm, group_name)
 
     print("{}".format(group_name))
-    print(tabulate(
+    r = tabulate(
         ((name, str(c_type).split("'")[1].split('_')[1], getattr(group, name).get()) for name, c_type in group._fields),
-        headers=("Variable", "Type", "Value")))
-    print()
+        headers=("Variable", "Type", "Value"))
+    print((r.replace('\n', '\x1b[K\n') + '\x1b[K') if clear else r)
 
 
 if args.groups:
@@ -129,18 +134,38 @@ if args.group:
                     if "shm_set({}".format(args.group) in line:
                         variable = line.split("shm_set({}, ".format(args.group))[1].split(")")[0].split(", ")
                         call(["auv-shm-cli", args.group] + variable)
+        elif args.frequency:
+            def f(watcher, quit_event):
+                watcher.watch(group)
+                last_updates = None
+                while True:
+                    watcher.wait(new_update=False)
+                    if quit_event.is_set():
+                        break
+                    now = time.time()
+                    if last_updates is None:
+                        last_updates = [0] + [now] * (HISTORY_LENGTH - 1)
+                    rate = len(last_updates) / (now - last_updates[0] + 1e-30)
+                    last_updates.pop(0)
+                    last_updates.append(now)
+                    print('\rUpdate frequency: {:5.2f} Hz'.format(rate), end='')
+            watch_thread_wrapper(f)
         else:
             print_group(args.group, group)
         if args.watch:
+            print('\x1b[?25l\x1b[s', end='')
             def f(watcher, quit_event):
                 watcher.watch(group)
 
                 while True:
                     watcher.wait(new_update=False)
-                    if quit_event.is_set():
-                        break
 
-                    print_group(args.group, group)
+                    if quit_event.is_set():
+                        print('\x1b[u\x1b[?25h', end='')
+                        break
+                    print('\x1b[{}A'.format(len(group._fields) + 3), end='')
+
+                    print_group(args.group, group, clear=True)
 
             watch_thread_wrapper(f)
 

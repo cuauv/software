@@ -5,4 +5,9 @@ restart = "merge.arm_for_restart"
 useInternADC = "merge.use_internal_adc"
 isRestarting = "merge_status.is_restarting"
 reading = "merge_status.raw_adc"
-isKilled = "switches.hard_kill"
+#isKilled = "switches.hard_kill"
+Va = "merge_status.voltage_a"
+Vb = "merge_status.voltage_b"
+
+[devices.merge.options]
+canHardKill = true

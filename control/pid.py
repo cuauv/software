@@ -267,7 +267,7 @@ class PIDLoop:
         # Convert from body frame to spitz space (heading-adjusted world space).
         ang_rates_sub = np.array((kalman.roll_rate.get(), kalman.pitch_rate.get(), kalman.heading_rate.get()))
         ang_rates_spitz = tm.spitz_to_sub_quat.conjugate() * ang_rates_sub
-        self.roll_rate = ang_rates_sub[0]
+        self.roll_rate = ang_rates_spitz[0]
         self.pitch_rate = ang_rates_spitz[1]
         self.heading_rate = ang_rates_spitz[2]
 

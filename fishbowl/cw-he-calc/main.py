@@ -7,6 +7,7 @@
 import math
 import numpy as np
 from control.thruster_manager import ThrusterManager
+import shm
 
 # average magnitude
 def amag(pair):
@@ -32,6 +33,10 @@ def calculate():
     # tm.max_forces(axis, torquep) returns the force/torque along the given
     # axis as [min, max]. We average |min| and |max| so we can treat it as
     # the major axis length in that direction.
+
+    # Set depth to well below surface of the water so that thruster maximums are computed
+    # without any artificial throttling based on depth
+    shm.kalman.depth.set(2.0)
 
     fx = tm.max_forces(np.array([1, 0, 0]), torque=False)
     fy = tm.max_forces(np.array([0, 1, 0]), torque=False)

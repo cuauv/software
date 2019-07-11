@@ -1,6 +1,6 @@
 ports = [
         #"/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if00-port0"
-        #"/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if01-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if01-port0" # HIM
         #"/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if02-port0"
         #"/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if03-port0"
 

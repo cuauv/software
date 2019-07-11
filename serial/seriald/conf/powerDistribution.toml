@@ -12,6 +12,8 @@ Enable5V_Switch = "power_distribution.enable_5v_switch"
 Enable5V_X1 = "power_distribution.enable_5v_x1"
 Enable5V_X2 = "power_distribution.enable_5v_x2"
 
+BigBrainTime = "power_distribution.big_brain_time"
+
 Current5V_Serial = "power_distribution_status.current_5v_serial"
 Current5V_Switch = "power_distribution_status.current_5v_switch"
 Current5V_X1 = "power_distribution_status.current_5v_x1"

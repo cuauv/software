@@ -75,6 +75,7 @@ class Cave:
                 self.logger.warning("Unable to save configuration in %s" % \
                                     self.config_file)
             else:
+                #Config files
                 f.write("%s" % self.db.get_filename())
                 f.close()
 
@@ -386,6 +387,7 @@ class Cave:
         if args.database:
             self.load_db(args.database)
         elif os.path.exists(os.path.expanduser(self.config_file)):
+            #Config File
             f = open(os.path.expanduser(self.config_file), "r")
             self.load_db(f.read())
 

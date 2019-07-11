@@ -343,9 +343,12 @@ class Timeline(Gtk.DrawingArea):
         def draw_frame_range(frame_list, height):
             #Code to get contiguous ranges from this list (to reduce drawing time)
             #ref: http://code.activestate.com/recipes/496682-make-ranges-of-contiguous-numbers-from-a-list-of-i/
-            frame_list.sort()
+            frame_list = list(frame_list)
+            print(frame_list)
+            frame_list.sort() 
+            print(frame_list)
             for k,g in groupby(enumerate(frame_list), key=lambda i_x: i_x[0]-i_x[1]):
-                segment = map(operator.itemgetter(1),g)
+                segment = tuple(map(operator.itemgetter(1),g))
                 first_frame = segment[0]
                 last_frame = segment[-1]
 
@@ -370,13 +373,13 @@ class Timeline(Gtk.DrawingArea):
 
         #Draw the image previews
         requested_frames = []
-        preview_frames = int(float(PREVIEW_WIDTH) / width * (self.view_end - self.view_start))
+        preview_frames = int((PREVIEW_WIDTH) / width * (self.view_end - self.view_start))
         i = int(self.view_start / preview_frames) * preview_frames
         while i < self.view_end:
             frame = self.video_preview_manager.request_frame(self.parent.video_box.video, i)
             requested_frames.append(i)
             if frame is not None:
-                x = int((float(i) - self.view_start) / (self.view_end - self.view_start) * width)
+                x = int(((i) - self.view_start) / (self.view_end - self.view_start) * width)
                 cr.set_source_surface(frame, x, PREVIEW_Y)
                 cr.paint()
             i += preview_frames

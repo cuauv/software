@@ -15,6 +15,8 @@ class AddVideo:
     Dialog for adding a video to the database
     """
 
+    last_path = None # Stores the path of the last opened video
+
     def validate(self):
         #Validates form input; also sets variables for use higher up
         warning_label = self.builder.get_object("warningLabel")
@@ -38,7 +40,8 @@ class AddVideo:
             warning_label.set_text("Camera link invalid")
             return False
         else:
-            self.linked_camera = camera_map.keys()[self.camera_link.get_active()]
+            #TODO: make this not hacky
+            self.linked_camera = tuple(camera_map.keys())[self.camera_link.get_active()]
 
         self.meta = MetaParser(self.meta_entry.get_text()).parse()
 
@@ -51,6 +54,7 @@ class AddVideo:
     def ok_click(self, object, data=None):
         if self.validate():
             self.window.destroy()
+            AddVideo.last_path = os.path.dirname(self.video_filename)
             self.log.info("Valid parameters; executing callback")
             self.callback(self)
         else:
@@ -77,11 +81,14 @@ class AddVideo:
         self.video_name_entry = self.builder.get_object("videoNameEntry")
         self.meta_entry = self.builder.get_object("metaEntry")
 
+        #If a previous video is added, open the folder containing that video instead
+        if AddVideo.last_path is not None:
+            self.video_path.set_current_folder(AddVideo.last_path)
+            self.log_path.set_current_folder(AddVideo.last_path)
         #Set default folders for the file-buttons
-        if default_folder is not None:
+        elif default_folder is not None:
             self.video_path.set_current_folder(default_folder)
             self.log_path.set_current_folder(default_folder)
-            #TODO: subsequent clicks of this button won't be set to the default folder
 
         #Populate camera link dropdown
         liststore = Gtk.ListStore(str)

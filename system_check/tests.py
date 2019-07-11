@@ -100,10 +100,10 @@ class Hydrophones(Test):
 
     @environment(WATER)
     def getting_pings():
-        freq = shm.hydrophones_settings.track_frequency_target.get()
-        shm.hydrophones_settings.track_frequency_target.set(PINGER_FREQUENCY)
-        ret = is_changing(shm.hydrophones_results_track.tracked_ping_count.get, 500)
-        shm.hydrophones_settings.track_frequency_target.set(freq)
+        #freq = shm.hydrophones_settings.track_frequency.get()
+        #shm.hydrophones_settings.track_frequency.set(PINGER_FREQUENCY)
+        ret = is_changing(shm.hydrophones_status.packet_count.get, 500)
+        #shm.hydrophones_settings.track_frequency.set(freq)
         return ret
 
 @environment(WATER)

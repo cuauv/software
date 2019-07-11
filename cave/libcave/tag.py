@@ -122,7 +122,7 @@ class Tag(SqlClass):
         else:
             #Add new values
             self.c.execute("INSERT INTO %s(%s) values (%s)" % 
-                (self.tag_data, ','.join(args.keys()), ','.join(['?' for k in args.keys()])), args.values())
+                (self.tag_data, ','.join(args.keys()), ','.join(['?' for k in args.keys()])), tuple(args.values()))
 
         del args["frame"]
         self.commit()

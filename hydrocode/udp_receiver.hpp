@@ -1,17 +1,18 @@
-#ifndef UDP_RECEIVER_H
+//
+//  udp_receiver.hpp
+//  hydromathd
+//
+//  Created by Vlad on 9/10/18.
+//  Copyright © 2018 Vlad. All rights reserved.
+//
 
-#define UDP_RECEIVER_H
-#include <cstdint>
-#include <string>
-#define UDP_PAYLOAD_SIZE 818
-#define UDP_PORT 8899
-#define CHANNEL_DEPTH 128
+#ifndef udp_receiver_hpp
+#define udp_receiver_hpp
 
-typedef struct superdongle_packet{
- uint16_t data[CHANNEL_DEPTH*3];
- uint8_t junk[UDP_PAYLOAD_SIZE - CHANNEL_DEPTH*sizeof(uint16_t)*3];
-} superdongle_packet_t;
+static const int udp_receive_port = 8899; //FPGA sends packets to this port
+static const int udp_receive_payload_size = 1024; //size of FPGA packet (in bytes). 1024 bytes/packet = 4 channels * 128 samples/packet/channel * 2 bytes/sample
 
-void udp_init(std::string fname);
-int loop(superdongle_packet_t * buffer);
-#endif
+void udpReceiverInit();
+bool udpReceive(uint16_t *fpga_packet);
+
+#endif /* udp_receiver_hpp */

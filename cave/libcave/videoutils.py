@@ -31,7 +31,7 @@ def hash_video(filename):
         return ""
 
     hasher = hashlib.md5()
-    for i in range(0, length, length / 10):
+    for i in range(0, length, length // 10): #python2 to python3
         cap.set(cv2.CAP_PROP_POS_FRAMES, i)
         success, frame = cap.read()
         if success:

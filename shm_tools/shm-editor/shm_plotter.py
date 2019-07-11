@@ -23,7 +23,7 @@ import traceback
 
 from matplotlib.font_manager import FontProperties
 
-sample_interval = 1/100.0  # how many seconds between data retrieval i.e. 0.1 = 10 samples / s
+sample_interval = 1/20.0  # how many seconds between data retrieval i.e. 0.1 = 10 samples / s
 draw_interval =   1/20.0  # draw interval; the lower the smoother, essentially FPS
 
 MAX_HISTORY = int(15 * 60 / sample_interval)   # how many data points to keep in history
@@ -161,7 +161,8 @@ class Plotter(PlotPanel):
         self.make()
 
         self._zoomRate = int(1/sample_interval)
-        self.N = SmoothBound(5 / sample_interval, XSCROLLVEL)     # number of data points on plot
+        # self.N = SmoothBound(5 / sample_interval, XSCROLLVEL)     # number of data points on plot
+        self.N = SmoothBound(20 / sample_interval, XSCROLLVEL)     # number of data points on plot
         self.updateSeekRate()
 
         self.xbound = AxisBound(-self.N.desire * sample_interval, 0, XSCROLLVEL)

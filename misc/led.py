@@ -40,6 +40,37 @@ COLORS = {
     "BLACK": (0, 0, 0),
 }
 
+LIGHTSHOWS = {
+    'none': 0,
+    'color': 1,
+    'unkilled': 2,
+    'killed': 3,
+    'torpedo': 4,
+    'mrinal': 5,
+    'pulse': 7,
+    'rainbow': 8,
+    'enable_pulse': 9,
+}
+
+class lightshow_helper:
+    def __init__(self, lightshow, func):
+        self.lightshow = LIGHTSHOWS[lightshow]
+        self.func = func
+    def init(self):
+        shm.leds_internal.light_show.set(self.lightshow)
+    def __call__(self, *args, **kwargs):
+        self.func(*args, **kwargs)
+
+
+def lightshow(name):
+    #n = LIGHTSHOWS[name]
+    def decorator(f):
+        return lightshow_helper(name, f)
+        #class _wrap(*args, **kwargs):
+        #    shm.leds_internal.light_show.set(n)
+        #    return f(*args, **kwargs)
+        #return _wrap
+    return decorator
 
 #######  Helpers  ######
 
@@ -90,6 +121,7 @@ def set_all(v):
 #######  Modes  #######
 
 
+@lightshow('color')
 def passthrough():
     leds = shm.leds.get()
     leds_internal = shm.leds_internal.get()
@@ -104,7 +136,8 @@ def passthrough():
     shm.leds_internal.set(leds_internal)
 
 
-def blink():
+@lightshow('color')
+def blink_mode():
     while True:
         set_all(255)
         time.sleep(0.1)
@@ -112,6 +145,7 @@ def blink():
         time.sleep(0.1)
 
 
+@lightshow('color')
 def rainbow():
     period = 5
 
@@ -121,7 +155,38 @@ def rainbow():
     for side, hue in zip(LEDS.values(), (hue_port, hue_star)):
         set_side_hsv(side, hue, 1, 1)
 
+def blink(pins, c, Ton, Toff, val=255):
+    for i in range(c):
+        for pin in pins: pin.set(val)
+        time.sleep(Ton)
+        for pin in pins: pin.set(0)
+        time.sleep(Toff)
+@lightshow('color')
+def police():
+    int3 = 0.07
+    for i in LEDS.values():
+        for j in i.values():
+            j.set(0)
+    LED1 = LEDS['port']['red']
+    LED2 = LEDS['starboard']['blue']
+    LEDS_USED = [LED1, LED2]
+    def quint():
+        blink(LEDS_USED, 5)
 
+    while True:
+        for j in range(5):
+            for i in range(2):
+                blink([LED1],4, int3, .03)
+                blink([LED2],4, int3, .03)
+            for i in range(8):
+                blink([LED1],1, int3, .03)
+                blink([LED2],1, int3, .03)
+        for j in range(3):
+            blink(LEDS_USED, 5, int3, .03)
+            time.sleep(int3 * 4)
+
+
+@lightshow('color')
 def pressure():
     set_all_rgb(
         *interp_color(
@@ -133,8 +198,37 @@ def pressure():
         )
     )
 
+@lightshow('color')
+def voltage_helper(v, side):
+    if v < 1:
+        set_side(side, 0)
+    elif v < 13.0:
+        set_side_rgb(side, *COLORS["RED"])
+        time.sleep(0.2)
+        set_side_rgb(side, 0, 0, 0)
+        time.sleep(0.1)
+    else:
+        set_side_rgb(side, 
+            *interp_color(
+                v,
+                [13.0, 14.2, 15],
+                [COLORS["RED"], COLORS["YELLOW"], COLORS["GREEN"]],
+                right=COLORS["GREEN"]
+            )
+        )
+@lightshow('color')
+def voltage_side():
+    voltage_helper(shm.merge_status.voltage_a.get(), LEDS["port"])
+    voltage_helper(shm.merge_status.voltage_b.get(), LEDS["starboard"])
+@lightshow('color')
+def voltage():
+    v = shm.merge_status.total_voltage.get()
+    voltage_helper(v, LEDS["port"])
+    voltage_helper(v, LEDS["starboard"])
+
 last_time = time.time()
 
+@lightshow('color')
 def trim():
     bad_angle = 7
     mid_angle = 3
@@ -162,7 +256,7 @@ def trim():
         )
     )
 
-
+@lightshow('color')
 def feedback():
     leds = shm.leds.get()
     leds_internal = shm.leds_internal.get()
@@ -177,6 +271,7 @@ def feedback():
     shm.leds_internal.set(leds_internal)
 
 
+@lightshow('color')
 def feedback_pulse():
     for i in itertools.cycle(range(15)):
         leds = shm.leds.get()
@@ -203,6 +298,7 @@ def feedback_pulse():
         time.sleep(0.1)
 
 
+@lightshow('color')
 def feedback_pulse2():
     for i in itertools.cycle(range(21)):
         leds = shm.leds.get()
@@ -229,6 +325,7 @@ def feedback_pulse2():
         time.sleep(0.1)
 
 
+@lightshow('color')
 def morse():
     TIMES = {
         ".": 0.1,
@@ -274,21 +371,35 @@ def morse():
         time.sleep(TIMES["/"])
 
 
+@lightshow('color')
 def on():
     set_all(255)
 
 
+@lightshow('color')
 def off():
     set_all(0)
 
+def internal_lightshow(n):
+    return lightshow(n)(lambda: None)
+#@lightshow('rainbow')
+#def rainbow2():
+#    pass
+
 
 modes = {
-    "blink": blink,
+    "blink": blink_mode,
     "passthrough": passthrough,
     "off": off,
     "on": on,
     "rainbow": rainbow,
+    "rainbow2": internal_lightshow('rainbow'),
+    "pulse": internal_lightshow('pulse'),
+    "enable_pulse": internal_lightshow('enable_pulse'),
     "pressure": pressure,
+    "voltage": voltage,
+    "voltage_side": voltage_side,
+    "police": police,
     "trim": trim,
     "feedback": feedback,
     "feedback_pulse": feedback_pulse,
@@ -306,6 +417,7 @@ def noop(_, __):
 
 def run_loop(func):
     register_exit_signals(noop)
+    if hasattr(func, 'init'): func.init()
     while True:
         func()
         time.sleep(0.1)

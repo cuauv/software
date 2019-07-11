@@ -9,6 +9,7 @@ body {
 
 .navbar {
     margin-bottom: 10px;
+    border: none !important;
 }
 
 .navbar-logo {

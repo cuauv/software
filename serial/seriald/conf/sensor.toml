@@ -1,2 +1,4 @@
 [devices.sensor.vars]
 DepthReadVar = "depth.depth"
+RawDepth = "depth.raw_depth"
+PressureReadVar = "pressure.hull"

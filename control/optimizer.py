@@ -46,17 +46,15 @@ class Optimizer:
         # bounds is an array of min, max pairs for each thruster
         self.bounds = []
         for i, t in enumerate(got_thrusters):
-            current_max_thrust, current_max_neg_thrust = t.current_max_thrusts()
-            self.constraints.append(lambda x, m=current_max_thrust, i=i: m-x[i])
-            self.constraints.append(lambda x, mn=current_max_neg_thrust, i=i: x[i]-mn)
-            self.bounds.append((current_max_neg_thrust, current_max_thrust))
+            self.constraints.append(lambda x, m=t.max_thrust, i=i: m-x[i])
+            self.constraints.append(lambda x, mn=t.max_neg_thrust, i=i: x[i]-mn)
+            self.bounds.append((t.max_neg_thrust, t.max_thrust))
 
         # calculate some "starting step" guesses for the optimization algorithm
         # by using 1/4 of the average max thrust
         # good start guesses are important and make the algorithm run faster
-        self.rhobeg = 0.25 * sum([current_max_thrust - current_max_neg_thrust \
-                          for (current_max_thrust, current_max_neg_thrust) in \
-                          [t.current_max_thrusts() for t in got_thrusters]]) / (len(got_thrusters) * 2)
+        self.rhobeg = 0.25 * sum([t.max_thrust - t.max_neg_thrust \
+                          for t in got_thrusters]) / (len(got_thrusters) * 2)
 
         # initial guess for optimizing function, currently static; 0 on all
         self.initial_guess = np.array((0,) * len(got_thrusters))
@@ -237,11 +235,10 @@ class Optimizer:
             # this only happens when desires are wild and slsqp fails
             # at that point we don't really care about accuracy and just
             # truncate for safety.
-            current_max_thrust, current_max_neg_thrust = t.current_max_thrusts()
-            if x[i] < current_max_neg_thrust:
-                x[i] = current_max_neg_thrust
-            elif x[i] > current_max_thrust:
-                x[i] = current_max_thrust
+            if x[i] < t.max_neg_thrust:
+                x[i] = t.max_neg_thrust
+            elif x[i] > t.max_thrust:
+                x[i] = t.max_thrust
 
             out[i] = t.thrust_to_pwm(x[i])
             if t.reversed_polarity:

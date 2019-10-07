@@ -87,7 +87,7 @@ def draw_contours(mat, contours, color=(0, 0, 255), thickness=1):
     :param mat: input image
     :param contours: contours to draw
     :param color: color of contours
-    :param thickness: thickness of contours
+    :param thickness: thickness of contours, filled if -1
     :return: None
     """
     cv2.drawContours(mat, contours, -1, color, thickness=thickness)

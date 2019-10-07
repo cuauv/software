@@ -57,7 +57,7 @@ while 1:
 		data = bytes()
 
 		#receiving the full packets and the final possibly partially filled packet
-		for j in range(int(math.ceil(float(RAW_PLOT_LENGTH) / UDP_PAYLOAD_SIZE))):
+		for j in range(int(math.ceil(float(RAW_PLOT_LENGTH) * 4.0 / UDP_PAYLOAD_SIZE))):
 			(data_packet, address) = sock.recvfrom(UDP_PAYLOAD_SIZE * 4)
 			data += data_packet
 

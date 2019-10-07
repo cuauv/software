@@ -21,12 +21,9 @@ def _convert_colorspace(conv_type):
     return _inner
 
 
-_conversions = [cv2.COLOR_BGR2LAB, cv2.COLOR_BGR2HSV, cv2.COLOR_BGR2HLS, cv2.COLOR_BGR2YCrCb, cv2.COLOR_BGR2LUV]
-bgr_to_lab, bgr_to_hsv, bgr_to_hls, bgr_to_ycrcb, bgr_to_luv = [_convert_colorspace(c) for c in _conversions]
-
-
-def bgr_to_grayscale(mat):
-    return cv2.cvtColor(mat, cv2.COLOR_BGR2GRAY)
+_conversions = [cv2.COLOR_BGR2LAB, cv2.COLOR_BGR2HSV, cv2.COLOR_BGR2HLS, cv2.COLOR_BGR2YCrCb,
+                cv2.COLOR_BGR2LUV, cv2.COLOR_BGR2GRAY, cv2.COLOR_GRAY2BGR]
+bgr_to_lab, bgr_to_hsv, bgr_to_hls, bgr_to_ycrcb, bgr_to_luv, bgr_to_gray, gray_to_bgr = [_convert_colorspace(c) for c in _conversions]
 
 
 def color_dist(c1, c2):
@@ -47,6 +44,31 @@ def elementwise_color_dist(mat, c):
     """
     return np.linalg.norm(as_mat(mat) - c, axis=2)
 
+def thresh_color_distance(split, color, distance, auto_distance_percentile=None, ignore_channels=[], weights=[1, 1, 1]):
+    """
+    thresholds the image according to the weighted distance of each pixel to the color
+    :param split: a list of monocolored images (see _convert_colorspace)
+    :param color: the target color of the threshold
+    :param distance: the target distance of the threshold.
+    :param auto_distance_percentile: the percentile used for distance
+    :param ignore_channels: specifies which color channels should be ignored
+    :param weights: the weights to calculated the weighted color distance of each channel
+    :return: the input image with all pixel values with weighted color distance to color larger than distance set to zero
+        and all other values set to 255
+    """
+    for idx in ignore_channels:
+        weights[idx] = 0
+    weights /= np.linalg.norm(weights)
+    dists = np.zeros(split[0].shape, dtype=np.float32)
+    for i in range(3):
+        if i in ignore_channels:
+            continue
+        dists += weights[i] * (np.float32(split[i]) - color[i])**2
+    if auto_distance_percentile:
+        distance = min(np.percentile(dists, auto_distance_percentile), distance**2)
+    else:
+        distance = distance**2
+    return range_threshold(dists, 0, distance), np.uint8(np.sqrt(dists))
 
 def range_threshold(mat, min, max):
     """
@@ -194,4 +216,3 @@ def color_correct(mat, equalize_rgb=True, rgb_contrast_correct=False,
     # Convert to matrix of original shape
     mat = np.ctypeslib.as_array(data_p, (rows, cols, depth)).astype(np.uint8)
     return mat
-

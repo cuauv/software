@@ -64,9 +64,8 @@ class ThrusterManager(object):
         forces = [0, 0]
         f = lambda t: t.torque_about if torque else t.thrust_in
         for thruster in self.get_thrusters():
-            current_max_thrust, current_max_neg_thrust = thruster.current_max_thrusts()
-            max_t = (f(thruster))(axis, current_max_thrust)
-            min_t = (f(thruster))(axis, current_max_neg_thrust)
+            max_t = (f(thruster))(axis, thruster.max_thrust)
+            min_t = (f(thruster))(axis, thruster.max_neg_thrust)
             forces[0] += min(max_t, min_t)
             forces[1] += max(max_t, min_t)
 

@@ -10,22 +10,17 @@
 
 #include <cstdio>
 #include <cstdint>
+#include <complex>
 
 #include "libshm/c/vars.h"
 //#include "shm_mac.hpp"
-#include "structs.hpp"
 #include "pinger_tracking.hpp"
-#include "common_dsp.hpp"
 #include "udp_sender.hpp"
-
-#include <complex>
-
-//#include "audible_ping.hpp"
-
-//extern FILE *audible_file;
+#include "structs.hpp"
+#include "constants.hpp"
 
 static const int trigger_plot_length = 2 * dft_length; //length of the trigger plot (in samples)
-static const int dft_plot_length = (int)(pinger_period * pinger_period_factor * (float)sampling_rate / packet_length - gain_propagation_packets); //length of the dft plot (in samples)
+static const int dft_plot_length = (int)(pinger_period * pinger_period_factor * (float)ADC_SAMPLE_RATE / SAMPLE_PKT_LEN - gain_propagation_packets); //length of the dft plot (in samples)
 static float dft_peak;
 static buffer dft_results_buffer(dft_length + 1);
 static buffer dft_plot_amplitudes(dft_plot_length);
@@ -50,6 +45,11 @@ static struct gx4 gx4_data;
 static int trigger_packet_no;
 static buffer_triple trigger_plot(trigger_plot_length);
 
+UDPGainSender gain_sender(GAIN_ADDR, GAIN_PORT);
+UDPPlotSender raw_plot_sender(RAW_PLOT_ADDR, RAW_PLOT_PORT);
+UDPPlotSender trigger_plot_sender(TRIGGER_PLOT_ADDR, TRIGGER_PLOT_PORT);
+UDPPlotSender dft_plot_sender(DFT_PLOT_ADDR, DFT_PLOT_PORT);
+
 bool increaseGain(float raw_peak, int &gain_lvl)
 {
     //Tries to increase gain, taking into account the signal strength on the current interval ("raw_peak") and the current gain level ("gain_lvl"). Returns 1 if gain has been increased
@@ -58,7 +58,7 @@ bool increaseGain(float raw_peak, int &gain_lvl)
     for(int try_gain_lvl = 13; try_gain_lvl > gain_lvl; try_gain_lvl--)
     {
         //if signal would not have clipped on a higher gain, then gain can be incresed. DC bias needs to be accounted for because it does not change with gain. it is very roughly "highest_quantization_lvl / 2" at all times because we are working with single rail supplies.
-        if((raw_peak - highest_quantization_lvl / 2) / gainz[gain_lvl] * gainz[try_gain_lvl] <= (clipping_threshold - clipping_threshold_hysteresis) * highest_quantization_lvl / 2)
+        if((raw_peak - BIT_DEPTH / 2) / gainz[gain_lvl] * gainz[try_gain_lvl] <= (clipping_threshold - clipping_threshold_hysteresis) * BIT_DEPTH / 2)
         {
             gain_lvl = try_gain_lvl;
             return 1;
@@ -140,7 +140,7 @@ void computeHeading(triple_sample ping_phase, float frequency, float &heading, f
     }
     else
     {
-        heading = fmod(atan2(path_diff_1, -path_diff_2) * 180.0 / M_PI /*+ gx4_data.heading*/, 360.0);
+        heading = fmod(atan2(-path_diff_1, path_diff_2) * 180.0 / M_PI + gx4_data.heading, 360.0);
     }
     
     cos_elevation = sqrt((path_diff_1 * path_diff_1 + path_diff_2 * path_diff_2)) / nipple_distance;
@@ -156,14 +156,9 @@ void computeHeading(triple_sample ping_phase, float frequency, float &heading, f
     }
 }
 
-void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
+void pingerTracking(uint16_t *fpga_packet)
 {
     //Main function, executes every packet and controls the pinger tracking program flow.
-    
-    if(reset_signal == 1)
-    {
-        packet_no = 0;
-    }
     
     //preparing for a new interval. every interval is guaranteed to contain at least one ping
     if(packet_no == 0)
@@ -191,7 +186,7 @@ void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
         shm_getg(hydrophones_settings, shm_settings);
         
         //the desired gain is set everytime a new interval starts
-        setGain(gain_lvl);
+        gain_sender.send(gain_lvl);
         printf("%s%d \n", "gain: x", gainz[gain_lvl]);
         
         //checking whether the shm frequency target setting is correct (present in the hardcoded frequency list)
@@ -223,7 +218,7 @@ void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
         average_noise = noise_sum / (packet_no - gain_propagation_packets + 1);
 
         //operations performed on every triple_sample in a packet
-        for(unsigned int packet_sample_no = 0; packet_sample_no < packet_length; packet_sample_no++)
+        for(unsigned int packet_sample_no = 0; packet_sample_no < SAMPLE_PKT_LEN; packet_sample_no++)
         {
             //this section executes on every sample
             
@@ -236,10 +231,9 @@ void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
             raw_buffer.push(new_raw_sample);
             
             triple_sample new_normalized_sample;
-            new_normalized_sample.ch0 = new_raw_sample.ch0 - (highest_quantization_lvl / 2);
-            new_normalized_sample.ch1 = new_raw_sample.ch1 - (highest_quantization_lvl / 2);
-            new_normalized_sample.ch2 = new_raw_sample.ch2 - (highest_quantization_lvl / 2);
-            //printAudible(new_normalized_sample);
+            new_normalized_sample.ch0 = new_raw_sample.ch0 - (BIT_DEPTH / 2);
+            new_normalized_sample.ch1 = new_raw_sample.ch1 - (BIT_DEPTH / 2);
+            new_normalized_sample.ch2 = new_raw_sample.ch2 - (BIT_DEPTH / 2);
             
             //everytime we get a record high triple_sample in the interval, we check for clipping (if autogain is on), and we rewrite the raw plot to capture the signal around this value
             if(new_raw_sample.max() > raw_peak)
@@ -248,7 +242,7 @@ void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
                     
                 if(shm_settings.auto_gain == 1)
                 {
-                    if(raw_peak > clipping_threshold * highest_quantization_lvl)
+                    if(raw_peak > clipping_threshold * BIT_DEPTH)
                     {
                         printf("%s \n","clipping detected");
                         
@@ -267,18 +261,18 @@ void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
                     }
                 }
                 
-                savePlot(raw_buffer, raw_buffer_length, raw_plot, raw_plot_length, raw_plot_length / highest_quantization_lvl);
+                savePlot(raw_buffer, raw_buffer_length, raw_plot, raw_plot_length, raw_plot_length / BIT_DEPTH);
             }
             
             //updating the DFT results buffer
             for(int freq_no = 0; freq_no < freq_list_length; freq_no++)
             {
-                slidingDFTBin(last_dft_result[freq_no], raw_buffer, raw_buffer_length, dft_length, freqs[freq_no], (float)sampling_rate);
+                slidingDFTBin(last_dft_result[freq_no], raw_buffer, raw_buffer_length, dft_length, freqs[freq_no], (float)ADC_SAMPLE_RATE);
             }
             dft_results_buffer.push(last_dft_result[good_freq_no].combinedAmplitude());
             
             //calculating the ratio between the amplitudes of two non-overlapping windows, our function of interest for triggering
-            if(packet_no >= gain_propagation_packets + ceil(2 * (float)dft_length / (float)packet_length))
+            if(packet_no >= gain_propagation_packets + ceil(2 * (float)dft_length / (float)ADC_SAMPLE_RATE))
             {
                 dft_ratio = (dft_results_buffer.read(dft_length) + average_noise) / (dft_results_buffer.read(0) + average_noise);
                 //when calculating the ratio, we add to both amplitudes the noise level first. this hurts cases when the amplitudes are very small and prevents triggering on random noise
@@ -310,7 +304,7 @@ void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
                         trigger_packet_no = packet_no;
                     
                         //rewriting the trigger plot to capture the signal around the trigger sample
-                        savePlot(raw_buffer, raw_buffer_length, trigger_plot, trigger_plot_length, trigger_plot_length / highest_quantization_lvl);
+                        savePlot(raw_buffer, raw_buffer_length, trigger_plot, trigger_plot_length, trigger_plot_length / BIT_DEPTH);
                     }
                 }
             }
@@ -340,7 +334,7 @@ void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
     packet_no++;
     
     //ending an interval
-    if(packet_no == (int)(pinger_period * pinger_period_factor * (float)sampling_rate / packet_length))
+    if(packet_no == (int)(pinger_period * pinger_period_factor * (float)ADC_SAMPLE_RATE / SAMPLE_PKT_LEN))
     {
         //increasing gain for the next interval if signal would not have clipped on higher gain (if autogain enabled)
         if(shm_settings.auto_gain == 1)
@@ -363,15 +357,15 @@ void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
         dft_plot_trigger_point.push((float)(trigger_packet_no - gain_propagation_packets));
         
         //sending the plots via UDP to the Python scripts
-        sendPlot(raw_plot.get(0), 0, raw_plot_length);
-        sendPlot(raw_plot.get(1), 0, raw_plot_length);
-        sendPlot(raw_plot.get(2), 0, raw_plot_length);
-        sendPlot(trigger_plot.get(0), 1, trigger_plot_length);
-        sendPlot(trigger_plot.get(1), 1, trigger_plot_length);
-        sendPlot(trigger_plot.get(2), 1, trigger_plot_length);
-        sendPlot(dft_plot_amplitudes.get(), 2, dft_plot_length);
-        sendPlot(dft_plot_ratios.get(), 2, dft_plot_length);
-        sendPlot(dft_plot_trigger_point.get(), 2, 1);
+        raw_plot_sender.send(raw_plot.get(0), raw_plot_length);
+        raw_plot_sender.send(raw_plot.get(1), raw_plot_length);
+        raw_plot_sender.send(raw_plot.get(2), raw_plot_length);
+        trigger_plot_sender.send(trigger_plot.get(0), trigger_plot_length);
+        trigger_plot_sender.send(trigger_plot.get(1), trigger_plot_length);
+        trigger_plot_sender.send(trigger_plot.get(2), trigger_plot_length);
+        dft_plot_sender.send(dft_plot_amplitudes.get(), dft_plot_length);
+        dft_plot_sender.send(dft_plot_ratios.get(), dft_plot_length);
+        dft_plot_sender.send(dft_plot_trigger_point.get(), 1);
         
         //updating the shm results
         shm_results_track.tracked_ping_heading = heading;
@@ -385,6 +379,6 @@ void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal)
         
         packet_no = 0;
         
-        printf("%s %4.2f%s \n", "signal peak was:", raw_peak / highest_quantization_lvl * 100, "% of highest quantization level");
+        printf("%s %4.2f%s \n", "signal peak was:", raw_peak / BIT_DEPTH * 100, "% of highest quantization level");
     }
 }

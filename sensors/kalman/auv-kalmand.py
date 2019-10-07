@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-''' 
+'''
 The daemon that runs Kalman filters for orientation and position.
 '''
 
@@ -12,7 +12,7 @@ import shm
 
 from auv_math.quat import Quaternion
 from auv_python_helpers.angles import abs_heading_sub_degrees
-from conf.vehicle import sensors, dvl_present, gx_hpr
+from conf.vehicle import sensors, dvl_present, gx_hpr, dvl_offset
 from settings import dt
 
 from kalman_unscented import UnscentedKalmanFilter
@@ -148,10 +148,8 @@ def get_velocity(sub_quat, heading_rate):
         vel[2] = -vel[2]
 
         # Offset velocity to account for misaligned reference point and DVL position
-        # TODO: In the future, this may not be necessary. The numbers here are specifically for Odysseus.
-        # The numbers below are most likely incorrect for your sub.
-        SKEW_FACTOR = -0.2286 * 2 * math.pi / 360 # 9 inches from DVL beam to axis of rotation
-        dy = SKEW_FACTOR * heading_rate
+        skew_factor = dvl_offset * 2 * math.pi / 360
+        dy = skew_factor * heading_rate
         vel[1] -= dy
 
         vel = convert_dvl_velocities(sub_quat, vel)
@@ -258,7 +256,7 @@ while True:
             outputs.q3= quat_in[3]
             outputs.roll = hpr[2]
             outputs.roll_rate = roll_rate_in
-            outputs.sway = outputs.sway 
+            outputs.sway = outputs.sway
             outputs.velx = vels[0]
             outputs.vely = vels[1]
             outputs.velz = vels[2]
@@ -401,7 +399,7 @@ while True:
                                                 outputs.pitch, outputs.roll))
 
         outputs.velz = z_vel
-       
+
         # This really shouldn't be necessary when kalman has a u term (which it does)
         if not beams_good and dvl_present:
             outputs.velx = 0.0
@@ -417,4 +415,3 @@ while True:
                 iteration = 0
                 real_start = time.time()
             print(iteration/(real_start-time.time()))
-

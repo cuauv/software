@@ -26,7 +26,7 @@ if [ "$VEHICLE_TYPE" = "mainsub" ]; then
 elif [ "$VEHICLE_TYPE" = "minisub" ]; then
 	GX_PORT=$(readlink -f /dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if01-port0)
 fi
-DVL_PORT=/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if01-port0
+DVL_PORT=/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if00-port0
 
 # CONFIGS
 

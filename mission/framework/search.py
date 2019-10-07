@@ -111,6 +111,8 @@ class SearchFor(Task):
             self.finish()
         else:
             search_task()
+            if search_task.finished:
+                self.finish(success=False)
 
 class PitchSearch(Task):
     def on_first_run(self, angle, dps=45):

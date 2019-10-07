@@ -2,6 +2,8 @@
 #include <fstream>
 #include <functional>
 #include <condition_variable>
+#include <vector>
+#include <algorithm>
 
 #include <serial/libserial/Manager.h>
 #include <serial/libserial/SerialPort.h>
@@ -79,6 +81,22 @@ class ResetDevice {
 
 };
 
+static void flash_page(BootTalker &talker, uint16_t page_size, uint16_t addr, std::vector<uint8_t> bytes) {
+        std::vector<uint8_t> buf;
+        buf.push_back('U');
+        buf.push_back((addr/2) & 0xFF);
+        buf.push_back((addr/2) >> 8);
+        talker.query(buf, TIMEOUT, 0);
+        buf.clear();
+        buf.push_back('d');
+        // NOTE: not a bug here, the two commands do in fact switch endianness
+        buf.push_back((page_size*2) >> 8);
+        buf.push_back((page_size*2) & 0xFF);
+        buf.push_back('F');
+        buf.insert(buf.end(), bytes.begin(), bytes.end());
+        talker.query(buf, TIMEOUT, 0);
+}
+
 static int flash_run(std::map<std::string, std::string> args) {
     std::string port;
     if (args.count("port") == 0) {
@@ -115,6 +133,7 @@ static int flash_run(std::map<std::string, std::string> args) {
         // via the serial board, not through one of the Prolific adapters. It seems like
         // there's some extra data on the line when the serial board is talking, this sleep
         // gives the firmware enough time to time out whatever is confusing it
+
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
 
         {
@@ -150,21 +169,17 @@ static int flash_run(std::map<std::string, std::string> args) {
 
             // Do the programming here
             std::cout << "Uploading code..." << std::endl;
+            std::vector<uint8_t> ones_page(fw.pageSize() * 2);
+            std::fill(ones_page.begin(), ones_page.end(), 0xff);
+            flash_page(talker, fw.pageSize(), 0, ones_page);
+            //std::cout << "cleared page 0" << std::endl;
+            //std::cout << "pageSize = " << fw.pageSize() << std::endl;
             for (auto page : pages) {
-                std::vector<uint8_t> buf;
-                buf.push_back('U');
-                buf.push_back((page.first/2) & 0xFF);
-                buf.push_back((page.first/2) >> 8);
-                talker.query(buf, TIMEOUT, 0);
-                buf.clear();
-                buf.push_back('d');
-                // NOTE: not a bug here, the two commands do in fact switch endianness
-                buf.push_back((fw.pageSize()*2) >> 8);
-                buf.push_back((fw.pageSize()*2) & 0xFF);
-                buf.push_back('F');
-                buf.insert(buf.end(), page.second.begin(), page.second.end());
-                talker.query(buf, TIMEOUT, 0);
+                //std::cout << "page.size() = " << page.second.size() << std::endl;
+                if (page.first != 0) flash_page(talker, fw.pageSize(), page.first, page.second);
+                //std::cout << "wrote page " << page.first << std::endl;
             }
+            flash_page(talker, fw.pageSize(), 0, pages[0]);
 
             // Read back pages
             std::cout << "Verifying code..." << std::endl;

@@ -15,16 +15,15 @@ from termcolor import colored
 
 import shm, time, numpy, traceback
 
-all_modules = [
-  shm.vision_modules.BicolorGate,
-  shm.vision_modules.CashInDownward,
-  shm.vision_modules.CashInForward,
-  shm.vision_modules.Dice,
-  shm.vision_modules.Pipes,
-  shm.vision_modules.Roulette,
-  shm.vision_modules.Torpedoes,
-  shm.vision_modules.Debug, # don't know what this is
-]
+#all_modules = [
+#  shm.vision_modules.Gate,
+#  shm.vision_modules.Stake,
+#  shm.vision_modules.VampBuoy,
+#  shm.vision_modules.BinsCover,
+#  shm.vision_modules.Debug, # don't know what this is
+#]
+ignored_modules = {'Record', 'Poster'}
+all_modules = [getattr(shm.vision_modules, x) for (x, typ) in shm.vision_modules._fields if x not in ignored_modules]
 
 def assertModules(modules, log):
   for v in all_modules:

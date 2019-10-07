@@ -35,7 +35,6 @@ from mission.framework.primitive import FunctionTask, HardkillGuarded, \
                                         EnableController, ZeroWithoutHeading, Zero, Succeed, \
                                         Log, Fail
 from mission.constants.region import *
-from mission.missions.hydrophones import Full as Hydrophones
 
 from mission.missions.will_common import Consistent, BigDepth, FakeMoveX
 
@@ -43,13 +42,13 @@ from sensors.kalman.set_zero_heading import set_zero_heading
 
 from mission.missions.leds import AllLeds
 
-from mission.constants.config import highway as highway_settings, track as track_settings, NONSURFACE_MIN_DEPTH as MIN_DEPTH
+from mission.constants.config import NONSURFACE_MIN_DEPTH as MIN_DEPTH
 
 from collections import namedtuple
 
-from hydrocode.scripts.udp_set_gain import set_gain
-from hydrocode.scripts.udp_set_gain_12 import set_gain as set_gain_12
-from hydrocode.scripts.udp_set_gain_13 import set_gain as set_gain_13
+# from hydrocode.scripts.udp_set_gain import set_gain
+# from hydrocode.scripts.udp_set_gain_12 import set_gain as set_gain_12
+# from hydrocode.scripts.udp_set_gain_13 import set_gain as set_gain_13
 
 
 class RunTask(Task):
@@ -75,7 +74,7 @@ class RunTask(Task):
 
   def block_surface(self):
     #Block non-surfacing tasks from surfacing
-    if not self.task.surfaces and (shm.desires.depth.get() < MIN_DEPTH or shm.kalman.depth.get() < MIN_DEPTH):
+    if not self.task.surfaces and (shm.desires.depth.get() < MIN_DEPTH):   #  or shm.kalman.depth.get() < MIN_DEPTH):
       Depth(max(MIN_DEPTH, shm.desires.depth.get()))()
       self.logw('Task attempted to rise above min depth, {}!'.format(MIN_DEPTH))
 
@@ -170,7 +169,7 @@ class Begin(Task):
     self.killed = shm.switches.hard_kill.get()
 
     self.use_task(Sequential(
-      VisionFramePeriod(0.1), # reset this
+      # VisionFramePeriod(0.1), # reset this
       FunctionTask(lambda: shm.switches.soft_kill.set(1)),
       FunctionTask(lambda: shm.deadman_settings.enabled.set(False)),
       Log('Disabling Record vision module'),
@@ -190,15 +189,16 @@ class Begin(Task):
 
       Log('Waiting for unkill signal to start mission...'),
       WaitForUnkill(wait=5.0),
+      Timer(5),
       Log('Starting mission!'),
       #AllLeds('red'),
 
       Log('Zeroing'),
-      ZeroHeading(),
+      # ZeroHeading(),
       Zero(),
       FunctionTask(lambda: shm.switches.soft_kill.set(0)),
-      EnableController(),
-      Heading(0), # This will revert to the aligned heading
+      # EnableController(),
+      # Heading(0), # This will revert to the aligned heading
       Log('Enabling Record vision module'),
       FunctionTask(lambda: shm.vision_modules.Record.set(1)),
     ))
@@ -215,87 +215,87 @@ class End(Task):
     ))
 
 # Not used in 2018, perhaps this was 2017?
-class HydrophonesWithVision(Task):
-  # TODO use a ConcurrentOr combinator instead?
-  def on_first_run(self, vision, *args, **kwargs):
-    self.hydro = Hydrophones()
-    self.vision = vision
+# class HydrophonesWithVision(Task):
+#   # TODO use a ConcurrentOr combinator instead?
+#   def on_first_run(self, vision, *args, **kwargs):
+#     self.hydro = Hydrophones()
+#     self.vision = vision
+#
+#   def on_run(self, *args, **kwargs):
+#     self.hydro()
+#     self.vision()
+#     if self.hydro.finished:
+#       self.logi('Hydrophones finished without seeing anything')
+#       self.finish()
+#     elif self.vision.finished:
+#       self.logi('Hydrophones finished after seeing mission element in vision')
+#       self.finish()
 
-  def on_run(self, *args, **kwargs):
-    self.hydro()
-    self.vision()
-    if self.hydro.finished:
-      self.logi('Hydrophones finished without seeing anything')
-      self.finish()
-    elif self.vision.finished:
-      self.logi('Hydrophones finished after seeing mission element in vision')
-      self.finish()
+# VisionFramePeriod = lambda period: FunctionTask(lambda: shm.vision_module_settings.time_between_frames.set(period))
 
-VisionFramePeriod = lambda period: FunctionTask(lambda: shm.vision_module_settings.time_between_frames.set(period))
+# def pollux_step():
+#   set_gain()
+#   time.sleep(30)
+#   set_gain_13()
+#   time.sleep(30)
+#   set_gain_12()
+#
+# def p_step():
+#   threading.Thread(target=pollux_step, daemon=True).start()
 
-def pollux_step():
-  set_gain()
-  time.sleep(30)
-  set_gain_13()
-  time.sleep(30)
-  set_gain_12()
-
-def p_step():
-  threading.Thread(target=pollux_step, daemon=True).start()
-
-def ConfigureHydromath(enable, gain_high=True):
-  if os.environ["CUAUV_VEHICLE"] == "pollux":
-    return Sequential(
-      FunctionTask(lambda: shm.hydrophones_settings.enabled.set(enable)),
-      FunctionTask(p_step)
-    )
-  else:
-    return Sequential(
-      FunctionTask(lambda: shm.hydrophones_settings.enabled.set(enable)),
-      FunctionTask(set_gain if gain_high else set_gain_12)
-    )
+# def ConfigureHydromath(enable, gain_high=True):
+#   if os.environ["CUAUV_VEHICLE"] == "pollux":
+#     return Sequential(
+#       FunctionTask(lambda: shm.hydrophones_settings.enabled.set(enable)),
+#       FunctionTask(p_step)
+#     )
+#   else:
+#     return Sequential(
+#       FunctionTask(lambda: shm.hydrophones_settings.enabled.set(enable)),
+#       FunctionTask(set_gain if gain_high else set_gain_12)
+#     )
 
 
-TrackerGetter = lambda found_roulette, found_cash_in, enable_roulette=True, enable_cash_in=True: Sequential(
-  # Turn on hydromathd
-  ConfigureHydromath(True, enable_cash_in),
-  # Don't kill CPU with vision
-  VisionFramePeriod(track_settings.vision_frame_period),
-  Log('Roulette: ' + str(enable_roulette) + ', Cash-in:' + str(enable_cash_in)),
-  MasterConcurrent(
-    Conditional(
-      # Find either roulette or cash-in
-      Either(
-        Consistent(test=lambda: shm.bins_vision.board_visible.get() if enable_roulette else False,
-                   count=1, total=1.5, invert=False, result=True),
-        Consistent(test=lambda: shm.recovery_vision_downward_bin_red.probability.get() > 0 if enable_cash_in else False,
-                   count=1, total=1.5, invert=False, result=False),
-      ),
-      # Success is roulette
-      on_success=found_roulette,
-      # Failure is cash-in
-      on_fail=found_cash_in,
-    ),
-    # Track with hydrophones
-    Hydrophones(),
-  ),
-  Zero(),
-  # This should end up getting run twice because we call it in on_exit... but just in case
-  TrackerCleanup(),
-)
+# TrackerGetter = lambda found_roulette, found_cash_in, enable_roulette=True, enable_cash_in=True: Sequential(
+#   # Turn on hydromathd
+#   ConfigureHydromath(True, enable_cash_in),
+#   # Don't kill CPU with vision
+#   VisionFramePeriod(track_settings.vision_frame_period),
+#   Log('Roulette: ' + str(enable_roulette) + ', Cash-in:' + str(enable_cash_in)),
+#   MasterConcurrent(
+#     Conditional(
+#       # Find either roulette or cash-in
+#       Either(
+#         Consistent(test=lambda: shm.bins_vision.board_visible.get() if enable_roulette else False,
+#                    count=1, total=1.5, invert=False, result=True),
+#         Consistent(test=lambda: shm.recovery_vision_downward_bin_red.probability.get() > 0 if enable_cash_in else False,
+#                    count=1, total=1.5, invert=False, result=False),
+#       ),
+#       # Success is roulette
+#       on_success=found_roulette,
+#       # Failure is cash-in
+#       on_fail=found_cash_in,
+#     ),
+#     # Track with hydrophones
+#     Hydrophones(),
+#   ),
+#   Zero(),
+#   # This should end up getting run twice because we call it in on_exit... but just in case
+#   TrackerCleanup(),
+# )
 
-TrackerCleanup = lambda: Sequential(
-  # Turn off hydromathd
-  ConfigureHydromath(False, True),
-  # Go back to normal vision settings
-  VisionFramePeriod(0.1), # this should be default
-)
+# TrackerCleanup = lambda: Sequential(
+#   # Turn off hydromathd
+#   ConfigureHydromath(False, True),
+#   # Go back to normal vision settings
+#   VisionFramePeriod(0.1), # this should be default
+# )
 
-DriveToSecondPath = Sequential(
-    BigDepth(highway_settings.high_depth),
-    FakeMoveX(dist=highway_settings.dist, speed=highway_settings.speed),
-    BigDepth(highway_settings.low_depth),
-)
+# DriveToSecondPath = Sequential(
+#     BigDepth(highway_settings.high_depth),
+#     FakeMoveX(dist=highway_settings.dist, speed=highway_settings.speed),
+#     BigDepth(highway_settings.low_depth),
+# )
 
 BeginMission = MissionTask(
   name = 'BeginMission', #DON'T CHANGE THIS!!!!
@@ -313,4 +313,6 @@ EndMission = MissionTask(
 
 ZeroHeading = lambda: FunctionTask(set_zero_heading)
 
-configure_hydrophones = ConfigureHydromath(True, True)
+# configure_hydrophones = ConfigureHydromath(True, True)
+
+# frick = WaitForUnkill(killed=False, wait=1)

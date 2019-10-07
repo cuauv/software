@@ -2,12 +2,13 @@
 from vision.modules.base import ModuleBase
 from vision import options
 
-
 import cv2
+
 module_options = [
-        options.DoubleOption('text_size', 1.0, 1,0, 20.0),
-        options.IntOption('text_thickness', 1, 1, 10)
+    options.DoubleOption('text_size', 1.0, 0, 1, 20.0),
+    options.IntOption('text_thickness', 1, 1, 10)
 ]
+
 class Hello(ModuleBase):
     def process(self, img):
         hello_img = cv2.putText(
@@ -16,5 +17,5 @@ class Hello(ModuleBase):
             thickness=self.options["text_thickness"])
         self.post("hello", hello_img)
 
-if _name_ == '_main_':
-    Hello(None, module_options)
+if __name__ == '__main__':
+    Hello("forward", module_options)()

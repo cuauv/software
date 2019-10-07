@@ -51,7 +51,7 @@ class ModuleBase:
         self.options_dict = OrderedDict()
         self.preprocessor = Preprocessor(self)
 
-        if len(sys.argv) > 1:
+        if len(sys.argv) > 1 and not (len(sys.argv) == 2 and sys.argv[1] == 'default'):
             self.directions = sys.argv[1:]
         elif default_directions is None:
             print('No camera directions specified')
@@ -92,6 +92,8 @@ class ModuleBase:
             image = from_umat(orig_image)
         else:
             image = np.array(orig_image, None, copy=True, order='C', ndmin=1)
+        if image.dtype != np.uint8:
+            image = np.uint8(image)
 
         if self.order_post_by_time:
             self.posted_images.append((tag, image))

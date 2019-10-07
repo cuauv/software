@@ -2,3 +2,8 @@
 DepthReadVar = "depth.depth"
 RawDepth = "depth.raw_depth"
 PressureReadVar = "pressure.hull"
+
+LEDModeWriteVar = "leds_internal.light_show"
+BlueWriteVar = "leds_internal.port_color_blue"
+GreenWriteVar = "leds_internal.port_color_green"
+RedWriteVar = "leds_internal.port_color_red"

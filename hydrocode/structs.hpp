@@ -11,10 +11,9 @@
 #ifndef structs_hpp
 #define structs_hpp
 
-#include "liquid.h"
-#include "comms.hpp"
-
 #include <complex>
+
+#include "liquid.h"
 
 struct triple_sample
 {
@@ -287,64 +286,6 @@ struct buffer
         //Fills buffer with zeros
         
         windowf_reset(value);
-    }
-};
-
-struct energy_detector
-{
-    float space_energy, mark_energy;
-    bool symbol;
-    unsigned int samples_per_symbol;
-    unsigned int sample_counter;
-    
-    energy_detector(unsigned int corr_resolution)
-    {
-        space_energy = 0;
-        mark_energy = 0;
-        samples_per_symbol = corr_resolution;
-        sample_counter = 0;
-    }
-    
-    void reset(void)
-    {
-        space_energy = 0;
-        mark_energy = 0;
-        sample_counter = 0;
-        symbol = 0;
-    }
-    
-    bool push(std::complex <float> space_sample, std::complex <float> mark_sample)
-    {
-        space_energy += space_correction_factor * std::abs(space_sample);
-        mark_energy += mark_correction_factor * std::abs(mark_sample);
-        
-        sample_counter++;
-        if(sample_counter == samples_per_symbol)
-        {
-            if(space_energy > mark_energy)
-            {
-                symbol = 0;
-            }
-            else
-            {
-                symbol = 1;
-            }
-            
-            space_energy = 0;
-            mark_energy = 0;
-            sample_counter = 0;
-            
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    
-    bool getSymbol(void)
-    {
-        return symbol;
     }
 };
 

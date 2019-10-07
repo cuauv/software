@@ -18,7 +18,7 @@ class Preprocessor:
             options.IntOption('PPX_r_bias', 0, -255, 255),
             options.IntOption('PPX_g_bias', 0, -255, 255),
             options.IntOption('PPX_b_bias', 0, -255, 255),
-            options.DoubleOption('PPX_contrast', 1, 0, 255),
+            options.DoubleOption('PPX_contrast', 1, 0, 5),
             options.IntOption('PPX_brightness', 0, -255, 255),
             options.BoolOption('PPX_gaussian_blur', False),
             options.IntOption('PPX_gaussian_blur_kernel', 1, 1, 100),

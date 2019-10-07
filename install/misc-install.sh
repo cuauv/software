@@ -6,6 +6,11 @@ apt-get -y install zsh
 rm /home/software/.bashrc
 
 sudo -u software tee /home/software/.zshrc <<'EOF'
+
+if [[ $TERM = "dumb" ]]; then
+    bash && exit
+fi
+
 if [[ -f /home/software/.env ]]; then
    . /home/software/.env
 fi

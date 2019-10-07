@@ -52,7 +52,7 @@ class VampBuoy(ModuleBase):
 
         def find_key_descriptors(im):
             if self.options['source_x_scale_%s'%image] !=0 and self.options['source_y_scale_%s'%image] != 0:
-                scaledim = resize(im, int(im.shape[1]*self.options['source_x_scale_%s'%image]), 
+                scaledim = resize(im, int(im.shape[1]*self.options['source_x_scale_%s'%image]),
                                       int(im.shape[0]*self.options['source_y_scale_%s'%image]))
                 scaledim = np.pad(scaledim, ((PADDING, PADDING), (PADDING, PADDING)), 'constant', constant_values=255)
                 rx = self.options['source_x_scale_%s'%image]
@@ -68,15 +68,15 @@ class VampBuoy(ModuleBase):
 
         if image in self.static:
             if self.static[image]['rx'] == self.options['source_x_scale_%s'%image] and \
-               self.static[image]['ry'] == self.options['source_y_scale_%s'%image]: 
+               self.static[image]['ry'] == self.options['source_y_scale_%s'%image]:
                 return self.static[image]
-            else: 
+            else:
                 im = self.static[image]["org"]
                 return find_key_descriptors(im)
         else:
             im = simple_gaussian_blur(cv2.imread('buoy_images/%s.png' %image,0), 11, 3)
             im = resize(im, im.shape[1]//2, im.shape[0]//2)
-            return find_key_descriptors(im) 
+            return find_key_descriptors(im)
 
     def match(self, im1, im2, output, color):
         MIN_MATCH_COUNT = self.options['min_match_count']
@@ -120,7 +120,7 @@ class VampBuoy(ModuleBase):
                 mar = cv2.minAreaRect(dst)
                 rarea = mar[1][0]*mar[1][1]
                 mom = cv2.moments(dst)
-                if area/rarea < RECTANGULARITY_THRESH: 
+                if area/rarea < RECTANGULARITY_THRESH:
                     print("box lower than rectangularity threshold")
                     return output
                 output = cv2.polylines(output,[np.int32(dst)],True,color,3, cv2.LINE_AA)
@@ -157,7 +157,7 @@ class VampBuoy(ModuleBase):
         p = self.match(draugr, cam, None, (255,0,0))
         p = self.match(vetalas, cam, p, (0, 255, 0))
         p = self.match(aswang, cam, p, (0,0,255))
-        p = self.match(jiangshi, cam, p, (255,255,255))
+        p = self.match(jiangshi, cam, p, (255,0,255))
 
         if self.options['show_keypoints']:
             p = cv2.drawKeypoints(p, kp2, None, (255,255,0))

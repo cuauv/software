@@ -425,18 +425,22 @@ def run_loop(func):
 
 def control_loop(watcher, quit_event):
     watcher.watch(shm.leds)
+    watcher.watch(shm.active_mission)
 
     last_mode = "--"
     led_process = None
+    last_no_mission = None
 
     while not quit_event.is_set():
         modename = shm.leds.mode.get()
+        no_mission = shm.leds.use_mission.get() and not shm.active_mission.active.get()
 
-        if modename != last_mode:
+        if modename != last_mode or no_mission != last_no_mission:
             last_mode = modename
+            last_no_mission = no_mission
             if led_process is not None:
                 led_process.terminate()
-            led_controller_func = modes.get(modename, passthrough)
+            led_controller_func = modes['pulse'] if no_mission else modes.get(modename, passthrough)
             led_process = multiprocessing.Process(target=run_loop, args=(led_controller_func,), daemon=True)
             led_process.start()
 

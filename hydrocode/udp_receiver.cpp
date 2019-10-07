@@ -12,42 +12,32 @@
 #include <cstdint>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "udp_receiver.hpp"
 
-static bool bound = 0;
-static int receive_socket;
-static struct sockaddr_in receive_serv_addr;
-
-void udpReceiverInit()
+UDPSampleReceiver::UDPSampleReceiver(unsigned int port):
+sock(socket(AF_INET, SOCK_DGRAM, 0))
 {
-    //Initializes the UDP networking for receiving FPGA packets.
+    int status;
+    struct sockaddr_in serv_addr;
     
-    int r;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(port);
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
     
-    receive_socket = socket(AF_INET, SOCK_DGRAM, 0);
-    receive_serv_addr.sin_family = AF_INET;
-    receive_serv_addr.sin_port = htons(udp_receive_port);
-    receive_serv_addr.sin_addr.s_addr = INADDR_ANY;
-    
-    r = bind(receive_socket, (struct sockaddr *) &receive_serv_addr, sizeof(receive_serv_addr));
-    
-    if(r == 1)
+    status = bind(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+    if(status < 0)
     {
         printf("%s \n", "binding receive socket failed!");
     }
     else
     {
-        bound = 1;
         printf("%s \n", "bound receive socket successfully");
     }
 }
 
-bool udpReceive(uint16_t *fpga_packet)
+void UDPSampleReceiver::recv(uint16_t *pkt, unsigned int pkt_len)
 {
-    //Uses a blocking socket to receive UDP packets.
-    
-    recvfrom(receive_socket, fpga_packet, udp_receive_payload_size, 0, NULL, NULL);
-    
-    return 0;
+    recvfrom(sock, pkt, pkt_len * 4 * sizeof(uint16_t), 0, NULL, NULL);
 }

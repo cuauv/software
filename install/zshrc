@@ -1,3 +1,7 @@
+if [[ $TERM = "dumb" ]]; then
+    bash && exit
+fi
+
 export ZSH=$HOME/.oh-my-zsh
 ZSH_THEME="robbyrussell"
 plugins=(git)
@@ -70,7 +74,7 @@ chpwd() {
 }
 
 # Useful aliases
-alias build="ninja -C \"${CUAUV_SOFTWARE}\" -k 1000" # Build the software repo
+alias build="shm switches soft_kill 1 > /dev/null; ninja -C \"${CUAUV_SOFTWARE}\" -k 1000" # Build the software repo
 alias cs="cd $CUAUV_SOFTWARE"
 alias e="emacsclient -ca ''"
 alias t="trogdor"

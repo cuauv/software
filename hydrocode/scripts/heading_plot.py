@@ -6,7 +6,7 @@ import math
 import shm
 import matplotlib.pyplot as plt
 
-REFRESH_INTERVAL = 0.25 #heading plot updates at this interval (in seconds)
+REFRESH_INTERV = 0.25 #heading plot updates at this interval (in seconds)
 
 #initializing the plot window
 fig = plt.figure(figsize = (7, 7))
@@ -36,6 +36,6 @@ while 1:
 
 	#drawing the plot and pausing until the next update
 	plt.draw()
-	plt.pause(REFRESH_INTERVAL)
+	plt.pause(REFRESH_INTERV)
 
 

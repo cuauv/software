@@ -214,6 +214,9 @@ class While(Task):
         self.begin_iteration(task_func, condition)
 
     def on_run(self, task_func, condition, *args, **kwargs):
+        if not hasattr(self, 'task'):
+            self.finish(success=True)
+            return
         self.task()
         if self.task.finished:
             self.begin_iteration(task_func, condition)

@@ -9,10 +9,17 @@
 #ifndef udp_receiver_hpp
 #define udp_receiver_hpp
 
-static const int udp_receive_port = 8899; //FPGA sends packets to this port
-static const int udp_receive_payload_size = 1024; //size of FPGA packet (in bytes). 1024 bytes/packet = 4 channels * 128 samples/packet/channel * 2 bytes/sample
+#include <cstdint>
+#include <netinet/in.h>
 
-void udpReceiverInit();
-bool udpReceive(uint16_t *fpga_packet);
+class UDPSampleReceiver
+{
+public:
+    UDPSampleReceiver(unsigned int port);
+    void recv(uint16_t *pkt, unsigned int pkt_len);
+
+private:
+    int sock;
+};
 
 #endif /* udp_receiver_hpp */

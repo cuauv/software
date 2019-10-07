@@ -60,6 +60,8 @@ module_dir_name, module_no_dir_name = module_name.rsplit(".",1)
 # Get new log directory name
 cuauv_log = os.environ['CUAUV_LOG']
 dirname_base = "{}_{}".format(module_no_dir_name,task_name)
+initially_recording = shm.vision_modules.Record.get()
+
 if not args.no_record:
     try:
         dirs = glob.glob(os.path.join(cuauv_log, 'current', dirname_base) + '[0-9][0-9]*')
@@ -158,15 +160,17 @@ def cleanup():
     if not args.no_record:
           logger('Disabling "Record" vision module', copy_to_stdout = True)
           shm.vision_modules.Debug.set(False)
-          shm.vision_modules.Record.set(False)
+          if not initially_recording:
+              shm.vision_modules.Record.set(False)
 
           # Stop shmlogging
           shmlog_proc.kill()
 
           active_mission = shm.active_mission.get()
-          active_mission.active = False
-          active_mission.name = bytes("", encoding="utf-8")
+          if not initially_recording:
+              active_mission.active = False
           active_mission.log_path = bytes("", encoding="utf-8")
+          active_mission.name = bytes("", encoding="utf-8")
           shm.active_mission.set(active_mission)
 
 has_caught_sigint = False
@@ -188,22 +192,24 @@ register_exit_signals(exit_handler)
 
 too_long_initial = True
 
-if initially_killed:
-    logger('Sub is currently hard-killed. Waiting until unkilled.', copy_to_stdout=True)
+# if initially_killed:
+#     logger('Sub is currently hard-killed. Waiting until unkilled.', copy_to_stdout=True)
 
 while True:
     begin_time = time.time()
     is_unkilled = not shm.switches.hard_kill.get()
+    #is_soft_killed = shm.switches.soft_kill.get()
     #print(is_unkilled)
-    if initially_killed and is_unkilled and not was_ever_unkilled:
-        # If un-hard killing for the first time, also un-soft kill to start mission
-        time.sleep(3)
-        shm.switches.soft_kill.set(0)
+    # Note: Handled by the master mission
+    #if initially_killed and is_unkilled and is_soft_killed:
+    #    # If un-hard killing for the first time, also un-soft kill to start mission
+    #    time.sleep(3)
+    #    shm.switches.soft_kill.set(0)
     was_ever_unkilled = was_ever_unkilled or is_unkilled
 
     try:
-        if is_unkilled:
-            task()
+        # if is_unkilled:
+        task()
     except Exception as e:
         if not args.ignore_exceptions:
             cleanup()

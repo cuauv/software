@@ -28,6 +28,6 @@ static const float sound_speed = 1481; //speed of sound in fresh water at 20 deg
 static const int freqs[freq_list_length] = {25000, 30000, 35000, 40000}; //hardcoded frequencies list. read wiki entry before updating this!
 static const int gainz[14] = {1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128}; //possible gain settings
 
-void pingerTrackingDSP(uint16_t *fpga_packet, bool reset_signal);
+void pingerTracking(uint16_t *fpga_packet);
 
 #endif /* pinger_tracking_hpp */

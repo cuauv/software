@@ -6,407 +6,419 @@
 //  Copyright © 2019 Vlad. All rights reserved.
 //
 
-#include <cstdio>
 #include <cstdint>
-
-#include "libshm/c/vars.h"
-//#include "shm_mac.hpp"
-#include "liquid.h"
-#include "comms.hpp"
-#include "common_dsp.hpp"
-#include "udp_sender.hpp"
-#include "structs.hpp"
-
 #include <complex>
+#include <cstring>
 
-static float f0_hat = (float)carrier_freq / (float)sampling_rate;
-static float f_cutoff_hat = (float)lowpass_width / (float)sampling_rate / 2.0;
-static float lowpass_transition_width_hat = (float)lowpass_transition_width / (float)sampling_rate;
-static float space_freq_hat = (float)space_freq / (float)dsp_sampling_rate;
-static float mark_freq_hat = (float)mark_freq / (float)dsp_sampling_rate;
-static float symbol_f_cutoff_hat = (float)symbol_width / (float)dsp_sampling_rate / 2.0;
-static float symbol_transition_width_hat = (float)symbol_transition_width / (float)dsp_sampling_rate;
-static unsigned int dsp_decimation_factor = sampling_rate / dsp_sampling_rate;
-static unsigned int corr_decimation_factor = dsp_sampling_rate / (bit_rate * corr_resolution);
-static unsigned int dc_averaging_length = (long long)dc_averaging_duration * (long long)sampling_rate / 1'000'000;
-static unsigned int noise_std_dev_length = (long long)noise_std_dev_duration * (long long)(bit_rate * corr_resolution) / 1'000'000;
-static unsigned int min_interpacket_length = (comms_packet_length + gold_code_length) * corr_resolution;
-static unsigned int comms_filtered_plot_period_length = (long long)comms_filtered_plot_period * (long long)dsp_sampling_rate / 1'000'000;
-static unsigned int comms_filtered_plot_duration_length = (long long)comms_filtered_plot_duration * (long long)(dsp_sampling_rate) / 1'000'000;
-static unsigned int corr_plot_length =(long long)corr_plot_duration * (long long)(bit_rate * corr_resolution) / 1'000'000;
+#include "liquid.h"
+//#include "libshm/c/vars.h"
+#include "comms.hpp"
 
-static struct hydrophones_settings shm_settings;
+const unsigned int Downconverter::TRANS_WIDTH = 500;
+const unsigned int Downconverter::STOPBAND_ATTEN = 60;
 
-windowf input_buffer = windowf_create(buffer_length);
-windowf ac_coupled_buffer = windowf_create(buffer_length);
-windowcf mixed_buffer = windowcf_create(buffer_length);
-windowcf filtered_buffer = windowcf_create(buffer_length);
-windowcf space_ch_buffer = windowcf_create(buffer_length);
-windowcf mark_ch_buffer = windowcf_create(buffer_length);
-windowf corr_buffer = windowf_create(buffer_length);
-windowf corr_signal_output_buffer = windowf_create(buffer_length);
-windowf corr_noise_output_buffer = windowf_create(buffer_length);
-windowf threshold_buffer = windowf_create(buffer_length);
-windowcf comms_filtered_plot = windowcf_create(comms_filtered_plot_duration_length);
+const std::complex<float> FSKSynchronizer::j = {0, 1};
+const unsigned int FSKSynchronizer::BUFF_LEN = 65536;
+const unsigned int FSKSynchronizer::SYM_WIDTH = 500;
+const unsigned int FSKSynchronizer::TRANS_WIDTH = 100;
+const unsigned int FSKSynchronizer::STOPBAND_ATTEN = 60;
+const unsigned int FSKSynchronizer::SAMPLES_PER_SYMBOL = 25;
+const float FSKSynchronizer::THRESH_CALC_LEN = 200;
+const float FSKSynchronizer::THRESH_FACTOR = 3.0;
 
-nco_crcf mixer_oscillator;
-firfilt_rrrf corr_signal_fir, corr_noise_fir;
-firfilt_crcf lowpass_fir;
-firfilt_cccf space_fir, mark_fir;
+const std::complex<float> FSKDecider::j = {0, 1};
+const unsigned int FSKDecider::SYM_WIDTH = 500;
+const unsigned int FSKDecider::TRANS_WIDTH = 100;
+const unsigned int FSKDecider::STOPBAND_ATTEN = 60;
+const unsigned int FSKDecider::SAMPLES_PER_SYMBOL = 25;
 
-energy_detector decider(corr_resolution);
-
-static float lowpass_fir_coeffs[2048];
-static float symbol_fir_coeffs[512];
-static float corr_signal_coeffs[1024], corr_noise_coeffs[1024];
-static std::complex<float> space_fir_coeffs[512];
-static std::complex<float> mark_fir_coeffs[512];
-
-static unsigned int n, last_comms_filtered_plot_n, triggered_n, corr_peak_n, last_packet_n;
-static unsigned int trigger_state;
-static unsigned int symbol_counter;
-static float input_peak, corr_peak;
-static float dc_offset, noise_std_dev;
-
-void commsInit(void)
+DCRemover::DCRemover(unsigned int len):
+len(len),
+avg(0),
+buff(windowf_create(len))
 {
-    unsigned int lowpass_fir_length, symbol_fir_length;
-    std::complex<float> lowpass_unscaled_response, space_unscaled_response, mark_unscaled_response, space_unscaled_response_inverse, mark_unscaled_response_inverse;
+}
+DCRemover::~DCRemover(void)
+{
+    windowf_destroy(buff);
+}
+float DCRemover::push(float in_sample)
+{
+    float oldest_sample;
+    
+    windowf_index(buff, 0, &oldest_sample);
+    windowf_push(buff, in_sample);
+    avg += (in_sample - oldest_sample) / (float)len;
+    
+    return in_sample - avg;
+}
 
-    printf("\nInitializng Comms...\n\n");
+StdDev::StdDev(unsigned int len):
+len(len),
+std_dev(0),
+buff(windowf_create(len))
+{
+}
+StdDev::~StdDev(void)
+{
+    windowf_destroy(buff);
+}
+float StdDev::push(float in_sample)
+{
+    float oldest_sample;
     
-    mixer_oscillator = nco_crcf_create(LIQUID_NCO);
-    nco_crcf_set_phase(mixer_oscillator, 0.0);
-    nco_crcf_set_frequency(mixer_oscillator, 2 * M_PI * f0_hat);
+    windowf_index(buff, 0, &oldest_sample);
+    windowf_push(buff, in_sample);
+    std_dev = sqrt((std_dev * std_dev * ((float)len - 1.0f) + in_sample * in_sample - oldest_sample * oldest_sample) / (float)(len - 1.0f));
     
-    lowpass_fir_length = estimate_req_filter_len(lowpass_transition_width_hat, stopband_attenuation);
-    liquid_firdes_kaiser(lowpass_fir_length, f_cutoff_hat, stopband_attenuation, 0.0, lowpass_fir_coeffs);
-    lowpass_fir = firfilt_crcf_create(lowpass_fir_coeffs, lowpass_fir_length);
-    firfilt_crcf_freqresponse(lowpass_fir, 0.0, (liquid_float_complex *)&lowpass_unscaled_response);
-    firfilt_crcf_set_scale(lowpass_fir, 1.0 / std::abs(lowpass_unscaled_response));
+    return std_dev;
+}
+
+Downconverter::Downconverter(unsigned int in_sample_rate, unsigned int decim_factor, unsigned int carrier_freq, unsigned int bandwidth):
+status(DOWNCONV_DEFAULT),
+n(0),
+decim_factor(decim_factor),
+conv_sample(0.0f),
+mix_osc(nco_crcf_create(LIQUID_NCO))
+{
+    float f0_hat = (float)carrier_freq / (float)in_sample_rate;
+    float f_cutoff_hat = (float)bandwidth / (float)in_sample_rate / 2.0f;
+    float trans_width_hat = (float)TRANS_WIDTH / (float)in_sample_rate;
+    unsigned int filt_len = estimate_req_filter_len(trans_width_hat, STOPBAND_ATTEN);
+    float *coeffs = new float[filt_len];
+    std::complex<float> filt_unscaled_resp;
     
-    symbol_fir_length = estimate_req_filter_len(symbol_transition_width_hat, stopband_attenuation);
-    liquid_firdes_kaiser(symbol_fir_length, symbol_f_cutoff_hat, stopband_attenuation, 0.0, symbol_fir_coeffs);
-    for(unsigned int coeff_no = 0; coeff_no < symbol_fir_length; coeff_no++)
+    nco_crcf_set_phase(mix_osc, 0.0f);
+    nco_crcf_set_frequency(mix_osc, 2.0f * M_PI * f0_hat);
+    
+    liquid_firdes_kaiser(filt_len, f_cutoff_hat, STOPBAND_ATTEN, 0.0f, coeffs);
+    filt = firfilt_crcf_create(coeffs, filt_len);
+    firfilt_crcf_freqresponse(filt, 0, &filt_unscaled_resp);
+    firfilt_crcf_set_scale(filt, 1.0f / std::abs(filt_unscaled_resp));
+    
+    delete [] coeffs;
+}
+Downconverter::~Downconverter(void)
+{
+    nco_crcf_destroy(mix_osc);
+    firfilt_crcf_destroy(filt);
+}
+void Downconverter::push(float in_sample)
+{
+    std::complex<float> in_sample_complex = in_sample;
+    std::complex<float> mixed;
+    
+    nco_crcf_mix_down(mix_osc, in_sample_complex, &mixed);
+    nco_crcf_step(mix_osc);
+    
+    firfilt_crcf_push(filt, mixed);
+    
+    status = DOWNCONV_DEFAULT;
+    if(n % decim_factor == 0)
     {
-        space_fir_coeffs[coeff_no] = symbol_fir_coeffs[coeff_no] * std::exp(j * (std::complex<float>)(2 * M_PI * (float)(space_freq_hat * (coeff_no + 1))));
-        mark_fir_coeffs[coeff_no] = symbol_fir_coeffs[coeff_no] * std::exp(j * (std::complex<float>)(2 * M_PI * (float)(mark_freq_hat * (coeff_no + 1))));
+        firfilt_crcf_execute(filt, &conv_sample);
+        status = NEW_CONV_SAMPLE;
     }
-    space_fir = firfilt_cccf_create((liquid_float_complex *)space_fir_coeffs, symbol_fir_length);
-    mark_fir = firfilt_cccf_create((liquid_float_complex *)mark_fir_coeffs, symbol_fir_length);
-    firfilt_cccf_freqresponse(space_fir, space_freq_hat, (liquid_float_complex *)&space_unscaled_response);
-    firfilt_cccf_freqresponse(mark_fir, mark_freq_hat, (liquid_float_complex *)&mark_unscaled_response);
-    space_unscaled_response_inverse = (std::complex<float>)1.0 / space_unscaled_response;
-    mark_unscaled_response_inverse = (std::complex<float>)1.0 / mark_unscaled_response;
-    firfilt_cccf_set_scale(space_fir, *(liquid_float_complex *)&space_unscaled_response_inverse);
-    firfilt_cccf_set_scale(mark_fir, *(liquid_float_complex *)&mark_unscaled_response_inverse);
     
-    for(unsigned int coeff_no = 0; coeff_no < gold_code_length * corr_resolution; coeff_no++)
+    n++;
+}
+downconverter_status Downconverter::getStatus(void)
+{
+    return status;
+}
+std::complex<float> Downconverter::getSample(void)
+{
+    return conv_sample;
+}
+
+FSKSynchronizer::FSKSynchronizer(unsigned int sample_rate, const int symbols[2], unsigned int sym_rate, const float *sym_corrections, const float code[], const float orth_code[], unsigned int code_len):
+status(SYNCH_DEFAULT),
+triggered(0),
+n(0),
+sample_rate(sample_rate),
+sym_rate(sym_rate),
+sym_corrections(sym_corrections),
+code_len(code_len),
+corr_sig_peak(0),
+corr_in_buff(windowf_create(BUFF_LEN)),
+corr_sig_output_buff(windowf_create(BUFF_LEN)),
+corr_orth_output_buff(windowf_create(BUFF_LEN)),
+dyn_thresh_buff(windowf_create(BUFF_LEN)),
+thresh_calc(THRESH_CALC_LEN)
+{
+    float space_freq_hat = (float)symbols[0] / (float)sample_rate;
+    float mark_freq_hat = (float)symbols[1] / (float)sample_rate;
+    float f_cutoff_hat = (float)SYM_WIDTH / (float)sample_rate / 2.0f;
+    float trans_width_hat = (float)TRANS_WIDTH / (float)sample_rate;
+    unsigned int filt_len = estimate_req_filter_len(trans_width_hat, STOPBAND_ATTEN);
+    float *base_coeffs = new float[filt_len];
+    std::complex<float> *space_coeffs = new std::complex<float>[filt_len];
+    std::complex<float> *mark_coeffs = new std::complex<float>[filt_len];
+    std::complex<float> space_unscaled_resp, mark_unscaled_resp;
+    float *corr_sig_coeffs = new float[code_len * SAMPLES_PER_SYMBOL];
+    float *corr_orth_coeffs = new float[code_len * SAMPLES_PER_SYMBOL];
+    
+    liquid_firdes_kaiser(filt_len, f_cutoff_hat, STOPBAND_ATTEN, 0.0f, base_coeffs);
+    for(unsigned int coeff_no = 0; coeff_no < filt_len; coeff_no++)
     {
-        if(gold_code[gold_code_length - 1 - coeff_no / corr_resolution])
-        {
-            corr_signal_coeffs[coeff_no] = 1.0;
-        }
-        else
-        {
-            corr_signal_coeffs[coeff_no] = -1.0;
-        }
+        space_coeffs[coeff_no] = base_coeffs[coeff_no] * std::exp(j * (std::complex<float>)(2 * M_PI * (float)(space_freq_hat * (coeff_no + 1))));
+        mark_coeffs[coeff_no] = base_coeffs[coeff_no] * std::exp(j * (std::complex<float>)(2 * M_PI * (float)(mark_freq_hat * (coeff_no + 1))));
+    }
+    space_filt = firfilt_cccf_create(space_coeffs, filt_len);
+    mark_filt = firfilt_cccf_create(mark_coeffs, filt_len);
+    firfilt_cccf_freqresponse(space_filt, space_freq_hat, &space_unscaled_resp);
+    firfilt_cccf_freqresponse(mark_filt, mark_freq_hat, &mark_unscaled_resp);
+    firfilt_cccf_set_scale(space_filt, (std::complex<float>)1.0f / space_unscaled_resp);
+    firfilt_cccf_set_scale(mark_filt, (std::complex<float>)1.0f / mark_unscaled_resp);
+
+    for(unsigned int coeff_no = 0; coeff_no < code_len * SAMPLES_PER_SYMBOL; coeff_no++)
+    {
+        corr_sig_coeffs[coeff_no] = code[code_len - 1 - coeff_no / SAMPLES_PER_SYMBOL];
+        corr_orth_coeffs[coeff_no] = orth_code[code_len - 1 - coeff_no / SAMPLES_PER_SYMBOL];
+    }
+    corr_sig = firfilt_rrrf_create(corr_sig_coeffs, code_len * SAMPLES_PER_SYMBOL);
+    corr_orth = firfilt_rrrf_create(corr_orth_coeffs, code_len * SAMPLES_PER_SYMBOL);
+    
+    delete [] base_coeffs;
+    delete [] space_coeffs;
+    delete [] mark_coeffs;
+    delete [] corr_sig_coeffs;
+    delete [] corr_orth_coeffs;
+}
+FSKSynchronizer::~FSKSynchronizer(void)
+{
+    windowf_destroy(corr_in_buff);
+    windowf_destroy(corr_sig_output_buff);
+    windowf_destroy(corr_orth_output_buff);
+    windowf_destroy(dyn_thresh_buff);
+    firfilt_cccf_destroy(space_filt);
+    firfilt_cccf_destroy(mark_filt);
+    firfilt_rrrf_destroy(corr_sig);
+    firfilt_rrrf_destroy(corr_orth);
+}
+void FSKSynchronizer::push(std::complex<float> in_sample)
+{
+    firfilt_cccf_push(space_filt, in_sample);
+    firfilt_cccf_push(mark_filt, in_sample);
+    
+    status = SYNCH_DEFAULT;
+    if(n % (sample_rate / (sym_rate * SAMPLES_PER_SYMBOL)) == 0)
+    {
+        std::complex<float> space_ch_sample, mark_ch_sample;
+        float corr_sig_output, corr_orth_output;
         
-        if(another_gold_code[gold_code_length - 1 - coeff_no / corr_resolution])
-        {
-            corr_noise_coeffs[coeff_no] = 1.0;
-        }
-        else
-        {
-            corr_noise_coeffs[coeff_no] = -1.0;
-        }
-    }
-    corr_signal_fir = firfilt_rrrf_create(corr_signal_coeffs, gold_code_length * corr_resolution);
-    corr_noise_fir = firfilt_rrrf_create(corr_noise_coeffs, gold_code_length * corr_resolution);
-    
-    commsReset();
-}
-
-void commsReset(void)
-{
-    windowf_reset(input_buffer);
-    windowf_reset(ac_coupled_buffer);
-    windowcf_reset(mixed_buffer);
-    windowcf_reset(filtered_buffer);
-    windowcf_reset(space_ch_buffer);
-    windowcf_reset(mark_ch_buffer);
-    windowf_reset(corr_buffer);
-    windowf_reset(corr_signal_output_buffer);
-    windowf_reset(corr_noise_output_buffer);
-    windowf_reset(threshold_buffer);
-
-    n = 0;
-    last_comms_filtered_plot_n = 0;
-    triggered_n = 0;
-    corr_peak_n = 0;
-    last_packet_n = 0;
-    input_peak = 0;
-    corr_peak = 0;
-    dc_offset = 0;
-    noise_std_dev = 0;
-    trigger_state = 0;
-    symbol_counter = 0;
-    
-    decider.reset();
-    
-    setGain(shm_settings.manual_gain_value);
-}
-
-static void copyComplexBuff(windowcf *source, unsigned int source_len, windowcf *target, unsigned int target_len)
-{
-    std::complex<float> sample;
-    
-    for(unsigned int sample_no = 0; sample_no < target_len; sample_no++)
-    {
-        windowcf_index(*source, source_len - 1 - target_len + sample_no, (liquid_float_complex *)&sample);
-        windowcf_push(*target, *(liquid_float_complex *)&sample);
-    }
-}
-
-static void copyRealBuff(windowf *source, unsigned int source_len, windowf *target, unsigned int target_len)
-{
-    float sample;
-    
-    for(unsigned int sample_no = 0; sample_no < target_len; sample_no++)
-    {
-        windowf_index(*source, source_len - 1 - target_len + sample_no, &sample);
-        windowf_push(*target, sample);
-    }
-}
-
-static void getReals(windowcf *source, float *target, unsigned int len)
-{
-    std::complex<float> sample;
-    
-    for(unsigned int sample_no = 0; sample_no < len; sample_no++)
-    {
-        windowcf_index(*source, sample_no, (liquid_float_complex *)&sample);
-        target[sample_no] = std::real(sample);
-    }
-}
-
-static void getImags(windowcf *source, float *target, unsigned int len)
-{
-    std::complex<float> sample;
-    
-    for(unsigned int sample_no = 0; sample_no < len; sample_no++)
-    {
-        windowcf_index(*source, sample_no, (liquid_float_complex *)&sample);
-        target[sample_no] = std::imag(sample);
-    }
-}
-
-static void runningAverage(float *avg, windowf *buff, unsigned int buff_len, unsigned int len)
-{
-    float sample_to_add, sample_to_remove;
-    
-    windowf_index(*buff, buff_len - 1, &sample_to_add);
-    windowf_index(*buff, buff_len - 1 - len, &sample_to_remove);
-    
-    *avg += (sample_to_add - sample_to_remove) / (float)len;
-}
-
-static void runningStdDev(float *std_dev, windowf *buff, unsigned int buff_len, unsigned int len)
-{
-    float sample_to_add, sample_to_remove;
-    
-    windowf_index(*buff, buff_len - 1, &sample_to_add);
-    windowf_index(*buff, buff_len - 1 - len, &sample_to_remove);
-    
-    *std_dev = sqrt((*std_dev * *std_dev * ((float)len - 1.0) + sample_to_add * sample_to_add - sample_to_remove * sample_to_remove) / (float)(len - 1));
-}
-
-void commsDSP(uint16_t *fpga_packet, unsigned int packet_no)
-{
-    for(unsigned int packet_sample_no = 0; packet_sample_no < packet_length; packet_sample_no++)
-    {
-        float input_sample, ac_coupled_sample, corr_sample, corr_signal_output, corr_noise_output;
-        std::complex<float> mixed_sample, filtered_sample, space_ch_sample, mark_ch_sample;
-        bool new_symbol;
+        firfilt_cccf_execute(space_filt, &space_ch_sample);
+        firfilt_cccf_execute(mark_filt, &mark_ch_sample);
         
-        input_sample = fpga_packet[4 * packet_sample_no + 3];
-        windowf_push(input_buffer, input_sample);
+        float corr_in = sym_corrections[1] * std::abs(mark_ch_sample) - sym_corrections[0] * std::abs(space_ch_sample);
+        windowf_push(corr_in_buff, corr_in);
         
-        if(input_sample > abs(input_peak))
-        {
-            input_peak = input_sample;
-            
-            copyComplexBuff(&filtered_buffer, buffer_length, &comms_filtered_plot, comms_filtered_plot_duration_length);
-        }
+        firfilt_rrrf_push(corr_sig, corr_in);
+        firfilt_rrrf_push(corr_orth, corr_in);
         
-        runningAverage(&dc_offset, &input_buffer, buffer_length, dc_averaging_length);
-        ac_coupled_sample = input_sample - dc_offset;
-        windowf_push(ac_coupled_buffer, ac_coupled_sample);
+        firfilt_rrrf_execute(corr_sig, &corr_sig_output);
+        firfilt_rrrf_execute(corr_orth, &corr_orth_output);
+        
+        windowf_push(corr_sig_output_buff, corr_sig_output);
+        windowf_push(corr_orth_output_buff, corr_orth_output);
+        
+        float dyn_thresh = THRESH_FACTOR * thresh_calc.push(corr_orth_output);
+        windowf_push(dyn_thresh_buff, dyn_thresh);
     
-        nco_crcf_mix_down(mixer_oscillator, *(liquid_float_complex *)&ac_coupled_sample, reinterpret_cast<liquid_float_complex *>(&mixed_sample));
-        windowcf_push(mixed_buffer, *(liquid_float_complex *)&mixed_sample);
-        
-        firfilt_crcf_push(lowpass_fir, *(liquid_float_complex *)&mixed_sample);
-        if(n % dsp_decimation_factor == 0)
+        if(triggered)
         {
-            firfilt_crcf_execute(lowpass_fir, (liquid_float_complex *)&filtered_sample);
-            windowcf_push(filtered_buffer, *(liquid_float_complex *)&filtered_sample);
-            
-            firfilt_cccf_push(space_fir, *(liquid_float_complex *)&filtered_sample);
-            firfilt_cccf_push(mark_fir, *(liquid_float_complex *)&filtered_sample);
-            
-            if((n / dsp_decimation_factor) % corr_decimation_factor == 0)
+            if(n - trigger_n > code_len * sample_rate / sym_rate)
             {
-                firfilt_cccf_execute(space_fir, (liquid_float_complex *)&space_ch_sample);
-                windowcf_push(space_ch_buffer, *(liquid_float_complex *)&space_ch_sample);
-                
-                firfilt_cccf_execute(mark_fir, (liquid_float_complex *)&mark_ch_sample);
-                windowcf_push(mark_ch_buffer, *(liquid_float_complex *)&mark_ch_sample);
-                
-                corr_sample = mark_correction_factor * std::abs(mark_ch_sample) - space_correction_factor * std::abs(space_ch_sample);
-                windowf_push(corr_buffer, corr_sample);
-                
-                firfilt_rrrf_push(corr_signal_fir, corr_sample);
-                firfilt_rrrf_execute(corr_signal_fir, &corr_signal_output);
-                windowf_push(corr_signal_output_buffer, corr_signal_output);
-                
-                firfilt_rrrf_push(corr_noise_fir, corr_sample);
-                firfilt_rrrf_execute(corr_noise_fir, &corr_noise_output);
-                windowf_push(corr_noise_output_buffer, corr_noise_output);
-                
-                runningStdDev(&noise_std_dev, &corr_noise_output_buffer, buffer_length, noise_std_dev_length);
-                windowf_push(threshold_buffer, threshold_factor * noise_std_dev);
-                
-                switch(trigger_state)
-                {
-                    case 0:
-                    {
-                        if(corr_signal_output > threshold_factor * noise_std_dev && (n - last_packet_n) / (dsp_decimation_factor * corr_decimation_factor) > min_interpacket_length)
-                        {
-                            printf("trigg\n");
-                            printf("%d\n", (n - last_packet_n) / (dsp_decimation_factor * corr_decimation_factor) - min_interpacket_length);
-                            triggered_n = n;
-                            trigger_state = 1;
-                        }
-                        break;
-                    }
-                    case 1:
-                    {
-                        if(corr_signal_output > corr_peak)
-                        {
-                            corr_peak = corr_signal_output;
-                            corr_peak_n = n;
-                        }
-                        if((n - triggered_n) / (dsp_decimation_factor * corr_decimation_factor) > corr_resolution * gold_code_length)
-                        {
-                            last_packet_n = corr_peak_n;
-                            
-                            if((n - last_packet_n) / (dsp_decimation_factor * corr_decimation_factor) > corr_plot_length / 2)
-                            {
-                                float *plot_ptr;
-                                
-                                windowf_read(corr_buffer, &plot_ptr);
-                                sendPlot(plot_ptr + buffer_length - 1 - corr_plot_length, 4, corr_plot_length);
-                                windowf_read(corr_signal_output_buffer, &plot_ptr);
-                                sendPlot(plot_ptr + buffer_length - 1 - corr_plot_length, 4, corr_plot_length);
-                                windowf_read(corr_noise_output_buffer, &plot_ptr);
-                                sendPlot(plot_ptr + buffer_length - 1 - corr_plot_length, 4, corr_plot_length);
-                                windowf_read(threshold_buffer, &plot_ptr);
-                                sendPlot(plot_ptr + buffer_length - 1 - corr_plot_length, 4, corr_plot_length);
-                                
-                                //printf("corr plot sent\n");
-                            }
-                            
-                            for(unsigned int past_sample_no = (n - corr_peak_n) / (dsp_decimation_factor * corr_decimation_factor); past_sample_no > 0; past_sample_no--)
-                            {
-                                std::complex <float> space_sample, mark_sample;
-                                
-                                windowcf_index(space_ch_buffer, buffer_length - 1 - past_sample_no, (liquid_float_complex *)&space_sample);
-                                windowcf_index(mark_ch_buffer, buffer_length - 1 - past_sample_no, (liquid_float_complex *)&mark_sample);
-                                
-                                new_symbol = decider.push(space_sample, mark_sample);
-                                if(new_symbol)
-                                {
-                                    printf("%d", decider.getSymbol());
-                                    
-                                    symbol_counter++;
-                                    if(symbol_counter == comms_packet_length)
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                            //printf("done with past samples");
-                            
-                            if(symbol_counter == comms_packet_length)
-                            {
-                                printf("\n");
-                                symbol_counter = 0;
-                                trigger_state = 0;
-                            }
-                            else
-                            {
-                                trigger_state = 2;
-                            }
-                        }
-                        break;
-                    }
-                    case 2:
-                    {
-                        new_symbol = decider.push(space_ch_sample, mark_ch_sample);
-                        if(new_symbol)
-                        {
-                            printf("%d", decider.getSymbol());
-                         
-                            symbol_counter++;
-                            if(symbol_counter == comms_packet_length)
-                            {
-                                symbol_counter = 0;
-                                trigger_state = 0;
-                                printf("\n");
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                    {
-                        break;
-                    }
-                }
-                
-                if((n - last_packet_n) / (dsp_decimation_factor * corr_decimation_factor) == corr_plot_length / 2)
-                {
-                    float *plot_ptr;
-                    
-                    windowf_read(corr_buffer, &plot_ptr);
-                    sendPlot(plot_ptr + buffer_length - 1 - corr_plot_length, 4, corr_plot_length);
-                    windowf_read(corr_signal_output_buffer, &plot_ptr);
-                    sendPlot(plot_ptr + buffer_length - 1 - corr_plot_length, 4, corr_plot_length);
-                    windowf_read(corr_noise_output_buffer, &plot_ptr);
-                    sendPlot(plot_ptr + buffer_length - 1 - corr_plot_length, 4, corr_plot_length);
-                    windowf_read(threshold_buffer, &plot_ptr);
-                    sendPlot(plot_ptr + buffer_length - 1 - corr_plot_length, 4, corr_plot_length);
-                    
-                    //printf("corr plot sent\n");
-                }
+                status = SYNCH_LOCKED_ON;
             }
-            
-            if((n - last_comms_filtered_plot_n) / dsp_decimation_factor == comms_filtered_plot_period_length)
+            else if(corr_sig_output > corr_sig_peak)
             {
-                float plot[comms_filtered_plot_duration_length];
-                getReals(&comms_filtered_plot, plot, comms_filtered_plot_duration_length);
-                sendPlot(plot, 3, comms_filtered_plot_duration_length);
-                getImags(&comms_filtered_plot, plot, comms_filtered_plot_duration_length);
-                sendPlot(plot, 3, comms_filtered_plot_duration_length);
-                
-                //printf("comms filtered plot sent\n");
-                
-                input_peak = 0;
-                last_comms_filtered_plot_n = n;
+                corr_sig_peak = corr_sig_output;
+                status = NEW_SYNCH_POINT;
             }
         }
-        
-        nco_crcf_step(mixer_oscillator);
-        n++;
+        else if(corr_sig_output > dyn_thresh)
+        {
+            corr_sig_peak = corr_sig_output;
+            trigger_n = n;
+            triggered = 1;
+        }
     }
+    
+    n++;
+}
+synchronizer_status FSKSynchronizer::getStatus(void)
+{
+    return status;
+}
+windowf FSKSynchronizer::dumpCorrInBuff(void)
+{
+    return corr_in_buff;
+}
+windowf FSKSynchronizer::dumpCorrSigOutputBuff(void)
+{
+    return corr_sig_output_buff;
+}
+windowf FSKSynchronizer::dumpCorrOrthOutputBuff(void)
+{
+    return corr_orth_output_buff;
+}
+windowf FSKSynchronizer::dumpDynThreshBuff(void)
+{
+    return dyn_thresh_buff;
+}
+void FSKSynchronizer::rst(void)
+{
+    triggered = 0;
+    status = SYNCH_DEFAULT;
+}
+
+FSKDecider::FSKDecider(unsigned int sample_rate, unsigned int bits_per_sym, const int symbols[], const float sym_corrections[], unsigned int sym_rate):
+status(DECID_DEFAULT),
+n(0),
+num_accum_samples(0),
+sample_rate(sample_rate),
+sym_rate(sym_rate),
+num_sym(1 << bits_per_sym),
+sym_corrections(sym_corrections),
+energies(new float[num_sym]),
+highest_energy_sym(0),
+filters(new firfilt_cccf[num_sym])
+{
+    float f_cutoff_hat = (float)SYM_WIDTH / (float)sample_rate / 2.0f;
+    float trans_width_hat = (float)TRANS_WIDTH / (float)sample_rate;
+    unsigned int filt_len = estimate_req_filter_len(trans_width_hat, STOPBAND_ATTEN);
+    float *base_coeffs = new float[filt_len];
+    std::complex<float> *rotated_coeffs = new std::complex<float>[filt_len];
+    std::complex<float> unscaled_resp;
+    
+    liquid_firdes_kaiser(filt_len, f_cutoff_hat, STOPBAND_ATTEN, 0.0f, base_coeffs);
+    
+    for(unsigned int sym_index = 0; sym_index < num_sym; sym_index++)
+    {
+        float sym_freq_hat = (float)symbols[sym_index] / (float)sample_rate;
+        
+        for(unsigned int coeff_no = 0; coeff_no < filt_len; coeff_no++)
+        {
+            rotated_coeffs[coeff_no] = base_coeffs[coeff_no] * std::exp(j * (std::complex<float>)(2 * M_PI * (float)(sym_freq_hat * (coeff_no + 1))));
+            filters[sym_index] = firfilt_cccf_create(rotated_coeffs, filt_len);
+            firfilt_cccf_freqresponse(filters[sym_index], sym_freq_hat, &unscaled_resp);
+            firfilt_cccf_set_scale(filters[sym_index], (std::complex<float>)1.0f / unscaled_resp);
+        }
+    }
+    
+    std::memset(energies, 0.0f, num_sym * sizeof(float));
+    
+    delete [] base_coeffs;
+    delete [] rotated_coeffs;
+}
+FSKDecider::~FSKDecider(void)
+{
+    delete [] energies;
+    
+    for(unsigned int sym_index = 0; sym_index < num_sym; sym_index++)
+    {
+        firfilt_cccf_destroy(filters[sym_index]);
+    }
+    delete [] filters;
+}
+void FSKDecider::push(std::complex<float> in_sample)
+{
+    for(unsigned int sym_index = 0; sym_index < num_sym; sym_index++)
+    {
+        firfilt_cccf_push(filters[sym_index], in_sample);
+    }
+    
+    if(n % (sample_rate / (sym_rate * SAMPLES_PER_SYMBOL)) == 0)
+    {
+        std::complex<float> sym_ch_sample;
+        
+        for(unsigned int sym_index = 0; sym_index < num_sym; sym_index++)
+        {
+            firfilt_cccf_execute(filters[sym_index], &sym_ch_sample);
+            
+            energies[sym_index] += sym_corrections[sym_index] * std::abs(sym_ch_sample);
+        }
+        
+        num_accum_samples++;
+    }
+    
+    status = DECID_DEFAULT;
+    if(num_accum_samples == SAMPLES_PER_SYMBOL)
+    {
+        float highest_energy = 0;
+        
+        for(unsigned int sym_index = 0; sym_index < num_sym; sym_index++)
+        {
+            if(energies[sym_index] > highest_energy)
+            {
+                highest_energy = energies[sym_index];
+                highest_energy_sym = sym_index;
+            }
+        }
+        num_accum_samples = 0;
+        std::memset(energies, 0.0f, num_sym * sizeof(float));
+        status = NEW_SYMBOL;
+    }
+    
+    n++;
+}
+decider_status FSKDecider::getStatus(void)
+{
+    return status;
+}
+unsigned int FSKDecider::getSym(void)
+{
+    return highest_energy_sym;
+}
+void FSKDecider::rst(void)
+{
+    num_accum_samples = 0;
+    std::memset(energies, 0.0f, num_sym * sizeof(float));
+    status = DECID_DEFAULT;
+}
+
+SymPacker::SymPacker(unsigned int pkt_size, unsigned int bits_per_sym):
+status(PACKER_DEFAULT),
+sym_num(0),
+bits_per_sym(bits_per_sym),
+pkt_size(pkt_size),
+sym_buff(new unsigned char[pkt_size * sizeof(unsigned char) / bits_per_sym]),
+pkt(new unsigned char[pkt_size])
+{
+    
+}
+SymPacker::~SymPacker(void)
+{
+    delete [] sym_buff;
+    delete [] pkt;
+}
+void SymPacker::push(unsigned int sym)
+{
+    unsigned int num_written;
+    
+    sym_buff[sym_num] = sym;
+    sym_num++;
+    
+    status = PACKER_DEFAULT;
+    if(sym_num == pkt_size * 8 / bits_per_sym)
+    {
+        liquid_repack_bytes(sym_buff, bits_per_sym, pkt_size * 8 / bits_per_sym, pkt, 8, pkt_size, &num_written);
+        
+        sym_num = 0;
+        status = PKT_FULL;
+    }
+}
+packer_status SymPacker::getStatus(void)
+{
+    return status;
+}
+unsigned char *SymPacker::getPkt(void)
+{
+    return pkt;
+}
+void SymPacker::rst(void)
+{
+    sym_num = 0;
+    status = PACKER_DEFAULT;
 }

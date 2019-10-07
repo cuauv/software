@@ -2,16 +2,23 @@
 import shm
 import cv2
 from functools import reduce
+from math import pi
+from pickle import load
 
 # import time
 
 import numpy as np
 from vision.modules.base import ModuleBase  # , UndefinedModuleOption
 from vision.framework.transform import resize, simple_gaussian_blur
+from vision.framework.feature import outer_contours, contour_centroid, contour_area, simple_canny
 from vision.framework.helpers import to_umat  # , from_umat
 from vision.framework.draw import draw_circle
 from vision.framework.color import bgr_to_lab, range_threshold
 
+from vision.modules.gate import thresh_color_distance
+
+
+from mission.missions.stake import MOVE_DIRECTION
 
 from vision import options
 
@@ -24,24 +31,37 @@ opts =    [options.DoubleOption('rectangular_thresh', 0.8, 0, 1),
            options.BoolOption('show_keypoints', False),
            options.IntOption('board_separation', 450, 0, 4000),
            options.IntOption('board_horizontal_offset', 70, -1000, 1000),
-           options.IntOption('lever_position_x', -500, -3000, 3000),
+           options.IntOption('lever_position_x', -500 if MOVE_DIRECTION==1 else 2700, -3000, 3000),
            options.IntOption('lever_position_y', 2500, 0, 6000),
            options.IntOption('heart_offset_x', -307, -3000, 3000),
            options.IntOption('heart_offset_y', 0, -3000, 3000),
            options.IntOption('belt_offset_x', 0, -3000, 3000),
            options.IntOption('belt_offset_y', 0, -3000, 3000),
-           options.IntOption('left_circle_offset_x', -60, -3000, 3000),
-           options.IntOption('left_circle_offset_y', -112, -3000, 3000),
-           options.IntOption('right_circle_offset_x', -64, -3000, 3000),
-           options.IntOption('right_circle_offset_y', -148, -3000, 3000),
+           options.IntOption('left_circle_offset_x', -284, -3000, 3000),
+           options.IntOption('left_circle_offset_y', 565, -3000, 3000),
+           options.IntOption('right_circle_offset_x', -519, -3000, 3000),
+           options.IntOption('right_circle_offset_y', 565, -3000, 3000),
            options.IntOption('lever_l', 129, 0, 255),
            options.IntOption('lever_a', 201, 0, 255),
            options.IntOption('lever_b', 183, 0, 255),
            options.IntOption('lever_color_distance', 50, 0, 255),
            options.IntOption('contour_size_min', 5, 0, 1000),
-           options.IntOption('lever_endzone_left', 1793, 0, 6000),
+           options.IntOption('lever_endzone_left', 1793 if MOVE_DIRECTION==1 else 750, 0, 6000),
            options.IntOption('lever_gutter_top', 2238, 0, 6000),
            options.IntOption('lever_gutter_bot', 2887, 0, 6000),
+           options.IntOption('color_l', 170, 0, 255),
+           options.IntOption('color_a', 129, 0, 255),
+           options.IntOption('color_b', 155, 0, 255),
+           options.IntOption('color_distance', 30, 0, 255),
+           options.IntOption('close_offset_x', -70, -255, 255),
+           options.IntOption('close_offset_y', -10, -255, 255),
+           options.DoubleOption('min_eccentricity', 0.6, 0, 1),
+           options.DoubleOption('max_eccentricity', 0.8, 0, 1),
+           options.DoubleOption('min_elllipsish_thing', 0.95, 0, 1),
+           options.IntOption('water_a', 10, 0, 100),
+           options.IntOption('water_b', 10, 0, 100),
+           options.IntOption('water_distance', 10, 0, 255),
+           options.DoubleOption('sigma_canny', 0.33, 0, 1),
            ]
 
 
@@ -55,7 +75,10 @@ BELT = (1174, 3700)
 LEFT_CIRCLE = (390, 562)
 RIGHT_CIRCLE = (1900, 570)
 
-MOVE_DIRECTION=1  # 1 if lever on left else -1 if on right
+# MOVE_DIRECTION=1  # 1 if lever on left else -1 if on right
+
+heart_original = load(open('/home/software/cuauv/software/vision/modules/heart', 'rb'))
+# from vision.modules.heart import heart as heart_original
 
 class Stake(ModuleBase):
 
@@ -122,8 +145,8 @@ class Stake(ModuleBase):
                     im = self.static[image]["org"]
                 return find_key_descriptors(im)
         else:
-            im1 = cv2.imread('stake_images/%s.png' % image1, 0)
-            im2 = cv2.imread('stake_images/%s.png' % image2, 0)
+            im1 = cv2.imread('/home/software/cuauv/software/vision/modules/stake_images/%s.png' % image1, 0)
+            im2 = cv2.imread('/home/software/cuauv/software/vision/modules/stake_images/%s.png' % image2, 0)
             self.static[image1] = {"org": im1}
             self.static[image2] = {"org": im2}
             im = stitch(im1, im2)
@@ -142,6 +165,7 @@ class Stake(ModuleBase):
         img1 = im1["img"]
         img2 = im2["img"]
 
+        self.dst = None
         try:
             matches = self.flann.knnMatch(des1, des2, k=2)
         except cv2.error as e:
@@ -194,6 +218,7 @@ class Stake(ModuleBase):
                 getattr(shm.torpedoes_stake, "%s_center_x" % im1["name"]).set(Moments["m10"]/Moments['m00'])
                 getattr(shm.torpedoes_stake, "%s_center_y" % im1["name"]).set(Moments["m01"]/Moments['m00'])
 
+                self.dst = dst
                 output = cv2.polylines(output, [np.int32(dst)], True, color, 3, cv2.LINE_AA)
 
                 return output, M
@@ -220,34 +245,41 @@ class Stake(ModuleBase):
         shm.torpedoes_stake.camera_x.set(p.shape[1]//2)
         shm.torpedoes_stake.camera_y.set(p.shape[0]//2)
 
+        colorspace = "lab"
+        _, split = bgr_to_lab(mat)
+
         if M is not None:
-            left_hole = self.locate_source_point('board', M, self.left_circle(), p)
-            right_hole = self.locate_source_point('board', M, self.right_circle(), p)
-            shm.torpedoes_stake.left_hole_x.set(left_hole[0][0][0])
-            shm.torpedoes_stake.left_hole_y.set(left_hole[0][0][1])
-            shm.torpedoes_stake.right_hole_x.set(right_hole[0][0][0])
-            shm.torpedoes_stake.right_hole_y.set(right_hole[0][0][1])
-            shm.torpedoes_stake.board_visible.set(True)
+            try:
+                left_hole = self.locate_source_point('board', M, self.left_circle(), p)
+                right_hole = self.locate_source_point('board', M, self.right_circle(), p)
+                shm.torpedoes_stake.left_hole_x.set(left_hole[0][0][0])
+                shm.torpedoes_stake.left_hole_y.set(left_hole[0][0][1])
+                shm.torpedoes_stake.right_hole_x.set(right_hole[0][0][0])
+                shm.torpedoes_stake.right_hole_y.set(right_hole[0][0][1])
+                shm.torpedoes_stake.board_visible.set(True)
 
-            lever_origin = (self.options['lever_position_x'], self.options['lever_position_y'])
-            lever_origin_board = self.locate_source_point('board', M, lever_origin, p, color=(255, 0, 255))
-            shm.torpedoes_stake.lever_origin_x.set(lever_origin_board[0][0][0])
-            shm.torpedoes_stake.lever_origin_y.set(lever_origin_board[0][0][1])
+                lever_origin = (self.options['lever_position_x'], self.options['lever_position_y'])
+                lever_origin_board = self.locate_source_point('board', M, lever_origin, p, color=(255, 0, 255))
+                shm.torpedoes_stake.lever_origin_x.set(lever_origin_board[0][0][0])
+                shm.torpedoes_stake.lever_origin_y.set(lever_origin_board[0][0][1])
 
-            heart = self.locate_source_point('board', M, self.heart(), p)
-            shm.torpedoes_stake.heart_x.set(heart[0][0][0])
-            shm.torpedoes_stake.heart_y.set(heart[0][0][1])
-            belt = self.locate_source_point('board', M, self.belt(), p)
-            shm.torpedoes_stake.belt_x.set(belt[0][0][0])
-            shm.torpedoes_stake.belt_y.set(belt[0][0][1])
+                heart = self.locate_source_point('board', M, self.heart(), p)
+                shm.torpedoes_stake.heart_x.set(heart[0][0][0])
+                shm.torpedoes_stake.heart_y.set(heart[0][0][1])
+                belt = self.locate_source_point('board', M, self.belt(), p)
+                shm.torpedoes_stake.belt_x.set(belt[0][0][0])
+                shm.torpedoes_stake.belt_y.set(belt[0][0][1])
+                shm.torpedoes_stake.lever_finished.set(self.lever_finished(mat, split, 'board', M, p, colorspace))
+            except cv2.error as e:
+                print(e)
         else:
             shm.torpedoes_stake.board_visible.set(False)
 
-        shm.torpedoes_stake.lever_finished.set(self.lever_finished(mat, 'board', M, p))
+        self.close_point(mat, split, colorspace)
         # print(self.lever_finished(mat, 'board', M, p))
+        self.post('contours', mat)
 
-    def lever_finished(self, mat, image, mask, output):
-        colorspace = "lab"
+    def lever_finished(self, mat, split, image, mask, output, colorspace="lab"):
         shape = self.static[image]['org'].shape[1] + GUTTER_PAD
         lever_gutter = ((-GUTTER_PAD, self.options['lever_gutter_top']),
                         (-GUTTER_PAD, self.options['lever_gutter_bot']),
@@ -260,12 +292,13 @@ class Stake(ModuleBase):
         cv2.fillPoly(gutter_mask, [np.int32(gutter_transformed)], 255)
         self.post('gutter', gutter_mask)
 
-        _, split = bgr_to_lab(mat)
 
         d = self.options['lever_color_distance']
-        threshed = [range_threshold(split[i],
-                    self.options['lever_%s' % colorspace[i]] - d, self.options['lever_%s' % colorspace[i]] + d)
-                    for i in range(1, len(colorspace))]
+        # threshed = [range_threshold(split[i],
+        #             self.options['lever_%s' % colorspace[i]] - d, self.options['lever_%s' % colorspace[i]] + d)
+        #             for i in range(1, len(colorspace))]
+
+        threshed = thresh_color_distance(split, [self.options['lever_%s' % colorspace[i]] for i in range(len(colorspace))], d, weights=[0.5, 2, 2,])
 
         combined = reduce(lambda x, y: cv2.bitwise_and(x, y), threshed)
         combined = cv2.bitwise_and(combined, gutter_mask)
@@ -275,7 +308,6 @@ class Stake(ModuleBase):
         filtered = [i for i in contours if cv2.contourArea(i) > self.options['contour_size_min']]
         cv2.drawContours(mat, filtered, -1, (0, 255, 0), 3)
 
-        self.post('contours', mat)
 
         def contour_in_endzone(contour, p):
             M = cv2.moments(contour)
@@ -283,7 +315,7 @@ class Stake(ModuleBase):
             center = (M['m10']/M['m00'], M['m01']/M['m00'])
             print(center)
             draw_circle(p, (int(center[0]), int(center[1])), 1, (0, 255, 0), thickness=3)
-            
+
             return center[0] > lever_endzone_left[0][0][0] if MOVE_DIRECTION==1 else lever_endzone_left[0][0][0] > center[0]
 
 
@@ -291,6 +323,114 @@ class Stake(ModuleBase):
 
         return ret
 
+    def close_point(self, mat, split, colorspace):
+        color = [self.options['color_%s' % s] for s in colorspace]
+        distance = self.options['water_distance']
+        # threshed = [range_threshold(split[i],
+        #             color[i] - distance, color[i] + distance)
+        #             for i in range(1, len(color))]
+        # mask = reduce(lambda x, y: cv2.bitwise_and(x, y), threshed)
+
+        # mask, _ = thresh_color_distance(split, color, distance, weights=[0.5, 2, 2])
+
+        mask = np.full((mat.shape[0], mat.shape[1]), 0, dtype=np.int32)
+        if self.dst is not None:
+            print(len(self.dst))
+            cv2.fillPoly(mask, [np.int32(self.dst)], 1)
+            if np.sum(mask) < mat.shape[0] * mat.shape[1] // 4 * 3:
+                mask = None
+        median_a = np.median(np.ma.array(split[1], mask=mask))
+        median_b = np.median(np.ma.array(split[2], mask=mask))
+        mask, _ = thresh_color_distance(split, [0, median_a, median_b], distance, weights=[0, 1, 1])
+        # thresh_a = cv2.bitwise_not(range_threshold(split[1], median_a-self.options['water_a'], median_a+self.options['water_a']))
+        # thresh_b = cv2.bitwise_not(range_threshold(split[2], median_b-self.options['water_a'], median_b+self.options['water_b']))
+        # self.post('a', thresh_a)
+        # self.post('b', thresh_b)
+        # mask = reduce(lambda x, y: cv2.bitwise_and(x, y), [mask, thresh_a, thresh_b])
+        #
+        # contours = outer_contours(mask)
+        _, contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        self.post('something', mask)
+        #
+
+
+        # canny_post = np.zeros(mat.shape)
+        # canny = simple_canny(mat, sigma=self.options['sigma_canny'], use_mean=True)
+        # contours = outer_contours(canny)
+        # for i in range(len((contours))):
+        #     cv2.drawContours(canny_post, contours, i, (i*20, i*20, i*20))
+        # self.post('canny', canny)
+        if contours is not None and len(contours) > 0:
+            # shm.torpedoes_stake.close_visible.set(True)
+
+            def filter_ellipses(contour):
+                if len(contour) < 5: return False
+                if contour_area(contour) < 200: return False
+                _, (MA, ma), _ = cv2.fitEllipse(contour)
+                try:
+                    return (self.options['max_eccentricity'] > 1-(MA**2)/(ma**2))**(1/2) > self.options['min_eccentricity'] and contour_area(contour)/(MA * ma / 4 * pi) > self.options['min_elllipsish_thing']
+                except ZeroDivisionError:
+                    return False
+
+            close = list(filter(filter_ellipses, contours))
+            close.sort(key=contour_area)
+
+            close1 = None
+            close2 = None
+            try:
+                close1 = {'contour': close[0], 'centroid': contour_centroid(close[0]), 'area': contour_area(close[0])}
+                close2 = {'contour': close[1], 'centroid': contour_centroid(close[1]), 'area': contour_area(close[1])}
+
+                if close1['centroid'][0] > close2['centroid'][0]:
+                    temp = close2
+                    close2 = close1
+                    close1 = temp
+
+            except IndexError:
+                pass
+
+            if close1 is not None:
+                shm.torpedoes_stake.close_left_x.set(close1['centroid'][0] + self.options['close_offset_x'])
+                shm.torpedoes_stake.close_left_y.set(close1['centroid'][1] + self.options['close_offset_y'])
+                shm.torpedoes_stake.close_left_size.set(close1['area'])
+                shm.torpedoes_stake.close_left_visible.set(True)
+
+                if close2 is not None:
+                    shm.torpedoes_stake.close_right_x.set(close2['centroid'][0] + self.options['close_offset_x'])
+                    shm.torpedoes_stake.close_right_y.set(close2['centroid'][1] + self.options['close_offset_y'])
+                    shm.torpedoes_stake.close_right_size.set(close2['area'])
+                    shm.torpedoes_stake.close_right_visible.set(True)
+                else:
+                    shm.torpedoes_stake.close_right_visible.set(False)
+            else:
+                shm.torpedoes_stake.close_left_visible.set(False)
+                shm.torpedoes_stake.close_right_visible.set(False)
+
+            # _, contours, _ = cv2.findContours(canny, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+            heart = [c for c in contours if cv2.contourArea(c) > 300]
+            if heart:
+                heart = min(heart, key=lambda c:cv2.matchShapes(heart_original, c, cv2.CONTOURS_MATCH_I1, 0))
+                print(cv2.matchShapes(heart_original, heart, cv2.CONTOURS_MATCH_I1, 0))
+                if not cv2.matchShapes(heart_original, heart, cv2.CONTOURS_MATCH_I1, 0) > 0.25:
+                    h_centroid = contour_centroid(heart)
+                    shm.torpedoes_stake.close_heart_x.set(h_centroid[0] + self.options['close_offset_x'])
+                    shm.torpedoes_stake.close_heart_y.set(h_centroid[1] + self.options['close_offset_y'])
+                    shm.torpedoes_stake.close_heart_size.set(contour_area(heart))
+                    shm.torpedoes_stake.close_heart_visible.set(True)
+                    cv2.drawContours(mat, [heart], -1, (0, 0, 255), thickness=5)
+            else:
+                    shm.torpedoes_stake.close_heart_visible.set(False)
+
+            try:
+                cv2.drawContours(mat, [close[0]], -1, (255, 0, 0), thickness=5)
+                cv2.drawContours(mat, [close[1]], -1, (255, 0, 0), thickness=5)
+            except IndexError:
+                pass
+
+        else:
+            # shm.torpedoes_stake.close_visible.set(False)
+            pass
 
     def process(self, *mats):
         # x = time.perf_counter()
@@ -314,10 +454,7 @@ class Stake(ModuleBase):
 
         assert p is not None
 
-        try:
-            self.post_shm(p_mat, p, M)
-        except cv2.error as e:
-            print(e)
+        self.post_shm(p_mat, p, M)
 
         self.post("outline", p)
 

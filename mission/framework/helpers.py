@@ -107,6 +107,8 @@ def call_if_function(value):
     Returns: A value that is ether the argument, the result of calling of the argument or a tuple of values that have
     been called if the element is a function.
     """
+    if type(value) == str:
+        return value
     if callable(value):
         return value()
     elif hasattr(value, "__iter__"):

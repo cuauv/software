@@ -390,6 +390,16 @@ class Cave:
             #Config File
             f = open(os.path.expanduser(self.config_file), "r")
             self.load_db(f.read())
+        else:
+            vision_test_path = 'VISION_TEST_PATH'
+            if vision_test_path in os.environ:
+                #Search for databases in $VISION_TEST_PATH
+                test_path = os.path.expandvars(os.path.expanduser(os.environ[vision_test_path]))
+                for f in os.listdir(test_path):
+                    fname = os.path.join(test_path, f)
+                    if os.path.isfile(fname) and fname.endswith('.cdb'):
+                        self.load_db(fname)
+                        break
 
         #Ctrl+C handling
         def handler(signum, frame):

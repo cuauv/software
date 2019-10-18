@@ -4,7 +4,7 @@ set -xeuo pipefail
 export DEBIAN_FRONTEND=noninteractive
 rm -rf /var/lib/apt/lists/*
 apt-get update -y -o Acquire::CompressionTypes::Order::=gz
-apt-get upgrade -y
+apt-get upgrade -y --option=Dpkg::Options::=--force-confdef
 
 . $@
 

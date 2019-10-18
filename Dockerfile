@@ -11,6 +11,9 @@ COPY install/aptstrap.sh /dependencies/
 COPY install/foundation-install.sh /dependencies/
 RUN bash /dependencies/aptstrap.sh /dependencies/foundation-install.sh
 
+COPY install/python-latest-install.sh /dependencies/
+RUN bash /dependencies/aptstrap.sh /dependencies/python-latest-install.sh
+
 COPY install/jetson-install.sh /dependencies/
 RUN bash /dependencies/aptstrap.sh /dependencies/jetson-install.sh
 
@@ -32,11 +35,12 @@ RUN setuser software /dependencies/ocaml-user-install.sh
 COPY install/node-install.sh /dependencies/
 RUN bash /dependencies/aptstrap.sh /dependencies/node-install.sh
 
-COPY install/spacemacs-install.sh /dependencies/
-RUN bash /dependencies/aptstrap.sh /dependencies/spacemacs-install.sh
-COPY install/dot-spacemacs /dependencies/
-RUN setuser software cp /dependencies/dot-spacemacs /home/software/.spacemacs && \
-    setuser software emacs --batch -u software --kill
+# Spacemacs install is breaking for some reason, but we don't need it anyway
+#COPY install/spacemacs-install.sh /dependencies/
+#RUN bash /dependencies/aptstrap.sh /dependencies/spacemacs-install.sh
+#COPY install/dot-spacemacs /dependencies/
+#RUN setuser software cp /dependencies/dot-spacemacs /home/software/.spacemacs && \
+#    setuser software emacs --batch -u software --kill
 
 COPY install/ripgrep-install.sh /dependencies
 RUN /dependencies/ripgrep-install.sh

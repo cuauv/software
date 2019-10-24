@@ -39,6 +39,8 @@ packages=(
     protobuf
 
     fire
+
+    tomlkit
 )
 
 packages2=(

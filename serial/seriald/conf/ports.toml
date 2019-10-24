@@ -39,22 +39,22 @@ ports = [
         #"/dev/serial/by-id/usb-FTDI_Quad_RS232-HS-if03-port0",
         
         #"/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if00-port0"
-        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if01-port0" # sensor
-        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if02-port0"
-        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if03-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if01-port0", # sensor
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if02-port0",
+        "/dev/serial/by-id/usb-CUAUV_ODAX_1_ODAX1-if03-port0",
 
-        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if00-port0"
-        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if01-port0" # DVL
-        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if02-port0" # causes segfault
-        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if03-port0" # hydrophones, segfault?
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if01-port0", # DVL
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if02-port0", # causes segfault
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_2_AUV-ODAX2-if03-port0", # hydrophones, segfault?
 
-        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if00-port0"
-        #"/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if01-port0" # GX
-        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if02-port0"
-        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if03-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if00-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if01-port0", # GX
+        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if02-port0",
+        "/dev/serial/by-id/usb-CUAUV_ODAX_3_ODAX3-if03-port0",
 
-        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if00-port0" # actuators
-        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if01-port0" # LED
-        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if02-port0"
-        #"/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if03-port0"
+        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if00-port0", # actuators
+        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if01-port0", # LED
+        "/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if02-port0",
+        #"/dev/serial/by-id/usb-CUAUV_ODAX_4_0DAX4-if03-port0",
 ]

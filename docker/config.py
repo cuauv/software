@@ -24,6 +24,8 @@ defaults = {
 
     "GIT_REPO_URL": "ssh://git@bitbucket.cuauv.org:7999/sof/subcode.git",
     "BRANCH": "master",
+
+    "GROUP_ID": 9999,
 }
 
 try:

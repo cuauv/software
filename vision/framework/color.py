@@ -53,8 +53,9 @@ def thresh_color_distance(split, color, distance, auto_distance_percentile=None,
     :param auto_distance_percentile: the percentile used for distance
     :param ignore_channels: specifies which color channels should be ignored
     :param weights: the weights to calculated the weighted color distance of each channel
-    :return: the input image with all pixel values with weighted color distance to color larger than distance set to zero
-        and all other values set to 255
+    :return: A tuple of the input image with all pixel values with weighted
+             color distance to color larger than distance set to zero and all other
+             values set to 255, and a matrix of distances of the point to the specified color.
     """
     for idx in ignore_channels:
         weights[idx] = 0

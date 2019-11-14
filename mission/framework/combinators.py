@@ -259,3 +259,39 @@ class Either(Task):
             if task.finished:
                 self.finish(success=task.success)
                 break
+
+class Except(Task):
+    """
+    Execute one task, but execute another if the first task raises
+    an exception. Finish with success of whichever task finishes.
+    """
+    def on_first_run(self, *args, **kwargs):
+        self.excepted = False
+
+    def on_run(self, main_task, except_task, *exceptions, **kwargs):
+        if not self.excepted:
+            try:
+                main_task()
+                if main_task.finished:
+                    self.finish(success=main_task.success)
+
+                return
+
+            except exceptions:
+                self.excepted = True
+
+        except_task()
+        if except_task.finished:
+            self.finish(success=except_task.success)
+
+class Disjunction(Task):
+    """
+    Run tasks in order as they fail, and succeed when the first task does. Fail
+    if no task succeeds.
+
+    Disjunction is to Sequential as 'or' is to 'and'.
+    """
+    def on_first_run(self, *tasks, subtasks=(), finite=True, **kwargs):
+        self.use_task(InvertSuccess(Sequential(
+            subtasks=[InvertSuccess(t) for t in itertools.chain(tasks, subtasks)]
+        )))

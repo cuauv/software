@@ -326,61 +326,6 @@ class SearchWithGlobalTimeout(Task):
             self.loge('Timed out while searching')
             raise GlobalTimeoutError()
 
-class Except(Task):
-    def on_first_run(self, *args, **kwargs):
-        self.excepted = False
-
-    def on_run(self, main_task, except_task, *exceptions, **kwargs):
-        if not self.excepted:
-            try:
-                main_task()
-                if main_task.finished:
-                    self.finish(success=main_task.success)
-
-                return
-
-            except exceptions:
-                self.excepted = True
-
-        except_task()
-        if except_task.finished:
-            self.finish(success=except_task.success)
-
-class ConsistentTask(Task):
-    """
-    Finishes when a non-finite task is consistently finished
-    """
-    def on_first_run(self, task, success=18, total=20, *args, **kwargs):
-        self.cons_check = ConsistencyCheck(success, total)
-
-    def on_run(self, task, debug=False, *args, **kwargs):
-        task()
-        if self.cons_check.check(task.finished):
-            self.finish()
-        if debug:
-            success_char = ["x", "^"][self.cons_check.results[-1] == 1]
-            dropped_char = ["x", "^"][self.cons_check.results[0] == 1]
-
-            self.logd("{}/{}/{}/{}/{}".format(
-                success_char,
-                sum(x == 1 for x in self.cons_check.results),
-                self.cons_check.count,
-                self.cons_check.total,
-                dropped_char,
-            ))
-
-class Disjunction(Task):
-    """
-    Run tasks in order as they fail, and succeed when the first task does. Fail
-    if no task succeeds.
-
-    Disjunction is to Sequential as 'or' is to 'and'.
-    """
-    def on_first_run(self, *tasks, subtasks=(), finite=True, **kwargs):
-        self.use_task(InvertSuccess(Sequential(
-            subtasks=[InvertSuccess(t) for t in itertools.chain(tasks, subtasks)]
-        )))
-
 # class ConcurrentOr(Concurrent):
     # """ Run tasks concurrently; finish if any finish. """
     # # TODO support finite

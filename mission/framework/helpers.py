@@ -6,54 +6,6 @@ from auv_math.quat import Quaternion
 from auv_python_helpers.angles import abs_heading_sub_degrees
 from conf.vehicle import cameras
 
-# TODO The below functions are temporary for TRANSDEC 2016.
-# Please remove as soon as competition is over.
-# I know in the back of my mind, that it won't be removed,
-# and using these will become standard because it is easier.
-
-# Using get_camera(results_group) is better because it eliminates
-# hard coding of camera direction and allows vision modules to switch
-# camera directions per frame.
-
-# BEGIN TEMPORARY FUNCTIONS #
-
-def get_forward_camera():
-    if "forward_right" in cameras:
-        return cameras["forward_right"]
-    return cameras["forward"]
-
-def get_forward_camera_size():
-    cam = get_forward_camera()
-    return cam['width'], cam['height']
-
-def get_forward_camera_center():
-    size = get_forward_camera_size()
-    return size[0] / 2.0, size[1] / 2.0
-
-def get_downward_camera():
-    return cameras["downward"]
-
-def get_downward_camera_size():
-    cam = get_downward_camera()
-    return cam['width'], cam['height']
-
-def get_downward_camera_center():
-    size = get_downward_camera_size()
-    return size[0] / 2.0, size[1] / 2.0
-
-# END TEMPORARY FUNCTIONS #
-
-#extra, better camera functions
-
-def get_camera_size_by_name(camera_name):
-    cam = cameras[camera_name]
-    return cam['width'], cam['height']
-
-def get_camera_by_name(camera_name):
-    return cameras[camera_name]
-
-#end extra
-
 def get_camera(results_group):
     direction = results_group.camera.decode('utf-8')
     if direction not in cameras:
@@ -159,53 +111,3 @@ def dict_join(d1, d2):
         if k not in new:
             new[k] = d2[k]
     return new
-
-
-class ConsistencyCheck:
-    ''' Call 'check' on a value to tell if it is consistently True.
-    This does dual-threshold hysteresis, so it requires 'count' of
-    the last 'total' calls to be true to switch to returning true,
-    and then it would wait for 'count' of the last 'total' values
-    to be false before switching back to returning false.
-
-    If 'strict' is used, then we require that at least 'count' of the last
-    'total' values are True in order to give True - i.e. we do away
-    with the dual thresholding.'''
-    def __init__(self, count=3, total=5, default=False, strict=False):
-        self.results = [1 if default else -1]*int(total)
-        self.total = int(total)
-        self.count = int(count)
-        self.state = default
-        self.default = default
-        self.strict = strict
-
-
-    def add(self, result):
-        self.results.append(1 if result else -1)
-        if len(self.results) > self.total:
-            self.results[:] = self.results[-self.total:]
-
-    def check(self, result=None):
-        if result != None:
-            self.add(result)
-
-        if self.strict:
-            return sum(x == 1 for x in self.results) >= self.count
-
-        if sum( self.results ) >= (2*self.count-self.total):
-            self.state = True
-        elif sum( self.results ) <= -(2*self.count-self.total):
-            self.state = False
-
-        return self.state
-
-    def __call__(self, result=None):
-        return self.check(result)
-
-    def clear(self, default=None):
-        if default is None:
-            self.results = [1 if self.default else -1]*self.total
-            self.state = self.default
-        else:
-            self.results = [1 if default else -1]*self.total
-            self.state = default

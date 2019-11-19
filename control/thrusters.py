@@ -136,7 +136,7 @@ desires = shm.motor_desires
 class GenericThruster(object):
     max_pwm = 255
     min_pwm = 0 # turn on value
-    def __init__(self, yaw, pitch, position, min_neg_pwm, min_pos_pwm, drag=1.0, link=None, name="", reversed_polarity=False, broken=False, vector=False):
+    def __init__(self, yaw, pitch, position, min_neg_pwm, min_pos_pwm, drag=1.0, link=None, name="", reversed_polarity=lambda: False, broken=False, vector=False):
         """
             Yaw, and pitch are counter-clockwise angles (deg) in a right hand
             coordinate system where +z is down (yaw axis) and
@@ -424,12 +424,14 @@ for thruster in vehicle.thrusters:
     min_neg_pwm = get_default('min_neg_pwm', -t_class.min_pwm)
 
     thruster_name = thruster.get('real_name', thruster['name'])
+    reversed_func = vars(shm.reversed_thrusters)[thruster_name].get
     thruster = t_class(yaw=h, pitch=p, position=thruster['pos'],
                        link=thruster['name'], name=thruster_name, vector=vector,
-                       reversed_polarity=reversed_polarity, broken=broken,
+                       reversed_polarity=reversed_func, broken=broken,
                        min_pos_pwm=min_pos_pwm, min_neg_pwm=min_neg_pwm)
 
     vars(shm.broken_thrusters)[thruster.name].set(broken)
+    vars(shm.reversed_thrusters)[thruster.name].set(reversed_polarity)
 
     all_thrusters.append(thruster)
 

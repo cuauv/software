@@ -241,7 +241,7 @@ class Optimizer:
                 x[i] = t.max_thrust
 
             out[i] = t.thrust_to_pwm(x[i])
-            if t.reversed_polarity:
+            if t.reversed_polarity():
               out[i] = -out[i]
 
         set_all_motors_from_seq(out, got_thrusters)

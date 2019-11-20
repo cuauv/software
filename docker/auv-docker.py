@@ -34,6 +34,7 @@ CONTAINER_WORKSPACE_DIRECTORY=get_config("CONTAINER_WORKSPACE_DIRECTORY")
 REPO_URL=get_config("GIT_REPO_URL")
 BRANCH=get_config("BRANCH")
 DOCKER_REPO=get_config("DOCKER_REPO")
+DOCKER_REPO_JETSON=get_config("DOCKER_REPO_JETSON")
 GROUP_ID=get_config("GROUP_ID")
 
 GUARD_DIRECTORY = WORKSPACE_DIRECTORY / ".guards"
@@ -246,13 +247,15 @@ def init(*, on_vehicle=False, set_permissions=False):
     )
 
 
-def create_worktree(branch=BRANCH, print_help=True):
+def create_worktree(branch=BRANCH, print_help=True, *, b=False):
     """
     Sets up a worktree directory for a branch.
 
     branch: Branch workspace to use.
 
     print_help: defaults to True. If false, will not print help afterwards.
+
+    b: True to create and push a new branch.
     """
     # If using master branch, then simply symlink to the existing clone
 
@@ -266,23 +269,36 @@ def create_worktree(branch=BRANCH, print_help=True):
             guarded_call("symlink_master", symlink_master, "Symlinking workspace for master")
 
         else:
-            subprocess.run(
-                ["git", "fetch", "origin", "{}:{}".format(branch, branch), "--"],
-                cwd=str(REPO_PATH),
-                check=True,
-            )
+            if b:
+                subprocess.run(
+                    ["git", "worktree", "add", str(branch_directory), "-b", branch],
+                    cwd=str(REPO_PATH),
+                    check=True,
+                )
 
-            subprocess.run(
-                ["git", "worktree", "add", str(branch_directory), branch],
-                cwd=str(REPO_PATH),
-                check=True,
-            )
+                subprocess.run(
+                    ["git", "push", "-u", "origin", branch],
+                    cwd=str(REPO_PATH),
+                    check=True,
+                )
+            else:
+                subprocess.run(
+                    ["git", "fetch", "origin", "{}:{}".format(branch, branch), "--"],
+                    cwd=str(REPO_PATH),
+                    check=True,
+                )
 
-            subprocess.run(
-                ["git", "branch", "-u", "origin/{}".format(branch), branch],
-                cwd=str(REPO_PATH),
-                check=True,
-            )
+                subprocess.run(
+                    ["git", "worktree", "add", str(branch_directory), branch],
+                    cwd=str(REPO_PATH),
+                    check=True,
+                )
+
+                subprocess.run(
+                    ["git", "branch", "-u", "origin/{}".format(branch), branch],
+                    cwd=str(REPO_PATH),
+                    check=True,
+                )
 
             # Change git paths to relative paths so they work inside the docker container
             (branch_directory / ".git").write_text("gitdir: ../../repo/.git/worktrees/{}".format(branch))
@@ -373,7 +389,7 @@ def start(*, branch:"b"=BRANCH, gpu=True, env=None, vehicle=False):
             docker_args["devices"] += ["/dev/dri:/dev/dri:rw"]
 
         if vehicle:
-            docker_args["image"] = "asb322/cuauv-jetson:{}".format(branch)
+            docker_args["image"] = "{}:{}".format(DOCKER_REPO_JETSON, branch)
             docker_args["volumes"]["/dev"] = {
                 "bind": "/dev",
                 "mode": "rw",
@@ -459,8 +475,12 @@ def destroy(branch=BRANCH, vehicle=False):
         print("No container for branch={}, vehicle={}".format(branch, vehicle))
 
     # Delete image for branch
-    client.images.remove("{}:{}".format(DOCKER_REPO, branch))
-    print("Deleted image {}:{}".format(DOCKER_REPO, branch))
+    image_name = "{}:{}".format(DOCKER_REPO, branch)
+    try:
+        client.images.remove(image_name)
+        print("Deleted image {}".format(image_name))
+    except docker.errors.ImageNotFound:
+        print("No image {}".format(image_name))
 
     # Delete worktree
     subprocess.run(

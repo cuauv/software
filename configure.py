@@ -47,6 +47,7 @@ dirs = [
         'conf/gui',
         'control',
         'control/controlhelm',
+        'control/control_helm2',
         'deadman',
         'lib',
         'libshm',

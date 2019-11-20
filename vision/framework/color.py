@@ -135,7 +135,7 @@ def otsu_threshold(mat):
     :param mat: input image (should be bimodal)
     :return: (threshold value, thresholded image)
     """
-    return cv2.threshold(mat, 0, 0, cv2.THRESH_OTSU)
+    return cv2.threshold(mat, 0, 255, cv2.THRESH_OTSU)
 
 
 def adaptive_threshold_mean(mat, neighborhood_size, bias=0):

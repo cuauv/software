@@ -2,7 +2,7 @@ from collections import namedtuple
 from itertools import permutations
 import math
 
-from mission.framework.helpers import ConsistencyCheck
+from mission.framework.consistency import ConsistencyCheck
 
 Match = namedtuple('Match', ['id', 'obs'])
 

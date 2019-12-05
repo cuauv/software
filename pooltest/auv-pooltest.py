@@ -133,7 +133,7 @@ class Pooltest:
         subprocess.run(command)
 
         unlink_log_dir()
-        slack.send('Pooltest has been completed. Logs can be accessed at https://cuauv.org/log/{}'.format(pooltest_name))
+        slack.send('Pooltest has been completed. Logs can be accessed at https://cuauv.org/log/current/pooltest/{}'.format(pooltest_name))
 
     def assert_shm(self):
         raise NotImplemented

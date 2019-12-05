@@ -13,6 +13,32 @@ struct shm* shm;
 const key_t SHM_KEY = 0x617576; //auv
 const char SHM_SEM_KEY[] = "/auv_shared_mem";
 
+// Global variables because we reference them in watcher.c.
+pthread_mutexattr_t _mattr;
+pthread_condattr_t _cattr;
+
+static void init_attr() {
+    // Initialize attributes for pthread mutices and condition variables.
+
+    pthread_mutexattr_init(&_mattr);
+    pthread_mutexattr_setpshared(&_mattr, PTHREAD_PROCESS_SHARED);
+    pthread_mutexattr_settype(&_mattr, PTHREAD_MUTEX_ERRORCHECK);
+    if (!(__GLIBC__ == 2 && __GLIBC_MINOR__ == 25)) {
+        // If a process dies while holding a shm lock. We don't want to freeze shm.
+        // glibc 2.25 has a bug with robust mutices that can cause deadlock.
+        pthread_mutexattr_setrobust(&_mattr, PTHREAD_MUTEX_ROBUST);
+    }
+
+    pthread_condattr_init(&_cattr);
+    pthread_condattr_setpshared(&_cattr, PTHREAD_PROCESS_SHARED);
+}
+
+static void __attribute__((destructor)) destroy_attr() {
+    // Should get called when the shared library is unloaded
+    pthread_mutexattr_destroy(&_mattr);
+    pthread_condattr_destroy(&_cattr);
+}
+
 // Initialize all the variables.
 void shm_init_vars();
 // Append the current pid to the shm file.
@@ -85,6 +111,9 @@ void shm_init() {
         abort();
     }
 
+    // Need to call this before shm_init_vars, or create_watcher
+    init_attr();
+
     // Initialize everything if we created a new file.
     if (create) {
         shm_init_vars();
@@ -151,28 +180,13 @@ void shm_set_defaults() {
 }
 
 void shm_init_vars() {
-    pthread_mutexattr_t mattr;
-    pthread_mutexattr_init(&mattr);
-    pthread_mutexattr_setpshared(&mattr, PTHREAD_PROCESS_SHARED);
-    pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_ERRORCHECK);
-    // If a process dies while holding a shm lock. We don't want to freeze shm.
-	
-	// TODO handle robust mutex malfunctions in newer glibc version
-	if (__GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 25)) {
-		pthread_mutexattr_setrobust(&mattr, PTHREAD_MUTEX_ROBUST);
-	}
-
-    pthread_condattr_t cattr;
-    pthread_condattr_init(&cattr);
-    pthread_condattr_setpshared(&cattr, PTHREAD_PROCESS_SHARED);
-
     // Set header.
     memset(&shm->header, 0,sizeof(shm->header));
     strcpy(shm->header.checksum, SHM_CHECKSUM);
 
     // Initialize mutices and string lengths.
     <!--(for g in groups)-->
-    pthread_mutex_init(&shm->$!g['groupname']!$.m.m, &mattr);
+    pthread_mutex_init(&shm->$!g['groupname']!$.m.m, &_mattr);
     shm->$!g['groupname']!$.m.f = false;
     shm->$!g['groupname']!$.m.stream = false;
     shm->$!g['groupname']!$.m.last_client = 0;
@@ -184,14 +198,8 @@ void shm_init_vars() {
     <!--(end)-->
 
     // Initialize watchers.
-    pthread_mutex_init(&shm->watch.mut, &mattr);
-    for (int i = 0; i < MAX_WATCHERS; i++) {
-        pthread_mutex_init(&shm->watch.watchers[i].mutex, &mattr);
-        pthread_cond_init(&shm->watch.watchers[i].condition, &cattr);
-    }
-
-    pthread_mutexattr_destroy(&mattr);
-    pthread_condattr_destroy(&cattr);
+    pthread_mutex_init(&shm->watch.mut, &_mattr);
+    // We initialize the mutices and condition variables in create_watcher.
 
     // Initialize the vars themselves.
     shm_set_defaults();

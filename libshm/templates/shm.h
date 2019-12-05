@@ -22,6 +22,9 @@
 extern "C" {
 #endif
 
+extern pthread_mutexattr_t _mattr;
+extern pthread_condattr_t _cattr;
+
 struct shm_header {
     pid_t users[SHM_MAX_USERS];
     char checksum[SHM_CHECKSUM_LEN];

@@ -51,6 +51,9 @@ watcher_t create_watcher() {
     new_watcher->modified = 0;
     shm->watch.occupied[i] = 1;
 
+    pthread_mutex_init(&new_watcher->mutex, &_mattr);
+    pthread_cond_init(&new_watcher->condition, &_cattr);
+
     if (pthread_mutex_unlock(&shm->watch.mut))
         LOCK_FAIL(create_watcher);
 

@@ -2,3 +2,4 @@ node_modules/
 
 static/bundle.js
 npm-install.fake
+package-lock.json

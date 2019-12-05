@@ -8,7 +8,7 @@ def outer_contours(mat):
     :param mat: input image; the image should be grayscale
     :return: contours in the image
     """
-    _, contours, _ = cv2.findContours(mat, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(mat, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     return contours
 
 

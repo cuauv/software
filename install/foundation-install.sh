@@ -11,18 +11,18 @@ packages=(
     build-essential
     cmake
     curl
-    cython
+    # cython
     gcc
     git
     ninja-build
-    python
-    python-matplotlib
-    python-pip
-    python3
-    python3-dev
-    python3-numpy
-    python3-pip
-    python3-scipy
+    # python
+    # python-matplotlib
+    # python-pip
+    # python3
+    # python3-dev
+    # python3-numpy
+    # python3-pip
+    # python3-scipy
     screen
     sudo
     unzip
@@ -38,8 +38,8 @@ for f in "${packages[@]}";  do
 done
 
 # Upgrade pip
-pip2 install --upgrade pip
-pip3 install --upgrade pip
+#pip2 install --upgrade pip
+#pip3 install --upgrade pip
 
 # Allow wireshark to be run by non-root users
 echo "wireshark-common wireshark-common/install-setuid boolean true" | sudo debconf-set-selections
@@ -54,4 +54,4 @@ pushd "liquid-dsp-${LIQUID_VERSION}"
 ./configure
 make -j "$(nproc)"
 make install
-
+rm -r "/v${LIQUID_VERSION}.zip"

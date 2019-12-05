@@ -1,7 +1,7 @@
 #include "camera_filters.hpp"
 
 #include <string.h>
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp> // for getOptimalNewCameraMatrix
 #include <opencv2/imgproc/imgproc.hpp> // for undistort
@@ -16,7 +16,7 @@ int initUndistortMap(optimal_camera_matrix *dst, std::string name, int width, in
   cv::FileStorage fs;
   cv::Mat M, D;
 
-  fs.open(dir, CV_STORAGE_READ);
+  fs.open(dir, cv::FileStorage::Mode::READ);
   if (!fs.isOpened()) {
     return 0;
   }

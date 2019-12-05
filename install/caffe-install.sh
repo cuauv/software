@@ -47,7 +47,7 @@ patch Makefile.config <<'EOF'
 ---
 > PYTHON_LIBRARIES := boost_python-py35 python3.5m
 > PYTHON_INCLUDE := /usr/include/python3.5m \
->                 /usr/lib/python3.5/dist-packages/numpy/core/include
+>                 /usr/lib/python3.8/dist-packages/numpy/core/include
 91c91
 < # WITH_PYTHON_LAYER := 1
 ---

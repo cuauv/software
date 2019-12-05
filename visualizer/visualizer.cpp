@@ -51,6 +51,7 @@
 #define ENABLE_FULLSCREEN_TOGGLE
 #endif
 
+#define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_RADIANS
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>

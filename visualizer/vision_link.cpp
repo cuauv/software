@@ -90,7 +90,7 @@ void VisionLinkImp::worker() {
       break;
     }
 
-    cv::cvtColor(input_image, output_image, CV_BGRA2BGR);
+    cv::cvtColor(input_image, output_image, cv::COLOR_BGRA2BGR);
     cv::flip(output_image, output_image, 0);
     write_frame(framework, output_image.ptr(),
                 acq_time->tv_sec * 1000 + acq_time->tv_nsec / 1000000,

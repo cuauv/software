@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -27,6 +28,7 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 }  // namespace
 
 
+void protobuf_AssignDesc_slam_5fmsg_2eproto() GOOGLE_ATTRIBUTE_COLD;
 void protobuf_AssignDesc_slam_5fmsg_2eproto() {
   protobuf_AddDesc_slam_5fmsg_2eproto();
   const ::google::protobuf::FileDescriptor* file =
@@ -45,16 +47,16 @@ void protobuf_AssignDesc_slam_5fmsg_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SlamMsg, u_z_),
   };
   SlamMsg_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
       SlamMsg_descriptor_,
       SlamMsg::default_instance_,
       SlamMsg_offsets_,
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SlamMsg, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SlamMsg, _unknown_fields_),
       -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(SlamMsg));
+      -1,
+      sizeof(SlamMsg),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SlamMsg, _internal_metadata_),
+      -1);
 }
 
 namespace {
@@ -65,10 +67,11 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_slam_5fmsg_2eproto);
 }
 
+void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    SlamMsg_descriptor_, &SlamMsg::default_instance());
+      SlamMsg_descriptor_, &SlamMsg::default_instance());
 }
 
 }  // namespace
@@ -78,6 +81,7 @@ void protobuf_ShutdownFile_slam_5fmsg_2eproto() {
   delete SlamMsg_reflection_;
 }
 
+void protobuf_AddDesc_slam_5fmsg_2eproto() GOOGLE_ATTRIBUTE_COLD;
 void protobuf_AddDesc_slam_5fmsg_2eproto() {
   static bool already_here = false;
   if (already_here) return;
@@ -105,7 +109,7 @@ struct StaticDescriptorInitializer_slam_5fmsg_2eproto {
 
 // ===================================================================
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int SlamMsg::kIdFieldNumber;
 const int SlamMsg::kRequestFieldNumber;
 const int SlamMsg::kMXFieldNumber;
@@ -114,10 +118,10 @@ const int SlamMsg::kMZFieldNumber;
 const int SlamMsg::kUXFieldNumber;
 const int SlamMsg::kUYFieldNumber;
 const int SlamMsg::kUZFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SlamMsg::SlamMsg()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:slam.SlamMsg)
 }
@@ -126,7 +130,8 @@ void SlamMsg::InitAsDefaultInstance() {
 }
 
 SlamMsg::SlamMsg(const SlamMsg& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
   SharedCtor();
   MergeFrom(from);
   // @@protoc_insertion_point(copy_constructor:slam.SlamMsg)
@@ -135,7 +140,7 @@ SlamMsg::SlamMsg(const SlamMsg& from)
 void SlamMsg::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   request_ = false;
   m_x_ = 0;
   m_y_ = 0;
@@ -152,9 +157,7 @@ SlamMsg::~SlamMsg() {
 }
 
 void SlamMsg::SharedDtor() {
-  if (id_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-    delete id_;
-  }
+  id_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
   }
 }
@@ -176,40 +179,51 @@ const SlamMsg& SlamMsg::default_instance() {
 
 SlamMsg* SlamMsg::default_instance_ = NULL;
 
-SlamMsg* SlamMsg::New() const {
-  return new SlamMsg;
+SlamMsg* SlamMsg::New(::google::protobuf::Arena* arena) const {
+  SlamMsg* n = new SlamMsg;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
 }
 
 void SlamMsg::Clear() {
-#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
-  &reinterpret_cast<SlamMsg*>(16)->f) - \
-   reinterpret_cast<char*>(16))
+// @@protoc_insertion_point(message_clear_start:slam.SlamMsg)
+#if defined(__clang__)
+#define ZR_HELPER_(f) \
+  _Pragma("clang diagnostic push") \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
+  __builtin_offsetof(SlamMsg, f) \
+  _Pragma("clang diagnostic pop")
+#else
+#define ZR_HELPER_(f) reinterpret_cast<char*>(\
+  &reinterpret_cast<SlamMsg*>(16)->f)
+#endif
 
-#define ZR_(first, last) do {                              \
-    size_t f = OFFSET_OF_FIELD_(first);                    \
-    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
-    ::memset(&first, 0, n);                                \
-  } while (0)
+#define ZR_(first, last) do {\
+  ::memset(&first, 0,\
+           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
+} while (0)
 
-  if (_has_bits_[0 / 32] & 255) {
+  if (_has_bits_[0 / 32] & 255u) {
     ZR_(m_x_, request_);
     if (has_id()) {
-      if (id_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-        id_->clear();
-      }
+      id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
   }
 
-#undef OFFSET_OF_FIELD_
+#undef ZR_HELPER_
 #undef ZR_
 
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
+  if (_internal_metadata_.have_unknown_fields()) {
+    mutable_unknown_fields()->Clear();
+  }
 }
 
 bool SlamMsg::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:slam.SlamMsg)
   for (;;) {
@@ -225,7 +239,7 @@ bool SlamMsg::MergePartialFromCodedStream(
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
             this->id().data(), this->id().length(),
             ::google::protobuf::internal::WireFormat::PARSE,
-            "id");
+            "slam.SlamMsg.id");
         } else {
           goto handle_unusual;
         }
@@ -368,7 +382,7 @@ void SlamMsg::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->id().data(), this->id().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "id");
+      "slam.SlamMsg.id");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       1, this->id(), output);
   }
@@ -408,22 +422,22 @@ void SlamMsg::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(8, this->u_z(), output);
   }
 
-  if (!unknown_fields().empty()) {
+  if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
   }
   // @@protoc_insertion_point(serialize_end:slam.SlamMsg)
 }
 
-::google::protobuf::uint8* SlamMsg::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* SlamMsg::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:slam.SlamMsg)
   // required string id = 1;
   if (has_id()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->id().data(), this->id().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "id");
+      "slam.SlamMsg.id");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         1, this->id(), target);
@@ -464,7 +478,7 @@ void SlamMsg::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(8, this->u_z(), target);
   }
 
-  if (!unknown_fields().empty()) {
+  if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
   }
@@ -472,22 +486,41 @@ void SlamMsg::SerializeWithCachedSizes(
   return target;
 }
 
-int SlamMsg::ByteSize() const {
+int SlamMsg::RequiredFieldsByteSizeFallback() const {
+// @@protoc_insertion_point(required_fields_byte_size_fallback_start:slam.SlamMsg)
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+  if (has_id()) {
     // required string id = 1;
-    if (has_id()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->id());
-    }
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->id());
+  }
+
+  if (has_request()) {
+    // required bool request = 2;
+    total_size += 1 + 1;
+  }
+
+  return total_size;
+}
+int SlamMsg::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:slam.SlamMsg)
+  int total_size = 0;
+
+  if (((_has_bits_[0] & 0x00000003) ^ 0x00000003) == 0) {  // All required fields are present.
+    // required string id = 1;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->id());
 
     // required bool request = 2;
-    if (has_request()) {
-      total_size += 1 + 1;
-    }
+    total_size += 1 + 1;
 
+  } else {
+    total_size += RequiredFieldsByteSizeFallback();
+  }
+  if (_has_bits_[2 / 32] & 252u) {
     // optional double m_x = 3;
     if (has_m_x()) {
       total_size += 1 + 8;
@@ -519,7 +552,7 @@ int SlamMsg::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
+  if (_internal_metadata_.have_unknown_fields()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
@@ -531,22 +564,31 @@ int SlamMsg::ByteSize() const {
 }
 
 void SlamMsg::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const SlamMsg* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const SlamMsg*>(
-      &from);
+// @@protoc_insertion_point(generalized_merge_from_start:slam.SlamMsg)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const SlamMsg* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const SlamMsg>(
+          &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:slam.SlamMsg)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:slam.SlamMsg)
     MergeFrom(*source);
   }
 }
 
 void SlamMsg::MergeFrom(const SlamMsg& from) {
-  GOOGLE_CHECK_NE(&from, this);
+// @@protoc_insertion_point(class_specific_merge_from_start:slam.SlamMsg)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_id()) {
-      set_id(from.id());
+      set_has_id();
+      id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
     }
     if (from.has_request()) {
       set_request(from.request());
@@ -570,16 +612,20 @@ void SlamMsg::MergeFrom(const SlamMsg& from) {
       set_u_z(from.u_z());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+  if (from._internal_metadata_.have_unknown_fields()) {
+    mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+  }
 }
 
 void SlamMsg::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:slam.SlamMsg)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void SlamMsg::CopyFrom(const SlamMsg& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:slam.SlamMsg)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -592,19 +638,21 @@ bool SlamMsg::IsInitialized() const {
 }
 
 void SlamMsg::Swap(SlamMsg* other) {
-  if (other != this) {
-    std::swap(id_, other->id_);
-    std::swap(request_, other->request_);
-    std::swap(m_x_, other->m_x_);
-    std::swap(m_y_, other->m_y_);
-    std::swap(m_z_, other->m_z_);
-    std::swap(u_x_, other->u_x_);
-    std::swap(u_y_, other->u_y_);
-    std::swap(u_z_, other->u_z_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
+  if (other == this) return;
+  InternalSwap(other);
+}
+void SlamMsg::InternalSwap(SlamMsg* other) {
+  id_.Swap(&other->id_);
+  std::swap(request_, other->request_);
+  std::swap(m_x_, other->m_x_);
+  std::swap(m_y_, other->m_y_);
+  std::swap(m_z_, other->m_z_);
+  std::swap(u_x_, other->u_x_);
+  std::swap(u_y_, other->u_y_);
+  std::swap(u_z_, other->u_z_);
+  std::swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
 }
 
 ::google::protobuf::Metadata SlamMsg::GetMetadata() const {
@@ -615,6 +663,232 @@ void SlamMsg::Swap(SlamMsg* other) {
   return metadata;
 }
 
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// SlamMsg
+
+// required string id = 1;
+bool SlamMsg::has_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+void SlamMsg::set_has_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+void SlamMsg::clear_has_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+void SlamMsg::clear_id() {
+  id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_id();
+}
+ const ::std::string& SlamMsg::id() const {
+  // @@protoc_insertion_point(field_get:slam.SlamMsg.id)
+  return id_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void SlamMsg::set_id(const ::std::string& value) {
+  set_has_id();
+  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:slam.SlamMsg.id)
+}
+ void SlamMsg::set_id(const char* value) {
+  set_has_id();
+  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:slam.SlamMsg.id)
+}
+ void SlamMsg::set_id(const char* value, size_t size) {
+  set_has_id();
+  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:slam.SlamMsg.id)
+}
+ ::std::string* SlamMsg::mutable_id() {
+  set_has_id();
+  // @@protoc_insertion_point(field_mutable:slam.SlamMsg.id)
+  return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* SlamMsg::release_id() {
+  // @@protoc_insertion_point(field_release:slam.SlamMsg.id)
+  clear_has_id();
+  return id_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void SlamMsg::set_allocated_id(::std::string* id) {
+  if (id != NULL) {
+    set_has_id();
+  } else {
+    clear_has_id();
+  }
+  id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
+  // @@protoc_insertion_point(field_set_allocated:slam.SlamMsg.id)
+}
+
+// required bool request = 2;
+bool SlamMsg::has_request() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+void SlamMsg::set_has_request() {
+  _has_bits_[0] |= 0x00000002u;
+}
+void SlamMsg::clear_has_request() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+void SlamMsg::clear_request() {
+  request_ = false;
+  clear_has_request();
+}
+ bool SlamMsg::request() const {
+  // @@protoc_insertion_point(field_get:slam.SlamMsg.request)
+  return request_;
+}
+ void SlamMsg::set_request(bool value) {
+  set_has_request();
+  request_ = value;
+  // @@protoc_insertion_point(field_set:slam.SlamMsg.request)
+}
+
+// optional double m_x = 3;
+bool SlamMsg::has_m_x() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+void SlamMsg::set_has_m_x() {
+  _has_bits_[0] |= 0x00000004u;
+}
+void SlamMsg::clear_has_m_x() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+void SlamMsg::clear_m_x() {
+  m_x_ = 0;
+  clear_has_m_x();
+}
+ double SlamMsg::m_x() const {
+  // @@protoc_insertion_point(field_get:slam.SlamMsg.m_x)
+  return m_x_;
+}
+ void SlamMsg::set_m_x(double value) {
+  set_has_m_x();
+  m_x_ = value;
+  // @@protoc_insertion_point(field_set:slam.SlamMsg.m_x)
+}
+
+// optional double m_y = 4;
+bool SlamMsg::has_m_y() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+void SlamMsg::set_has_m_y() {
+  _has_bits_[0] |= 0x00000008u;
+}
+void SlamMsg::clear_has_m_y() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+void SlamMsg::clear_m_y() {
+  m_y_ = 0;
+  clear_has_m_y();
+}
+ double SlamMsg::m_y() const {
+  // @@protoc_insertion_point(field_get:slam.SlamMsg.m_y)
+  return m_y_;
+}
+ void SlamMsg::set_m_y(double value) {
+  set_has_m_y();
+  m_y_ = value;
+  // @@protoc_insertion_point(field_set:slam.SlamMsg.m_y)
+}
+
+// optional double m_z = 5;
+bool SlamMsg::has_m_z() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+void SlamMsg::set_has_m_z() {
+  _has_bits_[0] |= 0x00000010u;
+}
+void SlamMsg::clear_has_m_z() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+void SlamMsg::clear_m_z() {
+  m_z_ = 0;
+  clear_has_m_z();
+}
+ double SlamMsg::m_z() const {
+  // @@protoc_insertion_point(field_get:slam.SlamMsg.m_z)
+  return m_z_;
+}
+ void SlamMsg::set_m_z(double value) {
+  set_has_m_z();
+  m_z_ = value;
+  // @@protoc_insertion_point(field_set:slam.SlamMsg.m_z)
+}
+
+// optional double u_x = 6;
+bool SlamMsg::has_u_x() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+void SlamMsg::set_has_u_x() {
+  _has_bits_[0] |= 0x00000020u;
+}
+void SlamMsg::clear_has_u_x() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+void SlamMsg::clear_u_x() {
+  u_x_ = 0;
+  clear_has_u_x();
+}
+ double SlamMsg::u_x() const {
+  // @@protoc_insertion_point(field_get:slam.SlamMsg.u_x)
+  return u_x_;
+}
+ void SlamMsg::set_u_x(double value) {
+  set_has_u_x();
+  u_x_ = value;
+  // @@protoc_insertion_point(field_set:slam.SlamMsg.u_x)
+}
+
+// optional double u_y = 7;
+bool SlamMsg::has_u_y() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+void SlamMsg::set_has_u_y() {
+  _has_bits_[0] |= 0x00000040u;
+}
+void SlamMsg::clear_has_u_y() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+void SlamMsg::clear_u_y() {
+  u_y_ = 0;
+  clear_has_u_y();
+}
+ double SlamMsg::u_y() const {
+  // @@protoc_insertion_point(field_get:slam.SlamMsg.u_y)
+  return u_y_;
+}
+ void SlamMsg::set_u_y(double value) {
+  set_has_u_y();
+  u_y_ = value;
+  // @@protoc_insertion_point(field_set:slam.SlamMsg.u_y)
+}
+
+// optional double u_z = 8;
+bool SlamMsg::has_u_z() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+void SlamMsg::set_has_u_z() {
+  _has_bits_[0] |= 0x00000080u;
+}
+void SlamMsg::clear_has_u_z() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+void SlamMsg::clear_u_z() {
+  u_z_ = 0;
+  clear_has_u_z();
+}
+ double SlamMsg::u_z() const {
+  // @@protoc_insertion_point(field_get:slam.SlamMsg.u_z)
+  return u_z_;
+}
+ void SlamMsg::set_u_z(double value) {
+  set_has_u_z();
+  u_z_ = value;
+  // @@protoc_insertion_point(field_set:slam.SlamMsg.u_z)
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
 

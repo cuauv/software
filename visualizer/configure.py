@@ -29,7 +29,7 @@ pkg_confs=['gl'], cflags=['-DGL_GLEXT_PROTOTYPES', '-Wno-misleading-indentation'
 # We compile this separately and link at RUNTIME to avoid
 # requiring OpenCV and Eigen for visualizer use.
 build.build_shared('vision_link', ['vision_link.cpp'],
-auv_deps=['auv-camera-message-framework', 'conf'], pkg_confs=['opencv', 'eigen3'],
+auv_deps=['auv-camera-message-framework', 'conf'], pkg_confs=['opencv4', 'eigen3'],
 cflags=[]
 )
 

@@ -14,7 +14,6 @@ cd "Python-${PYTHON_VERSION}"
 
 ./configure
 make
-make altinstall
+make install
 
-cd ..
-rm -rf python-latest-install
+rm -rf /python-latest-install

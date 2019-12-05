@@ -1,6 +1,8 @@
 #include "graphics_engine.h"
 #include "renderer.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/transform.hpp>

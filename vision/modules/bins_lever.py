@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from vision.modules.base import ModuleBase
 from vision.options import *
 import shm

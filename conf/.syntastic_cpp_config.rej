@@ -1,4 +1,0 @@
---- conf/.syntastic_cpp_config
-+++ conf/.syntastic_cpp_config
-@@ -0,0 +1 @@
-+-I/usr/include/eigen3

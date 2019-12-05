@@ -16,9 +16,9 @@ for cam, kvs in cameras.items():
                 "configuration" : kvs['camera_name'],
                 "size": (kvs['width'], kvs['height']) }
 
-  if 'rotate180' in kvs and kvs['rotate180'] in ["true", "True"]:
+  if 'rotate180' in kvs and kvs['rotate180']:
     args_dict['rotate180'] = "--rotate180"
-  if 'rotate90' in kvs and kvs['rotate90'] in ["true", "True"]:
+  if 'rotate90' in kvs and kvs['rotate90']:
     args_dict['rotate90'] = "--rotate90"
 
   cmds.append(get_camera_command(kvs['type'], **args_dict))

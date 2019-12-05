@@ -76,8 +76,8 @@ struct vehicle {
 };
 
 /**
- * Loads a vehicle object from the JSON file at the CUAUV_VEHICLE
- * environment variable appende to CUAUV_SOFTWARE.
+ * Loads a vehicle object from the TOML file at
+ * ${CUAUV_SOFTWARE}/conf/${CUAUV_VEHICLE}.toml
  * @throws std::runtime_error Thrown if the file cannot be opened or parsed.
  */
 vehicle load_vehicle(void);

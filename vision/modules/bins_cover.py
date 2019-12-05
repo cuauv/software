@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from vision import options
 import numpy as np
 from vision.modules.base import ModuleBase  # , UndefinedModuleOption

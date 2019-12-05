@@ -27,12 +27,14 @@ startm() {
   pids="$pids $!"
 }
 
-ALL=`cat ${CUAUV_SOFTWARE}/conf/$CUAUV_VEHICLE.json | jq -c ".vision_modules | .[]"`
+#ALL=`cat ${CUAUV_SOFTWARE}/conf/$CUAUV_VEHICLE.json | jq -c ".vision_modules | .[]"`
+ALL=`python3 -c "from conf import vehicle; print(' '.join(vehicle.vision_modules.keys()))"`
 
-for MODULE in ${ALL}
+for MODULE_NAME in ${ALL}
 do
-  CAPTURE_SOURCES=`echo "$MODULE" | jq -c -r ".capture_sources | .[]"`
-  MODULE_NAME=`echo "$MODULE" | jq -c -r ".name"`
+  #CAPTURE_SOURCES=`echo "$MODULE" | jq -c -r ".capture_sources | .[]"`
+  #MODULE_NAME=`echo "$MODULE" | jq -c -r ".name"`
+  CAPTURE_SOURCES=`python3 -c "from conf import vehicle; print(' '.join(vehicle.vision_modules['$MODULE_NAME']['capture_sources']))"`
   for SOURCE in ${CAPTURE_SOURCES}
   do
     log "Attempting to start module \"$MODULE_NAME\" with capture source \"$SOURCE\""

@@ -1,0 +1,142 @@
+
+# The below are highly dependent on trim
+center_of_buoyancy = [0.0, 0.0, 0.0]
+buoyancy_force = 300
+gravity_force = 300
+
+# only used for partially submerged buoyancy force calculation, non critical
+sub_height = 0.50
+
+# Moments of inertia (kg * m^2) from solidworks.
+# In the model frame.
+I = [[1.0, 0.0, 0.0],
+     [0.0, 1.0, 0.0],
+     [0.0, 0.0, 1.0]]
+# Ib and body_rot calculated using auv-body-frame-calc.
+Ib = [1.0, 1.0, 1.0]
+# A normalized quaternion representing rotation from the body to the model frame.
+btom_rq = [1.0, 0.0, 0.0, 0.0]
+# x was tweaked to reflect the limited real backwards thrust of our thrusters.
+cwhe_axes = [20.0, 20.0, 40.0, 40.0, 40.0, 40.0]
+thruster_minimums = [-20.0, -20.0, -40.0, -40.0, -40.0, -40.0]
+thruster_maximums = [20.0, 20.0, 40.0, 40.0, 40.0, 40.0]
+
+
+[[thrusters]]
+name = "fore_port"
+type = "Simple"
+pos = [1.0, -1.0, 0.0]
+heading_pitch = [0.0, 90.0]
+reversed = false
+
+[[thrusters]]
+name = "port"
+type = "Simple"
+pos = [0.0, -1.0, 0.0]
+heading_pitch = [0.0, 0.0]
+reversed = false
+
+[[thrusters]]
+name = "aft_port"
+type = "Simple"
+pos = [-1.0, -1.0, 0.0]
+heading_pitch = [0.0, 90.0]
+reversed = false
+
+[[thrusters]]
+name = "sway_aft"
+type = "Simple"
+pos = [-1.0, 0.0, 0.0]
+heading_pitch = [90.0, 0.0]
+reversed = false
+
+[[thrusters]]
+name = "aft_starboard"
+type = "Simple"
+pos = [-1.0, 1.0, 0.0]
+heading_pitch = [0.0, 90.0]
+reversed = false
+
+[[thrusters]]
+name = "starboard"
+type = "Simple"
+pos = [0.0, 1.0, 0.0]
+heading_pitch = [0.0, 0.0]
+reversed = false
+
+[[thrusters]]
+name = "fore_starboard"
+type = "Simple"
+pos = [1.0, 1.0, 0.0]
+heading_pitch = [0.0, 90.0]
+reversed = false
+
+[[thrusters]]
+name = "sway_fore"
+type = "Simple"
+pos = [1.0, 0.0, 0.0]
+heading_pitch = [90.0, 0.0]
+reversed = false
+
+
+[control_settings]
+depth   = { kP = 7.00, kI = 0.15, kD = 15.00, rD = 0.3, ramp_speed = 0.5 }
+pitch   = { kP = 0.10, kI = 0.10, kD = 11.00, rD = 30.0 }
+heading = { kP = 0.40, kI = 0.00, kD = 18.00, rD = 20.0 }
+velx    = { kP = 5.00, kI = 0.00, kD = 0.00, rD = 0.1547 }
+vely    = { kP = 5.00, kI = 0.00, kD = 0.00, rD = 0.5 }
+roll    = { kP = 0.14, kI = 0.01, kD = 10.00, rD = 30.0 }
+quat    = { kP = 30.0, kI = 0.00, kD = 4.00 }
+
+
+# horizontal, produces drag when diving and pitching
+[[drag_planes]]
+pos = [0.25, 0.0, 0.0]
+normal = [0.0, 0.0, 1.0]
+cD = 2.0
+area = 0.35
+
+[[drag_planes]]
+pos = [-0.25, 0.0, 0.0]
+normal = [0.0, 0.0, 1.0]
+cD = 2.0
+area = 0.35
+
+# fore sway, produces drag when swaying and rolling
+[[drag_planes]]
+pos = [0.0, 0.0, -0.10]
+normal = [0.0, 1.0, 0.0]
+cD = 2.0
+area = 0.20
+
+# aft sway
+[[drag_planes]]
+pos = [0.0, 0.0, 0.10]
+normal = [0.0, 1.0, 0.0]
+cD = 2.0
+area = 0.20
+
+# vertical, produces drag when going forward and yawing
+[[drag_planes]]
+pos = [0.0, -0.25, 0.0]
+normal = [1.0, 0.0, 0.0]
+cD = 2.0
+area = 0.10
+
+[[drag_planes]]
+pos = [0.0, 0.25, 0.0]
+normal = [1.0, 0.0, 0.0]
+cD = 2.0
+area = 0.10
+
+
+[sensors]
+depth = "depth.depth"
+depth_offset = "depth.offset"
+heading_rate = "gx4.ratez"
+pitch_rate = "gx4.ratey"
+roll_rate = "gx4.ratex"
+velx = "dvl.velocity_x"
+vely = "dvl.velocity_y"
+velz = "dvl.velocity_z"
+quaternion = "gx4"

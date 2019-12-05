@@ -9,7 +9,6 @@
 #include <condition_variable>
 
 #include <conf/vehicle.hpp>
-#include <conf/simulator.hpp>
 
 #include "spdlog/spdlog.h"
 
@@ -23,7 +22,6 @@ typedef uint32_t hook_id;
 
 struct run_config {
     cuauv::conf::vehicle vehicle;
-    cuauv::conf::simulator simulator;
     double frequency;
     double speed;
     bool non_real_time;

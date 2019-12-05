@@ -5,7 +5,6 @@
 
 #include <libshm/c/shm.h>
 #include <conf/vehicle.hpp>
-#include <conf/simulator.hpp>
 
 #include "lib/tclap/CmdLine.h"
 #include "spdlog/spdlog.h"
@@ -81,7 +80,6 @@ int main(int argc, char* argv[])
 
         fishbowl::run_config cfg {
             conf::load_vehicle(),
-            conf::load_simulator(simulator_conf_path.getValue()),
             frequency.getValue(),
             speed.getValue(),
             non_real_time.getValue(),

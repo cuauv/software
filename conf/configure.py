@@ -4,25 +4,9 @@ from build import ninja_common
 
 build = ninja_common.Build("conf")
 
-def decomment(name):
-  build.generate(["%s.json" % name], "conf/decomment.sh", ["%s.conf" % name],
-                 depends=['link-stage/auv-json-decomment'])
-
-# Vehicles
-decomment("odysseus")
-decomment("ajax")
-decomment("simple")
-
-# Simulator configs (unused)
-decomment("simulator")
-
-# Locales (for ASLAM)
-decomment("teagle")
-decomment("buoyland")
-
+# note: no dependency for toml because it is a header-only library
 build.build_shared("conf",
-        ["vehicle.cpp", "simulator.cpp", "map.cpp"],
-        auv_deps=["json"],
+        ["vehicle.cpp"],
         pkg_confs=["eigen3"],
         lflags=[],
         cflags=[])

@@ -8,7 +8,7 @@ from conf.vehicle import cameras
 from vision.modules.base import ModuleBase, _PsuedoOptionsDict
 from vision import options
 
-directions = cameras.keys()
+directions = list(cameras.keys())
 
 opts = []
 

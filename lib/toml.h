@@ -1,12 +1,15 @@
 #ifndef TINYTOML_H_
 #define TINYTOML_H_
 
+#include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <ctime>
+#include <fstream>
 #include <iomanip>
 #include <istream>
 #include <sstream>
@@ -167,6 +170,7 @@ public:
 
     // Writer.
     static std::string spaces(int num);
+    static std::string escapeKey(const std::string& key);
 
     void write(std::ostream*, const std::string& keyPrefix = std::string(), int indent = -1) const;
     void writeFormatted(std::ostream*, FormatFlag flags) const;
@@ -210,28 +214,41 @@ struct ParseResult {
 
 // Parses from std::istream.
 ParseResult parse(std::istream&);
+// Parses a file.
+ParseResult parseFile(const std::string& filename);
 
 // ----------------------------------------------------------------------
 // Declarations for Implementations
 //   You don't need to understand the below to use this library.
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 // Windows does not have timegm but have _mkgmtime.
 inline time_t timegm(std::tm* timeptr)
 {
     return _mkgmtime(timeptr);
 }
-inline std::tm* gmtime_r(const time_t* timer, std::tm* result)
+
+// On Windows, Visual Studio does not define gmtime_r. However, mingw might
+// do (or might not do). See https://github.com/mayah/tinytoml/issues/25,
+#ifndef gmtime_r
+inline struct tm* gmtime_r(const time_t* t, struct tm* r)
 {
-    gmtime_s(result, timer);
-    return result;
+    // gmtime is threadsafe in windows because it uses TLS
+    struct tm *theTm = gmtime(t);
+    if (theTm) {
+        *r = *theTm;
+        return r;
+    } else {
+        return 0;
+    }
 }
-#endif
+#endif  // gmtime_r
+#endif  // _WIN32
 
 namespace internal {
 
 enum class TokenType {
-    ERROR,
+    ERROR_TOKEN,
     END_OF_FILE,
     END_OF_LINE,
     IDENT,
@@ -252,12 +269,12 @@ enum class TokenType {
 
 class Token {
 public:
-    explicit Token(TokenType type) : type_(type) {}
-    Token(TokenType type, const std::string& v) : type_(type), str_value_(v) {}
-    Token(TokenType type, bool v) : type_(type), int_value_(v) {}
-    Token(TokenType type, std::int64_t v) : type_(type), int_value_(v) {}
-    Token(TokenType type, double v) : type_(type), double_value_(v) {}
-    Token(TokenType type, std::chrono::system_clock::time_point tp) : type_(type), time_value_(tp) {}
+    explicit Token(TokenType tokenType) : type_(tokenType) {}
+    Token(TokenType tokenType, const std::string& v) : type_(tokenType), str_value_(v) {}
+    Token(TokenType tokenType, bool v) : type_(tokenType), int_value_(v) {}
+    Token(TokenType tokenType, std::int64_t v) : type_(tokenType), int_value_(v) {}
+    Token(TokenType tokenType, double v) : type_(tokenType), double_value_(v) {}
+    Token(TokenType tokenType, std::chrono::system_clock::time_point tp) : type_(tokenType), time_value_(tp) {}
 
     TokenType type() const { return type_; }
     const std::string& strValue() const { return str_value_; }
@@ -283,6 +300,10 @@ public:
 
     int lineNo() const { return lineNo_; }
 
+    // Skips if UTF8BOM is found.
+    // Returns true if success. Returns false if intermediate state is left.
+    bool skipUTF8BOM();
+
 private:
     bool current(char* c);
     void next();
@@ -306,7 +327,14 @@ private:
 
 class Parser {
 public:
-    explicit Parser(std::istream& is) : lexer_(is), token_(TokenType::ERROR) { nextKey(); }
+    explicit Parser(std::istream& is) : lexer_(is), token_(TokenType::ERROR_TOKEN)
+    {
+        if (!lexer_.skipUTF8BOM()) {
+            token_ = Token(TokenType::ERROR_TOKEN, std::string("Invalid UTF8 BOM"));
+        } else {
+            nextKey();
+        }
+    }
 
     // Parses. If failed, value should be invalid value.
     // You can get the error by calling errorReason().
@@ -349,6 +377,10 @@ private:
 
 inline ParseResult parse(std::istream& is)
 {
+    if (!is) {
+        return ParseResult(toml::Value(), "stream is in bad state. file does not exist?");
+    }
+
     internal::Parser parser(is);
     toml::Value v = parser.parse();
 
@@ -356,6 +388,17 @@ inline ParseResult parse(std::istream& is)
         return ParseResult(std::move(v), std::string());
 
     return ParseResult(std::move(v), std::move(parser.errorReason()));
+}
+
+inline ParseResult parseFile(const std::string& filename)
+{
+    std::ifstream ifs(filename);
+    if (!ifs) {
+        return ParseResult(toml::Value(),
+                           std::string("could not open file: ") + filename);
+    }
+
+    return parse(ifs);
 }
 
 inline std::string format(std::stringstream& ss)
@@ -370,6 +413,12 @@ std::string format(std::stringstream& ss, T&& t, Args&&... args)
     return format(ss, std::forward<Args>(args)...);
 }
 
+// If you want to compile without exception,
+//   1. Define TOML_HAVE_FAILWITH_REPLACEMENT
+//   2. Define your own toml::failwith.
+// e.g. You can just abort here instead of exception.
+#ifndef TOML_HAVE_FAILWITH_REPLACEMENT
+
 template<typename... Args>
 #if defined(_MSC_VER)
 __declspec(noreturn)
@@ -381,6 +430,8 @@ void failwith(Args&&... args)
     std::stringstream ss;
     throw std::runtime_error(format(ss, std::forward<Args>(args)...));
 }
+
+#endif
 
 namespace internal {
 
@@ -545,6 +596,31 @@ inline std::string escapeString(const std::string& s)
 
 namespace internal {
 
+inline bool Lexer::skipUTF8BOM()
+{
+    // Check [EF, BB, BF]
+
+    int x1 = is_.peek();
+    if (x1 != 0xEF) {
+        // When the first byte is not 0xEF, it's not UTF8 BOM.
+        // Just return true.
+        return true;
+    }
+
+    is_.get();
+    int x2 = is_.get();
+    if (x2 != 0xBB) {
+        return false;
+    }
+
+    int x3 = is_.get();
+    if (x3 != 0xBF) {
+        return false;
+    }
+
+    return true;
+}
+
 inline bool Lexer::current(char* c)
 {
     int x = is_.peek();
@@ -585,7 +661,7 @@ inline void Lexer::skipUntilNewLine()
 inline Token Lexer::nextStringDoubleQuote()
 {
     if (!consume('"'))
-        return Token(TokenType::ERROR, std::string("string didn't start with '\"'"));
+        return Token(TokenType::ERROR_TOKEN, std::string("string didn't start with '\"'"));
 
     std::string s;
     char c;
@@ -612,7 +688,7 @@ inline Token Lexer::nextStringDoubleQuote()
         next();
         if (c == '\\') {
             if (!current(&c))
-                return Token(TokenType::ERROR, std::string("string has unknown escape sequence"));
+                return Token(TokenType::ERROR_TOKEN, std::string("string has unknown escape sequence"));
             next();
             switch (c) {
             case 't': c = '\t'; break;
@@ -627,7 +703,7 @@ inline Token Lexer::nextStringDoubleQuote()
                     codepoint += c;
                     next();
                   } else {
-                    return Token(TokenType::ERROR, std::string("string has unknown escape sequence"));
+                    return Token(TokenType::ERROR_TOKEN, std::string("string has unknown escape sequence"));
                   }
                 }
                 s += unescape(codepoint);
@@ -642,7 +718,7 @@ inline Token Lexer::nextStringDoubleQuote()
                 }
                 continue;
             default:
-                return Token(TokenType::ERROR, std::string("string has unknown escape sequence"));
+                return Token(TokenType::ERROR_TOKEN, std::string("string has unknown escape sequence"));
             }
         } else if (c == '"') {
             if (multiline) {
@@ -668,13 +744,13 @@ inline Token Lexer::nextStringDoubleQuote()
         s += c;
     }
 
-    return Token(TokenType::ERROR, std::string("string didn't end"));
+    return Token(TokenType::ERROR_TOKEN, std::string("string didn't end"));
 }
 
 inline Token Lexer::nextStringSingleQuote()
 {
     if (!consume('\''))
-        return Token(TokenType::ERROR, std::string("string didn't start with '\''?"));
+        return Token(TokenType::ERROR_TOKEN, std::string("string didn't start with '\''?"));
 
     std::string s;
     char c;
@@ -715,7 +791,7 @@ inline Token Lexer::nextStringSingleQuote()
             continue;
         }
 
-        return Token(TokenType::ERROR, std::string("string didn't end with '\'\'\'' ?"));
+        return Token(TokenType::ERROR_TOKEN, std::string("string didn't end with '\'\'\'' ?"));
     }
 
     while (current(&c)) {
@@ -727,20 +803,20 @@ inline Token Lexer::nextStringSingleQuote()
         s += c;
     }
 
-    return Token(TokenType::ERROR, std::string("string didn't end with '\''?"));
+    return Token(TokenType::ERROR_TOKEN, std::string("string didn't end with '\''?"));
 }
 
 inline Token Lexer::nextKey()
 {
     std::string s;
     char c;
-    while (current(&c) && (isalnum(c) || c == '_' || c == '-')) {
+    while (current(&c) && (isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-')) {
         s += c;
         next();
     }
 
     if (s.empty())
-        return Token(TokenType::ERROR, std::string("Unknown key format"));
+        return Token(TokenType::ERROR_TOKEN, std::string("Unknown key format"));
 
     return Token(TokenType::IDENT, s);
 }
@@ -750,10 +826,10 @@ inline Token Lexer::nextValue()
     std::string s;
     char c;
 
-    if (current(&c) && isalpha(c)) {
+    if (current(&c) && isalpha(static_cast<unsigned char>(c))) {
         s += c;
         next();
-        while (current(&c) && isalpha(c)) {
+        while (current(&c) && isalpha(static_cast<unsigned char>(c))) {
             s += c;
             next();
         }
@@ -762,7 +838,7 @@ inline Token Lexer::nextValue()
             return Token(TokenType::BOOL, true);
         if (s == "false")
             return Token(TokenType::BOOL, false);
-        return Token(TokenType::ERROR, std::string("Unknown ident: ") + s);
+        return Token(TokenType::ERROR_TOKEN, std::string("Unknown ident: ") + s);
     }
 
     while (current(&c) && (('0' <= c && c <= '9') || c == '.' || c == 'e' || c == 'E' ||
@@ -794,8 +870,20 @@ inline Token Lexer::parseAsTime(const std::string& str)
 
     int n;
     int YYYY, MM, DD;
+#if defined(_MSC_VER)
+    if (sscanf_s(s, "%d-%d-%d%n", &YYYY, &MM, &DD, &n) != 3)
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
+#else
     if (sscanf(s, "%d-%d-%d%n", &YYYY, &MM, &DD, &n) != 3)
-        return Token(TokenType::ERROR, std::string("Invalid token"));
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
+#endif
+
+    if (!(1 <= MM && MM <= 12)) {
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
+    }
+    if (YYYY < 1900) {
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
+    }
 
     if (s[n] == '\0') {
         std::tm t;
@@ -810,14 +898,19 @@ inline Token Lexer::parseAsTime(const std::string& str)
     }
 
     if (s[n] != 'T')
-        return Token(TokenType::ERROR, std::string("Invalid token"));
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
 
     s = s + n + 1;
 
     int hh, mm;
     double ss; // double for fraction
+#if defined(_MSC_VER)
+    if (sscanf_s(s, "%d:%d:%lf%n", &hh, &mm, &ss, &n) != 3)
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
+#else
     if (sscanf(s, "%d:%d:%lf%n", &hh, &mm, &ss, &n) != 3)
-        return Token(TokenType::ERROR, std::string("Invalid token"));
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
+#endif
 
     std::tm t;
     t.tm_sec = static_cast<int>(ss);
@@ -828,7 +921,8 @@ inline Token Lexer::parseAsTime(const std::string& str)
     t.tm_year = YYYY - 1900;
     auto tp = std::chrono::system_clock::from_time_t(timegm(&t));
     ss -= static_cast<int>(ss);
-    tp += std::chrono::microseconds(static_cast<int>(std::round(ss * 1000000)));
+    // TODO(mayah): workaround GCC 4.9.3 on cygwin does not have std::round, but round().
+    tp += std::chrono::microseconds(static_cast<std::int64_t>(round(ss * 1000000)));
 
     if (s[n] == '\0')
         return Token(TokenType::TIME, tp);
@@ -841,11 +935,16 @@ inline Token Lexer::parseAsTime(const std::string& str)
     // [+/-]%d:%d
     char pn;
     int oh, om;
+#if defined(_MSC_VER)
+    if (sscanf_s(s, "%c%d:%d", &pn, static_cast<unsigned>(sizeof(pn)), &oh, &om) != 3)
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
+#else
     if (sscanf(s, "%c%d:%d", &pn, &oh, &om) != 3)
-        return Token(TokenType::ERROR, std::string("Invalid token"));
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
+#endif
 
     if (pn != '+' && pn != '-')
-        return Token(TokenType::ERROR, std::string("Invalid token"));
+        return Token(TokenType::ERROR_TOKEN, std::string("Invalid token"));
 
     if (pn == '+') {
         tp -= std::chrono::hours(oh);
@@ -1192,7 +1291,6 @@ inline double Value::asNumber() const
         return as<double>();
 
     failwith("type error: this value is ", typeToString(type_), " but number is requested");
-    return 0.0;
 }
 
 inline std::time_t Value::as_time_t() const
@@ -1206,6 +1304,29 @@ inline std::string Value::spaces(int num)
         return std::string();
 
     return std::string(num, ' ');
+}
+
+inline std::string Value::escapeKey(const std::string& key)
+{
+    auto position = std::find_if(key.begin(), key.end(), [](char c) -> bool {
+        if (std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-')
+            return false;
+        return true;
+    });
+
+    if (position != key.end()) {
+        std::string escaped = "\"";
+        for (const char& c : key) {
+            if (c == '\\' || c  == '"')
+                escaped += '\\';
+            escaped += c;
+        }
+        escaped += "\"";
+
+        return escaped;
+    }
+
+    return key;
 }
 
 inline void Value::write(std::ostream* os, const std::string& keyPrefix, int indent) const
@@ -1232,7 +1353,7 @@ inline void Value::write(std::ostream* os, const std::string& keyPrefix, int ind
         std::tm t;
         gmtime_r(&tt, &t);
         char buf[256];
-        sprintf(buf, "%04d-%02d-%02dT%02d:%02d:%02dZ", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
+        snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02dZ", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
         (*os) << buf;
         break;
     }
@@ -1251,7 +1372,7 @@ inline void Value::write(std::ostream* os, const std::string& keyPrefix, int ind
                 continue;
             if (kv.second.is<Array>() && kv.second.size() > 0 && kv.second.find(0)->is<Table>())
                 continue;
-            (*os) << spaces(indent) << kv.first << " = ";
+            (*os) << spaces(indent) << escapeKey(kv.first) << " = ";
             kv.second.write(os, keyPrefix, indent >= 0 ? indent + 1 : indent);
             (*os) << '\n';
         }
@@ -1260,7 +1381,7 @@ inline void Value::write(std::ostream* os, const std::string& keyPrefix, int ind
                 std::string key(keyPrefix);
                 if (!keyPrefix.empty())
                     key += ".";
-                key += kv.first;
+                key += escapeKey(kv.first);
                 (*os) << "\n" << spaces(indent) << "[" << key << "]\n";
                 kv.second.write(os, key, indent >= 0 ? indent + 1 : indent);
             }
@@ -1268,7 +1389,7 @@ inline void Value::write(std::ostream* os, const std::string& keyPrefix, int ind
                 std::string key(keyPrefix);
                 if (!keyPrefix.empty())
                     key += ".";
-                key += kv.first;
+                key += escapeKey(kv.first);
                 for (const auto& v : kv.second.as<Array>()) {
                     (*os) << "\n" << spaces(indent) << "[[" << key << "]]\n";
                     v.write(os, key, indent >= 0 ? indent + 1 : indent);
@@ -1326,9 +1447,7 @@ inline bool operator==(const Value& lhs, const Value& rhs)
     case Value::Type::TABLE_TYPE:
         return *lhs.table_ == *rhs.table_;
     default:
-        assert(false);
         failwith("unknown type");
-        return false;
     }
 }
 
@@ -1341,6 +1460,7 @@ inline typename call_traits<T>::return_type Value::get(const std::string& key) c
     const Value* obj = find(key);
     if (!obj)
         failwith("key ", key, " was not found.");
+
     return obj->as<T>();
 }
 
@@ -1533,7 +1653,6 @@ inline Value* Value::ensureValue(const std::string& key)
         *this = Value((Table()));
     if (!is<Table>()) {
         failwith("encountered non table value");
-        return nullptr;
     }
 
     std::istringstream ss(key);
@@ -1544,7 +1663,6 @@ inline Value* Value::ensureValue(const std::string& key)
         internal::Token t = lexer.nextKeyToken();
         if (!(t.type() == internal::TokenType::IDENT || t.type() == internal::TokenType::STRING)) {
             failwith("invalid key");
-            return nullptr;
         }
 
         std::string part = t.strValue();
@@ -1553,6 +1671,7 @@ inline Value* Value::ensureValue(const std::string& key)
             if (Value* candidate = current->findChild(part)) {
                 if (!candidate->is<Table>())
                     failwith("encountered non table value");
+
                 current = candidate;
             } else {
                 current = current->setChild(part, Table());
@@ -1563,7 +1682,6 @@ inline Value* Value::ensureValue(const std::string& key)
             return current->setChild(part, Value());
         } else {
             failwith("invalid key");
-            return nullptr;
         }
     }
 }
@@ -1817,7 +1935,7 @@ inline bool Parser::parseValue(Value* v)
         *v = token().timeValue();
         nextValue();
         return true;
-    case TokenType::ERROR:
+    case TokenType::ERROR_TOKEN:
         addError(token().strValue());
         return false;
     default:

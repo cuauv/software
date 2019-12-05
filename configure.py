@@ -43,7 +43,6 @@ dirs = [
         'auv_math/libquat',
         'auvlog',
         'conf',
-        'conf/json-decomment',
         'conf/gui',
         'control',
         'control/controlhelm',

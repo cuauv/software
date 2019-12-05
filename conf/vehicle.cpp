@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <lib/json.h>
+#include <lib/toml.h>
 
 #include "vehicle.hpp"
 #include "parse.hpp"
@@ -12,17 +12,19 @@
 namespace cuauv {
 namespace conf {
 
-drag_plane_vector parse_drag_planes(const Json::Value& arr)
+drag_plane_vector parse_drag_planes(const toml::Value& val)
 {
-    if (!arr.isArray()) {
+    if (!val.is<toml::Array>()) {
         throw std::runtime_error("Expected array of drag planes.");
     }
 
+    const toml::Array& arr = val.as<toml::Array>();
+
     drag_plane_vector dps;
     for (unsigned int i = 0; i < arr.size(); i++) {
-        Json::Value root = arr[i];
-        if (!root.isObject()) {
-            throw std::runtime_error("Expected drag plane object.");
+        toml::Value root = arr[i];
+        if (!root.is<toml::Table>()) {
+            throw std::runtime_error("Expected drag plane to be a table.");
         }
         PARSE_VECTOR3(pos);
         PARSE_VECTOR3(normal);
@@ -35,17 +37,19 @@ drag_plane_vector parse_drag_planes(const Json::Value& arr)
     return dps;
 }
 
-thruster_vector parse_thrusters(const Json::Value& arr)
+thruster_vector parse_thrusters(const toml::Value& val)
 {
-    if (!arr.isArray()) {
+    if (!val.is<toml::Array>()) {
         throw std::runtime_error("Expected array of thrusters.");
     }
 
+    const toml::Array& arr = val.as<toml::Array>();
+
     thruster_vector ts;
     for (unsigned int i = 0; i < arr.size(); i++) {
-        Json::Value root = arr[i];
-        if (!root.isObject()) {
-            throw std::runtime_error("Expected thruster object.");
+        toml::Value root = arr[i];
+        if (!root.is<toml::Table>()) {
+            throw std::runtime_error("Expected thruster to be a table.");
         }
         PARSE_STRING(name);
         PARSE_VECTOR3(pos);
@@ -57,19 +61,21 @@ thruster_vector parse_thrusters(const Json::Value& arr)
     return ts;
 }
 
-camera_vector parse_cameras(const Json::Value& arr)
+camera_vector parse_cameras(const toml::Value& val)
 {
-    if (!arr.isObject()) {
-        throw std::runtime_error("Expected list of cameras.");
+    if (!val.is<toml::Table>()) {
+        throw std::runtime_error("Expected cameras to be a table.");
     }
 
+    const toml::Table& tbl = val.as<toml::Table>();
+
     camera_vector cs;
-    for (Json::ValueIterator itr = arr.begin(); itr != arr.end(); itr++) {
-        Json::Value root = *itr;
-        if (!root.isObject()) {
-            throw std::runtime_error("Expected camera object.");
+    for (auto itr = tbl.begin(); itr != tbl.end(); itr++) {
+        toml::Value root = itr->second;
+        if (!root.is<toml::Table>()) {
+            throw std::runtime_error("Expected camera to be a table.");
         }
-        std::string tag = itr.key().asString();
+        std::string tag = itr->first;
         PARSE_STRING(type);
         PARSE_INTEGER(id);
         PARSE_STRING(camera_name);
@@ -106,19 +112,20 @@ vehicle load_vehicle(void)
     }
     dirs = dirs + "conf/";
 
-    // std::string filename(std::string(vehicle_env) + ".conf");
-    std::string filename(vehicle_env + ".conf");
+    std::string filename(vehicle_env + ".toml");
 
     std::ifstream ifs(dirs + filename);
     if (!ifs) {
         throw std::runtime_error("cuauv::conf::load_vehicle: Failed to open vehicle file.");
     }
 
-    Json::Value root;
-    Json::Reader reader;
-    if (!reader.parse(ifs, root)) {
-        throw std::runtime_error("cuauv::conf::load_vehicle: Failed to parse vehicle file.");
+    toml::ParseResult res = toml::parse(ifs);
+
+    if (!res.valid()) {
+        throw std::runtime_error("cuauv::conf::load_vehicle: Failed to parse vehicle file: " + res.errorReason);
     }
+
+    const toml::Value& root = res.value;
 
     PARSE_VECTOR3(center_of_buoyancy)
     PARSE_DOUBLE(buoyancy_force)

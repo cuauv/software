@@ -12,6 +12,24 @@ def outer_contours(mat):
     return contours
 
 
+def canny(mat, lower, upper):
+    """
+    Performs Canny edge detection on the image using the given thresholds for hysteresis.
+
+    Canny edge detection identifies edges in an image via a sequence of Gaussian noise filtering,
+    calculation of an intensity gradient over the image, filtering out any pixels which do not lie
+    on an edge (are not a local maximum in the direction of the gradient), and finally identifying
+    edges via a dual-threshold hysteresis on the intensity gradient values. Any pixels connected to
+    pixels that are above the high threshold are assumed to be part of the edge. Any pixels below
+    the low threshold are discarded.
+
+    :param mat: input image
+    :param lower: lower gradient threshold, below which all edges are discarded
+    :param upper: upper gradient threshold, above which all edges are accepted
+    """
+    return cv2.Canny(mat, lower, upper)
+
+
 def simple_canny(mat, sigma=0.33, use_mean=False):
     """
     Performs Canny edge detection on the image using automatically computed lower and upper

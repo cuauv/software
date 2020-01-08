@@ -147,7 +147,7 @@ camera_name = "ueye_forward_odysseus" # for configuration
 width = 640
 height = 512
 position = [0.48, 0.15, -0.08]
-orientation_hpr = [0, 0, 0]
+orientation_hpr = [0.0, 0.0, 0.0]
 
 # The optical sensor size of the CAMERA, width and height in mm
 # This should typically be in the same ratio as the resolution, above.

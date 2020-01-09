@@ -1,4 +1,6 @@
 from pathlib import Path, PurePosixPath
+import os
+import pwd
 
 """
 You can override these defaults: create a new file called `user.py` (in this
@@ -16,6 +18,12 @@ config = {
 We use a separate file so that we don't track user-specific changes.
 """
 
+def get_user():
+   try:
+      return pwd.getpwuid(os.getuid()).pw_name
+   except Exception:
+      return ''
+
 defaults = {
     "WORKSPACE_DIRECTORY": Path("~/cuauv/workspaces").expanduser(),
     "CONTAINER_WORKSPACE_DIRECTORY": PurePosixPath("/home/software/cuauv/workspaces"),
@@ -27,6 +35,9 @@ defaults = {
     "BRANCH": "master",
 
     "GROUP_ID": 9999,
+
+    # default to current Linux user name
+    "AUV_ENV_ALIAS": get_user(),
 }
 
 try:

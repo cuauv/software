@@ -15,7 +15,6 @@ if [[ -f /home/software/.env ]]; then
    . /home/software/.env
 fi
 . /home/software/.zshrc_user
-. /opt/auv/.zshrc_system
 EOF
 
 sudo -u software ln -s /home/software/cuauv/software/install/zshrc /home/software/.zshrc_user

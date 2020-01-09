@@ -36,6 +36,7 @@ BRANCH=get_config("BRANCH")
 DOCKER_REPO=get_config("DOCKER_REPO")
 DOCKER_REPO_JETSON=get_config("DOCKER_REPO_JETSON")
 GROUP_ID=get_config("GROUP_ID")
+AUV_ENV_ALIAS=get_config("AUV_ENV_ALIAS")
 
 GUARD_DIRECTORY = WORKSPACE_DIRECTORY / ".guards"
 REPO_PATH = WORKSPACE_DIRECTORY / "repo"
@@ -364,6 +365,7 @@ def start(*, branch:"b"=BRANCH, gpu=True, env=None, vehicle=False):
                 "VISION_TEST_PATH": str(CONTAINER_WORKSPACE_DIRECTORY / "videos"),
                 "CUAUV_LOG": str(CONTAINER_WORKSPACE_DIRECTORY / "logs"),
                 "TERM": "xterm",
+                "AUV_ENV_ALIAS": AUV_ENV_ALIAS,
             },
             "hostname": docker_name,
             "name": docker_name,

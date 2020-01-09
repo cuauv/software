@@ -29,6 +29,7 @@ packages=(
     usbutils
     wget
     vlc
+    dnsutils
 
     # serial
     libgtest-dev

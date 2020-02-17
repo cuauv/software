@@ -21,6 +21,7 @@ packages=(
     nano
     neovim
     nload
+    rsync
     screen
     shellcheck
     silversearcher-ag

@@ -12,7 +12,7 @@ def check_imports(*names):
 
     if len(not_found) > 0:
         print(('\nauv-docker requires these packages: {}\n'
-              + 'Install with "sudo pip3 install {}"\n')
+              + 'Install with "pip3 install {}"\n')
               .format(', '.join(not_found), ' '.join(not_found)))
         quit()
 
@@ -48,6 +48,9 @@ STORAGE_DIRECTORY = WORKSPACE_DIRECTORY / "container_storage"
 
 NAME_CONFIG_PATH = CONFIGS_DIRECTORY / "name"
 EMAIL_CONFIG_PATH = CONFIGS_DIRECTORY / "email"
+
+
+CUAUV_CONTAINER_PREFIX = 'cuauv-workspace-'
 
 
 client = docker.from_env()
@@ -89,7 +92,7 @@ def get_docker_name(branch: str, vehicle: bool):
     if vehicle:
         return "cuauv_vehicle"
     else:
-        return "cuauv-workspace-{}".format(branch)
+        return "{}{}".format(CUAUV_CONTAINER_PREFIX, branch)
 
 
 def get_containers(docker_name: str):
@@ -254,7 +257,7 @@ def create_worktree(branch=BRANCH, print_help=True, *, b=False):
 
     branch: Branch workspace to use.
 
-    print_help: defaults to True. If false, will not print help afterwards.
+    print_help: Defaults to True. If False, will not print help afterwards.
 
     b: True to create and push a new branch.
     """
@@ -332,7 +335,7 @@ def start(*, branch:"b"=BRANCH, gpu=True, env=None, vehicle=False):
 
     gpu: If True, the GPU device will be mounted into the container and
     all windows will be rendered directly to the host X server (bypassing SSH X
-    forwarding)
+    forwarding).
 
     env: Extra environment variables to inject into the container.
 
@@ -446,10 +449,10 @@ def cdw(branch=BRANCH):
 
 def stop(branch=BRANCH, vehicle=False):
     """
-    Stop a running container for a branch
+    Stop a running container for a branch.
 
-    branch: Branch workspace to clean up
-    vehicle: Whether running on the vehicle
+    branch: Branch workspace to clean up.
+    vehicle: Whether running on the vehicle.
     """
     # Remove container
     docker_name = get_docker_name(branch, vehicle)
@@ -462,10 +465,10 @@ def stop(branch=BRANCH, vehicle=False):
 
 def destroy(branch=BRANCH, vehicle=False):
     """
-    Remove a container for a branch and clean up the worktree for the branch
+    Remove a container for a branch and clean up the worktree for the branch.
 
-    branch: Branch workspace to clean up
-    vehicle: Whether running on the vehicle
+    branch: Branch workspace to clean up.
+    vehicle: Whether running on the vehicle.
     """
     # Remove container
     docker_name = get_docker_name(branch, vehicle)
@@ -544,12 +547,36 @@ def set_permissions():
         check=True
     )
 
-
-def build():
+def get_running_containers():
     """
-    Currently a WIP.
+    Get all running CUAUV containers.
     """
-    print("Building container for branch {}".format(branch))
+    containers = client.containers.list()
+    return list(filter(lambda c: c.name.startswith(CUAUV_CONTAINER_PREFIX), containers))
+
+def _list():
+    """
+    List all branches with currently running containers.
+    """
+    containers = get_running_containers()
+    if len(containers) == 0:
+        print('No running containers!')
+    else:
+        print('Running containers:')
+        for container in containers:
+            print('  {}'.format(container.name[len(CUAUV_CONTAINER_PREFIX):]))
+
+def stop_all():
+    """
+    Stop all running branch containers.
+    """
+    containers = get_running_containers()
+    if len(containers) == 0:
+        print('No running containers!')
+    else:
+        for container in containers:
+            print('Stopping {}'.format(container.name[len(CUAUV_CONTAINER_PREFIX):]))
+            container.stop()
 
 
-clize.run(init, start, create_worktree, cdw, stop, destroy, vehicle, set_permissions)
+clize.run(init, start, create_worktree, cdw, _list, stop, stop_all, destroy, vehicle, set_permissions)

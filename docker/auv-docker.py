@@ -382,6 +382,7 @@ def start(*, branch:"b"=BRANCH, gpu=True, env=None, vehicle=False):
             "devices": [],
             "shm_size": "7G",
             "ports": {},
+            "security_opt": ["seccomp=unconfined"], # for gdb
         }
 
         if gpu:

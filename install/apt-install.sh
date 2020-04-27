@@ -31,6 +31,8 @@ packages=(
     wget
     vlc
     dnsutils
+    gdb
+    valgrind
 
     # serial
     libgtest-dev

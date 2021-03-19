@@ -54,7 +54,7 @@ class Depth(Test):
 
 class Pressure(Test):
     def valid():
-        return .7 < shm.pressure.hull.get() < .89
+        return .6 < shm.pressure.hull.get() < .89
 
     def updating():
         return is_changing(shm.pressure.hull.get)

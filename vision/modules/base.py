@@ -187,7 +187,7 @@ class ModuleBase:
         if mat is None:
             mat = self._next_images[0]
 
-        def norm(sz): return sz / mat.shape[1] * 2
+        def norm(sz): return sz / (mat.shape[1] * mat.shape[0])
         try:
             size = iter(size)
             return tuple(norm(sz) for sz in size)
@@ -199,7 +199,7 @@ class ModuleBase:
             mat = self._next_images[0]
 
         def denorm(sz):
-            denormed = sz * mat.shape[1] / 2
+            denormed = sz * (mat.shape[1] * mat.shape[0])
             if round:
                 denormed = int(denormed)
             return denormed

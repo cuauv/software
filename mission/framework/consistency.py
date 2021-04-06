@@ -4,6 +4,7 @@ import threading
 import shm
 
 from mission.framework.task import Task
+from mission.framework.helpers import call_if_function
 
 class ConsistencyCheck:
     ''' Call 'check' on a value to tell if it is consistently True.
@@ -120,3 +121,17 @@ class ConsistentShm(Task):
 
     def on_run(self, *args, **kwargs):
         pass
+
+class Consistent(Task):
+    """
+    Note: uses seconds instead of ticks
+    """
+    def on_first_run(self, test, count, total, invert=False, result=True, *args, **kwargs):
+        # Multiply by 60 to specify values in seconds, not ticks
+        self.result = result
+        self.checker = ConsistencyCheck(count*60, total*60, default=False)
+
+    def on_run(self, test, count, total, invert=False, result=True, *args, **kwargs):
+        test_result = call_if_function(test)
+        if self.checker.check(not test_result if invert else test_result):
+            self.finish(success=self.result)

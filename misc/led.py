@@ -191,7 +191,7 @@ def pressure():
     set_all_rgb(
         *interp_color(
             shm.pressure.hull.get(),
-            [0.7, 0.735, .9],
+            [0.6, 0.735, .9],
             [COLORS["GREEN"], COLORS["GREEN"], COLORS["ORANGE"]],
             left=COLORS["RED"],
             right=COLORS["RED"],

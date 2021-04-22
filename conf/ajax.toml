@@ -50,7 +50,7 @@ name = "aft_port"
 type = "T200"
 pos = [-0.271, -0.201, -0.0204]
 heading_pitch = [0.0, 90.0]
-reversed = true
+reversed = false
 
 [[thrusters]]
 name = "sway_aft"
@@ -78,7 +78,7 @@ name = "fore_starboard"
 type = "T200"
 pos = [0.235,  0.201, -0.0204]
 heading_pitch = [0.0, 90.0]
-reversed = true
+reversed = false
 
 [[thrusters]]
 name = "sway_fore"

@@ -1,6 +1,7 @@
 includes = [
-    "ports_ajax.toml",
-    "ajaxThruster.toml",
+    "leviathan_ports.toml",
+    "leviathanThruster1.toml",
+    "leviathanThruster2.toml",
     "him.toml",
     "ajaxPdActuator.toml",
     "sensor.toml",

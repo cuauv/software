@@ -1,0 +1,9 @@
+ports = [
+        "/dev/serial/by-id/usb-CUAUV_Kraken_3_AUV-KRAKEN3-if02-port0", # merge
+        "/dev/serial/by-id/usb-CUAUV_Kraken_2_AUV-KRAKEN2-if02-port0", # PD
+        "/dev/serial/by-id/usb-CUAUV_Kraken_4_AUV-KRAKEN4-if02-port0", # thruster 2
+        "/dev/serial/by-id/usb-CUAUV_Kraken_1_AUV-KRAKEN1-if00-port0", # thruster 1
+        "/dev/serial/by-id/usb-CUAUV_Kraken_4_AUV-KRAKEN4-if00-port0", # sensor
+        "/dev/serial/by-id/usb-CUAUV_Kraken_2_AUV-KRAKEN2-if03-port0", # actuators
+]
+

@@ -12,6 +12,7 @@ import shm
 #  - make code prettier
 #  - make a better control helm layout, using the fancy new features?
 
+
 class StyledString(str):
     """
     Just like a regular string, but with the following style delimiters:
@@ -23,8 +24,13 @@ class StyledString(str):
     def highlight_if(text, b):
         return StyledString('[{}]'.format(text) if b else text)
 
+    def __add__(self, to):
+        return StyledString(str(self) + to)
+
+
 # Represents the position of a panel on the screen
 Position = namedtuple('Position', ['x', 'y', 'width', 'height'])
+
 
 def make_position(hv_ind, val_pos, non_val_pos, val_size, non_val_size):
     """
@@ -40,6 +46,7 @@ def make_position(hv_ind, val_pos, non_val_pos, val_size, non_val_size):
         return Position(non_val_pos, val_pos, non_val_size, val_size)
     else:
         return Position(val_pos, non_val_pos, val_size, non_val_size)
+
 
 class Panel():
     """
@@ -77,6 +84,7 @@ class Panel():
         """
         return []
 
+
 class LineLambdaPanel(Panel):
     """
     A panel that uses a list of content producers to produce each line. If
@@ -97,6 +105,7 @@ class LineLambdaPanel(Panel):
         # TODO wrap output into multiple columns if it exceeds box height
         return list(map(list, zip(*out))) if self.columns else [out]
 
+
 def auto_shm_val_fmt(val):
     """
     Returns :val: formatted so that numbers are aligned.
@@ -109,6 +118,7 @@ def auto_shm_val_fmt(val):
         return val
     else:
         return str(val)
+
 
 class ShmPanel(LineLambdaPanel):
     """
@@ -140,14 +150,16 @@ class ShmPanel(LineLambdaPanel):
         if group is not None:
             if select_vars is None:
                 # select all variables
-                variables = [getattr(group, field[0]) for field in group._fields]
+                variables = [getattr(group, field[0])
+                             for field in group._fields]
             else:
                 # select only variables specified by select_vars
                 variables = [getattr(group, var) for var in select_vars]
 
         if var_names is not None:
             # apply renamings
-            var_name_map = {var: name for var, name in zip(variables, var_names)}
+            var_name_map = {var: name for var,
+                            name in zip(variables, var_names)}
         else:
             var_name_map = {}
 
@@ -157,6 +169,7 @@ class ShmPanel(LineLambdaPanel):
         line_lambdas = list(map(make_row, variables))
 
         super().__init__(title=title, line_lambdas=line_lambdas, columns=True, *args, **kwargs)
+
 
 class Layout(Panel):
     """
@@ -180,6 +193,7 @@ class Layout(Panel):
         Returns a dict mapping contents to positions.
         """
         return {panel: Position(0, 0, width, height) for panel in self.contents()}
+
 
 class LinearBox(Layout):
     """
@@ -266,19 +280,24 @@ class LinearBox(Layout):
 
         return self.cached_result
 
+
 class Hbox(LinearBox):
     """
     Lays out contents horizontally. See LinearBox.
     """
+
     def __init__(self, *contents, **kwargs):
         super().__init__(False, *contents, **kwargs)
+
 
 class Vbox(LinearBox):
     """
     Lays out contents vertically. See LinearBox.
     """
+
     def __init__(self, *contents, **kwargs):
         super().__init__(True, *contents, **kwargs)
+
 
 # Map of color names to ncurses color constants
 color_map = {
@@ -292,6 +311,7 @@ color_map = {
     'white': curses.COLOR_WHITE,
 }
 
+
 def get_color(c):
     """
     Get an ncurses color constant by name or number.
@@ -304,6 +324,7 @@ def get_color(c):
         except ValueError:
             raise Exception('Invalid color: {}'.format(c))
 
+
 def text_draw(box, text, max_chars):
     """
     Draw :text: in the ncurses window :box:, up to a maximum of :max_chars:.
@@ -311,8 +332,8 @@ def text_draw(box, text, max_chars):
     """
 
     if isinstance(text, StyledString):
-        pos = 0 # pos into string
-        pos_disp = 0 # number of chars displayed so far
+        pos = 0  # pos into string
+        pos_disp = 0  # number of chars displayed so far
         attr = 0
         color = 0
 
@@ -358,6 +379,7 @@ def text_draw(box, text, max_chars):
         text = text[:max_chars]
         box.addstr(text)
         return len(text)
+
 
 def panel_draw(screen, panel, pos):
     """
@@ -424,6 +446,7 @@ def panel_draw(screen, panel, pos):
     else:
         raise Exception('Not a panel or layout!')
 
+
 def main(screen, panels, callbacks, modal_callbacks, loop_delay):
     """
     Main loop. See start_helm for more information.
@@ -474,6 +497,7 @@ def main(screen, panels, callbacks, modal_callbacks, loop_delay):
 
         screen.refresh()
         time.sleep(loop_delay)
+
 
 def start_helm(panels, callbacks={}, modal_callbacks={'default': {}},
                loop_delay=0.075):

@@ -400,6 +400,10 @@ def start(*, branch:"b"=BRANCH, gpu=True, env=None, vehicle=False):
                 "bind": "/dev",
                 "mode": "rw",
             }
+            docker_args["volumes"]["/home/software/sdcard"] = {
+                "bind": "/home/software/sdcard",
+                "mode": "rw",
+            }
             nv_path = str(Path("~/.nv").expanduser())
             docker_args["volumes"][nv_path] = {
                 "bind": "/home/software/.nv",

@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
     context: __dirname,
-    devtool: debug ? "inline-sourcemap" : null,
+    devtool: debug ? "inline-source-map" : null,
     entry: './src/index.js',
     output: {
         path: path.resolve(__dirname, 'static/js/'),

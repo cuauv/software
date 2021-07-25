@@ -40,6 +40,8 @@ def watch_voltage():
             msg = 'WARNNG: Voltage is currently at {}. Battery change recommended!'.format(current_voltage)
             subprocess.run(['wall'], input=msg.encode('utf-8'))
             walled_time = time.monotonic()
+            # change LEDs
+            shm.leds.mode.set('pulse')
 
 def deadman_trigger():
     with open('/tmp/auv-deadman', 'w') as f:

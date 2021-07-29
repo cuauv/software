@@ -30,7 +30,7 @@ quaternion_filtering = 1
 dvl_present = true
 use_dvl_for_depth = false
 water_depth = 4.2672
-gx_hpr = [0.0, 0.0, 0.0] # Note: You probably want to re-tare the GX rather than use this offset
+gx_hpr = [0.0, 57.0, 13.0] # Note: You probably want to re-tare the GX rather than use this offset
 
 
 [[thrusters]]
@@ -52,7 +52,7 @@ name = "aft_port"
 type = "T200"
 pos = [-0.2178734, -0.2152564, -0.0352978]
 heading_pitch = [0.0, 90.0]
-reversed = true
+reversed = false
 
 [[thrusters]]
 name = "sway_aft"
@@ -87,13 +87,13 @@ name = "sway_fore"
 type = "T200"
 pos = [0.5155614, 0.001685, -0.0289478]
 heading_pitch = [90.0, 0.0]
-reversed = true
+reversed = false
 
 
 [control_settings]
 depth   = { kP = 2.50, kI = 0.03, kD = 4.00, rD = 0.30, ramp_speed = 0.5 }
 pitch   = { kP = 0.16, kI = 0.02, kD = 3.50, rD = 30.0 }
-heading = { kP = 0.40, kI = 0.004, kD = 20.00, rD = 20.0 }
+heading = { kP = 0.10, kI = 0.004, kD = 10.00, rD = 20.0 }
 velx    = { kP = 9.50, kI = 0.12, kD = 0.50, rD = 0.1547 }
 vely    = { kP = 10.00, kI = 0.20, kD = 0.50, rD = 0.5 }
 roll    = { kP = 0.20, kI = 0.05, kD = 7.00, rD = 30.0 }

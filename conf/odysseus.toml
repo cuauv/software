@@ -96,7 +96,7 @@ pitch   = { kP = 0.10, kI = 0.02, kD = 5.00, rD = 30.0 }
 heading = { kP = 0.20, kI = 0.004, kD = 1.00, rD = 20.0 }
 velx    = { kP = 9.50, kI = 0.12, kD = 0.50, rD = 0.1547 }
 vely    = { kP = 10.00, kI = 0.20, kD = 0.50, rD = 0.5 }
-roll    = { kP = 0.15, kI = 0.05, kD = 5.00, rD = 30.0 }
+roll    = { kP = 0.10, kI = 0.00, kD = 2.00, rD = 30.0 }
 quat    = { kP = 30.0, kI = 0.00, kD = 4.00 }
 
 

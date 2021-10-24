@@ -7,5 +7,6 @@ includes = [
 	"sensor.toml",
 	"actuator.toml",
 	"merge.toml",
-    "led.toml",
+	"led.toml",
+	"transmit.toml"
 ]

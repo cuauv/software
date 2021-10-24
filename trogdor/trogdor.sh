@@ -37,11 +37,11 @@ VISION_CONFIG=$ROOT/vision/configs/master.yaml
 
 if [ "$VEHICLE_TYPE" = "mainsub" ]; then
   SERVICES=(seriald gx4d kalmand navigated controld3 shmserver ueye
-  cameras webgui modules uptime hydromathd
+  cameras webgui modules uptime pingerd
   dvld leds deadman log redis)
 elif [ "$VEHICLE_TYPE" = "minisub" ]; then
   SERVICES=(seriald gx4d kalmand navigated controld3 shmserver ueye
-  cameras webgui modules uptime hydromathd deadman log redis
+  cameras webgui modules uptime pingerd deadman log redis
   )
 else
   echo "Unsupported CUAUV_VEHICLE_TYPE! Must be set to one of { mainsub, minisub }!"
@@ -162,7 +162,7 @@ case $COMMAND in
             deadman) fork "auv-deadman" "deadman" ;;
             uptime) fork "auv-uptimed" "uptime" ;;
             webgui) invoke "cd /home/software/cuauv/software/webserver" && fork "auv-webserver" "webserver" ;;
-            hydromathd) fork "auv-hydromathd" "hydromathd" ;;
+            pinger|pingerd) fork "auv-pingerd" "pingerd" ;;
             cameras) fork "auv-start-cameras" "start-cameras" ;;
             modules) fork "auv-start-modules" "start-modules" ;;
             led|leds) fork "auv-led daemon" "led" ;;
@@ -189,7 +189,7 @@ case $COMMAND in
             deadman) pkill "auv-deadman" ;;
             uptime) pkill "auv-uptimed" ;;
             webgui) pkill "auv-webserver" ;;
-            hydromathd) pkill "auv-hydromathd" ;;
+            pinger|pingerd) pkill "auv-pingerd" ;;
             cameras) pkill "auv-start-cameras" ;;
             modules) pkill "auv-start-modules" ;;
             led|leds) pkill "auv-led" ;;
@@ -236,7 +236,7 @@ case $COMMAND in
             deadman) servicestatus "auv-deadman" "deadman" ;;
             uptime) servicestatus "auv-uptimed" "uptime" ;;
             webgui) servicestatus "auv-webserver" "webgui" ;;
-            hydromathd) servicestatus "auv-hydromathd" "hydromathd" ;;
+            pinger|pingerd) servicestatus "auv-pingerd" "pingerd" ;;
             cameras) servicestatus "auv-start-cameras" "cameras" ;;
             modules) servicestatus "auv-start-modules" "modules" ;;
             led|leds) servicestatus "auv-led" "led" ;;
@@ -262,7 +262,7 @@ case $COMMAND in
             deadman) assertservice "deadman" "auv-deadman" ;;
             uptime) assertservice "uptime" "auv-uptimed" ;;
             webgui) assertservice "webgui" "auv-webserver" ;;
-            hydromathd) assertservice "hydromathd" "auv-hydromathd" ;;
+            pinger|pingerd) assertservice "pingerd" "auv-pingerd" ;;
             cameras) assertservice "cameras" "auv-start-cameras" ;;
             modules) assertservice "modules" "auv-start-modules" ;;
             led|leds) fork "auv-led daemon" "led";;

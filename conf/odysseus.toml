@@ -80,14 +80,14 @@ name = "fore_starboard"
 type = "T200"
 pos = [0.3682922, 0.206282, -0.0352978]
 heading_pitch = [0.0, 90.0]
-reversed = false 
+reversed = false
 
 [[thrusters]]
 name = "sway_fore"
 type = "T200"
 pos = [0.5155614, 0.001685, -0.0289478]
 heading_pitch = [90.0, 0.0]
-reversed = true 
+reversed = true
 
 
 [control_settings]

@@ -1,58 +1,119 @@
 #!/usr/bin/env python3
 
-#Script for generating a dump containing a single simulated ping of specified frequency and location. Read Hydrophones Code wiki entry.
+import sys
 
-import math
-import scipy.io
+import numpy as np
 
-BIT_DEPTH = 16383 #maximum possible level of a signal
-IDLE_TIME = 1.996 #padding before and after ping (in seconds)
-NIPPLE_DIST = 0.0178 #distance between the teats (in meters)
-NO_CH = 4 #number of channels
-PING_TIME = 0.004 #ping duration (in seconds)
-FREQ = 30000 #ping frequency
-COMMS_FREQ = 52000 #comms frequency
-SAMPL_RATE = 200000
-SOUND_SPEED = 1481 #speed of sound in fresh water at 20 degrees Celsius
+sys.path.insert(0, '../modules')
+from common import const
 
-HDG = 45 #ping heading (in degrees)
-ELEV = 86 #ping elevation (in degrees)
-A_AMPL = 0.76 #amplitude on channel A (max 1)
-B_AMPL = 0.87 #amplitude on channel B (max 1)
-C_AMPL = 0.76 #amplitude on channel C (max 1)
-D_AMPL = 0.75 #amplitude on channel D (max 1)
+MAX_DUR = 10 ** 7
 
-#calculating the total duration of the dump
-total_time = 2 * IDLE_TIME + PING_TIME
+max_travel_time = const.NIPPLE_DIST / const.SOUND_SPEED * const.SAMPLE_RATE
+range_top = const.BIT_DEPTH / 2 - 1
+range_bottom = -const.BIT_DEPTH / 2
 
-#calculating when the signal reaches each channel. reference channel is reached exactly when the initial padding ends
-a_start_time = IDLE_TIME
-b_start_time = IDLE_TIME - NIPPLE_DIST * math.sin(HDG * math.pi / 180) * math.cos(ELEV * math.pi / 180) / SOUND_SPEED
-c_start_time = IDLE_TIME + NIPPLE_DIST * math.cos(HDG * math.pi / 180) * math.cos(ELEV * math.pi / 180) / SOUND_SPEED
-d_start_time = IDLE_TIME
+try:
+    input_filename = sys.argv[1]
+except IndexError:
+    raise Exception('Input filename not specified')
 
-#initializing the dict that will be saved to the mat file
-write_dict = {"raw_samples_interleaved": []}
+while True:
+    try:
+        pkt_type = int(input('Enter packet type - 0 (pinger) or 1 (comms): '))
+        if not (pkt_type == 0 or pkt_type == 1):
+            raise ValueError('Packet type must be 0 or 1')
+        break
+    except ValueError as e:
+        print(e)
 
-#generating samples
-for sampl_no in range(int(total_time * SAMPL_RATE)):
+while True:
+    try:
+        hdg_deg = float(input('Enter heading in the interval [0, 360): '))
+        if not (0 <= hdg_deg < 360):
+            raise ValueError('Heading not in the correct interval')
+        hdg = np.radians(hdg_deg)
+        break
+    except ValueError as e:
+        print(e)
 
-	#adding DC bias, which is half the maximum possible signal level
-	write_dict["raw_samples_interleaved"] += [BIT_DEPTH / 2, BIT_DEPTH / 2, BIT_DEPTH / 2, BIT_DEPTH / 2]
+while True:
+    try:
+        elev_deg = float(input('Enter elevation in the interval [-90, 90]: '))
+        if not (-90 <= elev_deg <= 90):
+            raise ValueError('Elevation not in the correct interval')
+        elev = np.radians(elev_deg)
+        break
+    except ValueError as e:
+        print(e)
 
-	#adding the sinusoidal signal to channels if the time is right. it can have at most an amplitude of half the maximum possible signal level
-	if sampl_no >= a_start_time * SAMPL_RATE and sampl_no < (a_start_time + PING_TIME) * SAMPL_RATE:
-		write_dict["raw_samples_interleaved"][NO_CH * sampl_no + 0] += int(float(BIT_DEPTH) / 2 * A_AMPL * math.sin(FREQ * 2 * math.pi * (float(sampl_no) / SAMPL_RATE - a_start_time)))
+while True:
+    try:
+        signal_ampl_frac = float(input(
+            'Enter signal amplitude in the interval [0, 1]: '))
+        if not (0 <= signal_ampl_frac <= 1):
+            raise ValueError('Signal amplitude not in the correct interval')
+        signal_ampl = signal_ampl_frac * range_top
+        break
+    except ValueError as e:
+        print(e)
 
-	if sampl_no >= b_start_time * SAMPL_RATE and sampl_no < (b_start_time + PING_TIME) * SAMPL_RATE:
-		write_dict["raw_samples_interleaved"][NO_CH * sampl_no + 1] += int(float(BIT_DEPTH) / 2 * B_AMPL * math.sin(FREQ * 2 * math.pi * (float(sampl_no) / SAMPL_RATE - b_start_time)))
+while True:
+    try:
+        noise_rms_frac = float(input(
+            'Enter noise RMS in the interval [0, 1]: '))
+        if not (0 <= noise_rms_frac <= 1):
+            raise ValueError('Noise RMS not in the correct interval')
+        noise_rms = noise_rms_frac * range_top
+        break
+    except ValueError as e:
+        print(e)
 
-	if sampl_no >= c_start_time * SAMPL_RATE and sampl_no < (c_start_time + PING_TIME) * SAMPL_RATE:
-		write_dict["raw_samples_interleaved"][NO_CH * sampl_no + 2] += int(float(BIT_DEPTH) / 2 * C_AMPL * math.sin(FREQ * 2 * math.pi * (float(sampl_no) / SAMPL_RATE - c_start_time)))
+print('Generating data...')
 
-	if sampl_no >= d_start_time * SAMPL_RATE and sampl_no < (d_start_time + PING_TIME) * SAMPL_RATE:
-		write_dict["raw_samples_interleaved"][NO_CH * sampl_no + 3] += int(float(BIT_DEPTH) / 2 * D_AMPL * math.sin(FREQ * 2 * math.pi * (float(sampl_no) / SAMPL_RATE - d_start_time)))
+with open(input_filename) as input_file:
+    samples = []
+    for line in input_file:
+        words = line.split(',')
 
-#saving to the mat file
-scipy.io.savemat("spoofed_dump.mat", write_dict, do_compression = True, oned_as = "column")
+        freq_hz = int(words[0])
+        if freq_hz < 0:
+            raise ValueError('Specified frequencies must be positive')
+        freq = 2 * np.pi * freq_hz / const.SAMPLE_RATE
 
+        dur_s = float(words[1])
+        if dur_s < 0:
+            raise ValueError('Specified durations must be positive')
+        dur = int(dur_s * const.SAMPLE_RATE)
+
+        if len(samples) // const.NUM_CHS + dur > MAX_DUR:
+            raise ValueError('Specified signal too long')
+
+        ph = np.array([
+            [0],
+            [max_travel_time * np.sin(hdg) * np.cos(elev) * freq],
+            [max_travel_time * np.cos(hdg) * np.cos(elev) * freq],
+            [max_travel_time * np.sin(-elev) * freq]])
+
+        n = np.arange(dur)
+        signal = signal_ampl * np.sin(freq * n + (freq_hz != 0) * ph)
+        noise = np.random.normal(scale=noise_rms, size=(const.NUM_CHS, dur))
+        signal += noise
+        signal = np.clip(signal, range_bottom, range_top)
+        signal = signal.astype('<i2')
+
+        samples.append(signal)
+    samples = np.concatenate(samples, axis=1)
+
+print('Writing data...')
+
+with open('spoofed_dump.dat', 'wb') as dump_file:
+    for pkt_num in range(samples.shape[1] // const.L_PKT):
+        pkt_samples = samples[:, pkt_num * const.L_PKT :
+            (pkt_num + 1) * const.L_PKT]
+        max_sample = np.abs(pkt_samples).max()
+
+        buff = np.array((pkt_num, pkt_samples, max_sample, pkt_type, 0),
+            dtype=const.SAMPLE_PKT_DTYPE).tobytes()
+
+        dump_file.write(buff)

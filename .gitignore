@@ -30,7 +30,6 @@ stats-newest
 /aslam/build/
 /libshm/doc/
 /serial/doc/
-/hydrocode/scripts/data
 
 *.o
 *.hi

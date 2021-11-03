@@ -107,6 +107,9 @@ LOCK_NAME = ".mission_lock"
 lock_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), LOCK_NAME)
 try:
     os.mkdir(lock_dir)
+    # Inform control helm that the current user is running a mission.
+    with open('/home/software/cuauv/workspaces/worktrees/master/control/control_helm2/activity/mission.csv', 'w') as f:
+        f.write(os.getenv('AUV_ENV_ALIAS'))
 except OSError:
     logger("A MISSION IS ALREADY RUNNING! Aborting...", copy_to_stdout=True)
     logger("If I am mistaken, delete %s or check permissions" % lock_dir,
@@ -136,6 +139,9 @@ elif len(args.args) > 0:
 
 def release_lock():
     os.rmdir(lock_dir)
+    # Inform control helm that the no mission is currently running.
+    with open('/home/software/cuauv/workspaces/worktrees/master/control/control_helm2/activity/mission.csv', 'w') as f:
+        f.truncate(0)
 
 initially_killed = shm.switches.hard_kill.get()
 was_ever_unkilled = False

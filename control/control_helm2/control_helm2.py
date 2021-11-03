@@ -2,8 +2,11 @@
 
 import sys
 import time
+import os
+import signal
 
 from helm_basis import *
+import activity.panels, activity.logging
 
 import shm
 
@@ -71,102 +74,110 @@ def build_control_helm(expert=False):
                 status_line = '  Voltages nominal.'
             return (voltage_line, status_line)
 
-    drive_panels = Vbox(
-        Hbox(
-            LineLambdaPanel([
-                lambda: ' PORT: {:4}  '.format(
-                    shm.motor_desires.port.get()),
-                lambda: ' STAR: {:4}  '.format(
-                    shm.motor_desires.starboard.get()),
-                lambda: ' FORE:{:3}:{:3} '.format(
-                    shm.motor_desires.fore_port.get(),
-                    shm.motor_desires.fore_starboard.get()),
-                lambda: '  AFT:{:3}:{:3} '.format(
-                    shm.motor_desires.aft_port.get(),
-                    shm.motor_desires.aft_starboard.get()),
-                lambda: ' SFOR: {:4}  '.format(
-                    shm.motor_desires.sway_fore.get()),
-                lambda: ' SAFT: {:4}  '.format(
-                    shm.motor_desires.sway_aft.get()),
-            ], width=16, padding=False),
+    drive_panels = Hbox(
+        Vbox(
+            Hbox(
+                LineLambdaPanel([
+                    lambda: ' PORT: {:4}  '.format(
+                        shm.motor_desires.port.get()),
+                    lambda: ' STAR: {:4}  '.format(
+                        shm.motor_desires.starboard.get()),
+                    lambda: ' FORE:{:3}:{:3} '.format(
+                        shm.motor_desires.fore_port.get(),
+                        shm.motor_desires.fore_starboard.get()),
+                    lambda: '  AFT:{:3}:{:3} '.format(
+                        shm.motor_desires.aft_port.get(),
+                        shm.motor_desires.aft_starboard.get()),
+                    lambda: ' SFOR: {:4}  '.format(
+                        shm.motor_desires.sway_fore.get()),
+                    lambda: ' SAFT: {:4}  '.format(
+                        shm.motor_desires.sway_aft.get()),
+                ], width=16, padding=False),
 
-            ShmPanel(shm.navigation_desires, width=20, title=None,
-                     padding=False,
-                     select_vars=['heading', 'depth', 'pitch',
-                                  'roll', 'speed', 'sway_speed'],
-                     var_names=[' DES HEAD', ' DES DPTH', ' DES PTCH',
-                                ' DES ROLL', ' DES VELX', ' DES VELY']),
+               ShmPanel(shm.navigation_desires, width=20, title=None,
+                         padding=False,
+                         select_vars=['heading', 'depth', 'pitch',
+                                      'roll', 'speed', 'sway_speed'],
+                         var_names=[' DES HEAD', ' DES DPTH', ' DES PTCH',
+                                    ' DES ROLL', ' DES VELX', ' DES VELY']),
 
-            ShmPanel(shm.kalman, width=16, title=None, padding=False,
-                     select_vars=['heading', 'depth', 'pitch',
-                                  'roll', 'velx', 'vely'],
-                     var_names=[' HEAD', ' DPTH', ' PTCH',
-                                ' ROLL', ' VELX', ' VELY']),
+                ShmPanel(shm.kalman, width=16, title=None, padding=False,
+                         select_vars=['heading', 'depth', 'pitch',
+                                      'roll', 'velx', 'vely'],
+                         var_names=[' HEAD', ' DPTH', ' PTCH',
+                                    ' ROLL', ' VELX', ' VELY']),
 
-            LineLambdaPanel([
-                lambda: (' DVL ALTD:', dvl_fmt(shm.dvl.savg_altitude.get())),
-                lambda: (' DVL TEMP:', dvl_fmt(shm.dvl.temperature.get())),
-                lambda: (StyledString.highlight_if(
-                    ' DVL BEAM 1', shm.dvl.low_amp_1.get()
-                    or shm.dvl.low_correlation_1.get()), '  FWRD:'),
-                lambda: (StyledString.highlight_if(
-                    ' DVL BEAM 2', shm.dvl.low_amp_2.get()
-                    or shm.dvl.low_correlation_2.get()),
-                         dvl_fmt(shm.kalman.forward.get())),
-                lambda: (StyledString.highlight_if(
-                    ' DVL BEAM 3', shm.dvl.low_amp_3.get()
-                    or shm.dvl.low_correlation_3.get()), '  SWAY:'),
-                lambda: (StyledString.highlight_if(
-                    ' DVL BEAM 4', shm.dvl.low_amp_4.get()
-                    or shm.dvl.low_correlation_4.get()),
-                         dvl_fmt(shm.kalman.sway.get())),
-            ], width=20, columns=True, padding=False),
+                LineLambdaPanel([
+                    lambda: (' DVL ALTD:', dvl_fmt(shm.dvl.savg_altitude.get())),
+                    lambda: (' DVL TEMP:', dvl_fmt(shm.dvl.temperature.get())),
+                    lambda: (StyledString.highlight_if(
+                        ' DVL BEAM 1', shm.dvl.low_amp_1.get()
+                        or shm.dvl.low_correlation_1.get()), '  FWRD:'),
+                    lambda: (StyledString.highlight_if(
+                        ' DVL BEAM 2', shm.dvl.low_amp_2.get()
+                        or shm.dvl.low_correlation_2.get()),
+                             dvl_fmt(shm.kalman.forward.get())),
+                    lambda: (StyledString.highlight_if(
+                        ' DVL BEAM 3', shm.dvl.low_amp_3.get()
+                        or shm.dvl.low_correlation_3.get()), '  SWAY:'),
+                    lambda: (StyledString.highlight_if(
+                        ' DVL BEAM 4', shm.dvl.low_amp_4.get()
+                        or shm.dvl.low_correlation_4.get()),
+                             dvl_fmt(shm.kalman.sway.get())),
+                ], width=20, columns=True, padding=False),
 
-            LineLambdaPanel([
-                lambda: StyledString.highlight_if(
-                    ' HK ',shm.switches.hard_kill.get()),
-                lambda: StyledString.highlight_if(
-                    ' SK ', shm.switches.soft_kill.get()),
-                lambda: StyledString.highlight_if(
-                    ' DV ', shm.dvl.vel_x_invalid.get()
-                    or shm.dvl.vel_y_invalid.get()
-                    or shm.dvl.vel_z_invalid.get()),
-                lambda: StyledString.highlight_if(
-                    ' PC ', shm.navigation_settings.position_controls.get()),
-                lambda: StyledString.highlight_if(
-                    ' OT ', shm.navigation_settings.optimize.get()),
-                lambda: StyledString.highlight_if(
-                    ' EN ', shm.settings_control.enabled.get()),
-            ], width=6, padding=False),
-            height=8, min_height=8
+                LineLambdaPanel([
+                    lambda: StyledString.highlight_if(
+                        ' HK ',shm.switches.hard_kill.get()),
+                    lambda: StyledString.highlight_if(
+                        ' SK ', shm.switches.soft_kill.get()),
+                    lambda: StyledString.highlight_if(
+                        ' DV ', shm.dvl.vel_x_invalid.get()
+                        or shm.dvl.vel_y_invalid.get()
+                        or shm.dvl.vel_z_invalid.get()),
+                    lambda: StyledString.highlight_if(
+                        ' PC ', shm.navigation_settings.position_controls.get()),
+                    lambda: StyledString.highlight_if(
+                        ' OT ', shm.navigation_settings.optimize.get()),
+                    lambda: StyledString.highlight_if(
+                        ' EN ', shm.settings_control.enabled.get()),
+                ], width=6, padding=False),
+                height=8, min_height=8
+            ),
+
+           # PID loop panels
+            Hbox(
+                pid_panel('heading', 'heading_rate', 'heading'),
+                pid_panel('pitch', 'pitch_rate', 'pitch'),
+                pid_panel('roll', 'roll_rate', 'roll'),
+                height=8,
+            ),
+            Hbox(
+                pid_panel('velx', 'accelx', 'speed'),
+                pid_panel('vely', 'accely', 'sway_speed'),
+                pid_panel('depth', 'depth_rate', 'depth'),
+                height=8,
+            ),
+            Hbox(
+                LineLambdaPanel([
+                    lambda: get_battery_status()[0],
+                    lambda: get_battery_status()[1],
+                ], width=26),
+                LineLambdaPanel([
+                    lambda: msg,
+                    lambda: buf,
+                ], width=26),
+                Panel(width=26),
+                height=4
+            ),
+
+            width=26 * 3,
         ),
-
-        # PID loop panels
-        Hbox(
-            pid_panel('heading', 'heading_rate', 'heading'),
-            pid_panel('pitch', 'pitch_rate', 'pitch'),
-            pid_panel('roll', 'roll_rate', 'roll'),
-            height=8,
-        ),
-        Hbox(
-            pid_panel('velx', 'accelx', 'speed'),
-            pid_panel('vely', 'accely', 'sway_speed'),
-            pid_panel('depth', 'depth_rate', 'depth'),
-            height=8,
-        ),
-
-        Hbox(
-            LineLambdaPanel([
-                lambda: get_battery_status()[0],
-                lambda: get_battery_status()[1],
-            ], width=26),
-            LineLambdaPanel([
-                lambda: msg,
-                lambda: buf,
-            ], width=26),
-            Panel(width=26),
-            height=4,
-        ),
+        Vbox(
+            activity.panels.ConnectionsPanel("Active", height=8, max_recency=30),
+            activity.panels.ConnectionsPanel("Idle", height=16, min_recency=30),
+            activity.panels.MissionPanel()
+        )
     )
 
     def toggle_shm(var, set_msg=None):
@@ -412,8 +423,25 @@ def build_control_helm(expert=False):
                                   lambda: commit_pos('north'), allowable_chars)
 
     add_positional_controls()
-
+    
+    # Add activity logging to each callback, so every keypress
+    # updates the user's entry in the activity list.
+    for key in drive_callbacks:
+        activity.logging.add_logging(drive_callbacks, key)
+    for mode in drive_modal_callbacks:
+        for key in drive_modal_callbacks[mode]:
+            activity.logging.add_logging(drive_modal_callbacks[mode], key)
+    
     return drive_panels, drive_callbacks, drive_modal_callbacks
 
 if __name__ == '__main__':
+    # When Control Helm is exited through any of these
+    # means, remove the user from the activity list.
+    signal.signal(signal.SIGTERM, activity.logging.close_helm)
+    signal.signal(signal.SIGINT, activity.logging.close_helm)
+    signal.signal(signal.SIGHUP, activity.logging.close_helm)
+
+    # Add the user to the activity list.
+    activity.logging.log(new_helm=True)
+
     start_helm(*build_control_helm(expert='-e' in sys.argv))

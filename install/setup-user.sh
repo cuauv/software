@@ -5,7 +5,7 @@ useradd --create-home --shell /bin/bash --groups sudo,wireshark,dialout,video so
 echo "software:software" | chpasswd
 
 mv /dependencies/ssh /home/software/.ssh
-chown -R software:software /home/software/.ssh
+chown -R software:software /home/software
 chmod 700 /home/software/.ssh
 find /home/software/.ssh -type f -exec chmod 600 {} \;
 chmod 644 /home/software/.ssh/id_rsa.pub

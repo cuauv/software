@@ -31,6 +31,9 @@ packages=(
 
     pygobject
 
+    # pyparsing>=3 conflicts with packaging for some reason
+    "pyparsing<3"
+
     nanomsg
 
     #numpy
